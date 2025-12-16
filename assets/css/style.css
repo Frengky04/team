@@ -68,22 +68,74 @@ body {
     color: var(--dlg-blue);
 }
 
-/* --- 2. SIDEBAR (Light Version) --- */
+/* --- 2. SIDEBAR (Light Version & Pinned Footer) --- */
 .sidebar {
     width: var(--sidebar-width);
     background-color: #ffffff;
     border-right: 1px solid #e5e7eb;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Menyusun atas-bawah */
     position: fixed;
     top: var(--topbar-height);
     bottom: 0;
     left: 0;
     z-index: 1000;
-    padding: 20px 15px;
+    padding: 0; /* Padding dipindah ke child */
     transition: all 0.3s;
-    overflow-y: auto;
+    overflow: hidden; /* Sidebar utama tidak scroll, anaknya yang scroll */
 }
+
+/* Wrapper untuk area yang bisa di-scroll (Menu & Filter) */
+.sidebar-scroll-wrapper {
+    flex-grow: 1; /* Mengisi sisa ruang kosong */
+    overflow-y: auto; /* Scroll hanya terjadi di sini */
+    padding: 20px 15px;
+    
+    /* Menyembunyikan scrollbar tapi tetap bisa scroll (opsional) */
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+}
+
+/* Style Copyright */
+.sidebar-copyright {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    font-size: 0.7rem;
+    color: #9ca3af;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Pending Task Widget (Pinned Bottom) */
+.pending-widget {
+    flex-shrink: 0; /* Mencegah widget mengecil */
+    margin: 0; /* Reset margin auto */
+    background-color: #FFF0F3;
+    /* Border radius atas saja agar terlihat menyatu atau tetap rounded */
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 30px 20px; /* Padding bawah agak besar */
+    text-align: center;
+    position: relative;
+    border-top: 1px solid #ffe4e6;
+    z-index: 10;
+}
+
+/* Styling existing components (Sama seperti sebelumnya) */
+.smart-filters-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+.fire-icon-wrapper {
+    background: white; width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: -45px auto 10px auto;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+/* ... (Sisa CSS tombol dan icon tetap sama) ... */
+
+
 
 /* Smart Filters (4 Kotak Besar) */
 .smart-filters-grid {
@@ -155,12 +207,66 @@ body {
 }
 .btn-review:hover { background-color: black; }
 
-/* --- 3. MAIN CONTENT (From Code-28) --- */
+/* --- FIX LAYOUT OVERLAP --- */
 .main-content {
+    /* Memberi jarak kiri sebesar lebar sidebar agar tidak tertumpuk */
     margin-left: var(--sidebar-width);
-    flex-grow: 1;
-    padding: 30px;
+    /* Memberi jarak atas agar tidak tertutup navbar */
+    padding-top: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 30px;
     width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+}
+
+/* Responsif untuk Mobile */
+@media (max-width: 991px) {
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+}
+
+/* --- PROJECT CONTAINER --- */
+.project-container {
+    
+}
+
+/* --- GRADIENT PROGRESS BAR (Abu -> Biru -> Hijau) --- */
+.progress-track {
+    position: absolute;
+    top: 50%; left: 0; width: 100%; height: 6px; /* Sedikit lebih tebal */
+    background: #f3f4f6; /* Abu-abu sangat muda */
+    transform: translateY(-50%);
+    z-index: 1;
+    border-radius: 10px;
+}
+
+.progress-fill {
+    position: absolute;
+    top: 50%; left: 0; height: 6px;
+    /* GRADASI: Abu-abu (start) -> Biru (tengah) -> Hijau (akhir) */
+    background: linear-gradient(90deg, #9ca3af 0%, var(--dlg-blue) 50%, var(--dlg-green) 100%);
+    transform: translateY(-50%);
+    z-index: 1;
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+/* Update warna dot agar sesuai gradasi */
+.step-item.completed .step-dot {
+    /* Mengikuti warna fill, atau kita set biru default */
+    background: var(--dlg-blue);
+    border-color: var(--dlg-blue);
+}
+/* Dot terakhir (Launch) jika aktif warnanya hijau */
+.step-item:last-child.active .step-dot,
+.step-item:last-child.completed .step-dot {
+    background: var(--dlg-green);
+    border-color: var(--dlg-green);
+    color: var(--dlg-green);
 }
 
 /* Who Is Online */
