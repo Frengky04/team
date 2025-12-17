@@ -3,877 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>List - Making a Podcast</title>
+    <title>List - Dialogika</title>
     
-    <!-- Bootstrap 5.3 CSS -->
+    <!-- Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
 
     <style>
-        /* CSS KHUSUS HALAMAN LIST (STACKED CARD EFFECT) */
-        
-        body {
-            background-color: #e5e7eb; /* Background abu */
-        }
-        /* FIX: Main Content Margin agar tidak nabrak Sidebar */
+        /* --- CSS KHUSUS LIST.HTML --- */
+        body { background-color: #e5e7eb; }
+
+        /* FIX LAYOUT: Pastikan konten ada di sebelah kanan sidebar */
         .main-content {
-            margin-left: 290px; /* Sesuai lebar sidebar */
+            margin-left: 290px;
             width: calc(100% - 290px);
             padding: 40px;
             min-height: 100vh;
         }
-
-        /* Responsif Mobile */
         @media (max-width: 991px) {
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-                padding: 20px;
-            }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
         }
 
-        /* --- 1. PROJECT CONTEXT CARD (KARTU BELAKANG/ATAS) --- */
+        /* 1. KARTU HITAM (Project Context) */
         .project-context-card {
-            max-width: 800px; /* LEBIH KECIL dari card list */
-            width: 90%;
-            background-color: #fff;
-            color: #1f2937; /* Dark Navy */
-            margin: 20px auto -20px auto; /* Margin bottom negatif agar tertiban card bawah */
-            padding: 15px 25px 35px 25px; /* Padding bawah lebih besar untuk area tiban */
-            border-radius: 16px 16px 0 0; /* Rounded atas */
-            position: relative;
-            z-index: 1; /* Layer bawah */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 850px; width: 90%; margin: 20px auto -30px auto;
+            background-color: #1f2937; color: white;
+            padding: 20px 30px 45px 30px; border-radius: 16px 16px 0 0;
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         }
 
-        /* Badge Sample Project */
         .ph-badge {
-            background: #FDE047; /* Yellow */
-            color: #854D0E;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            margin-right: 15px;
-            letter-spacing: 0.5px;
-            position: absolute;
-            left: 30px;
-            top: 38%;
-            transform: translateY(-50%);
-        }
-        
-
-        /* Menu Trigger Icon (Kotak-kotak) */
-        .menu-trigger-btn {
-            position: absolute;
-            top: 0px; left: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #9ca3af;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-right: 10px;
-        }
-        .menu-trigger-btn:hover, .menu-trigger-btn[aria-expanded="true"] {
-            background: #1f2937;
-            color: white;
+            background: #FDE047; color: #854D0E; font-size: 0.7rem; font-weight: 800;
+            padding: 4px 8px; border-radius: 4px; text-transform: uppercase;
+            position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
         }
 
-        /* Nama Project (Link) */
-        .project-name-link {
-            font-weight: 700;
-            color: #1f2937;
-            text-decoration: none;
-            font-size: 1rem;
-            border-bottom: 1px solid transparent;
-            transition: 0.2s;
+        /* Menu Trigger */
+        .ph-nav-group {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255, 255, 255, 0.1); padding: 6px 15px; border-radius: 50px;
+            cursor: pointer; transition: 0.2s;
         }
-        .project-name-link:hover {
-            color: #0B2B6A;
-            border-bottom-color: #e5e7eb;
-        }
+        .ph-nav-group:hover { background: rgba(255, 255, 255, 0.2); }
+        .ph-project-name { font-weight: 700; color: white; font-size: 1rem; }
 
-        /* Dropdown Menu Style */
-        .tools-dropdown-menu {
-            border: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-radius: 12px;
-            padding: 10px;
-            min-width: 240px;
-            margin-top: 10px !important;
-        }
-        .tool-link {
-            display: flex; align-items: center; padding: 10px 12px;
-            color: #374151; text-decoration: none; border-radius: 8px;
-            font-weight: 500; font-size: 0.9rem; transition: 0.2s;
-        }
-        .tool-link:hover { background-color: #f3f4f6; color: var(--dlg-blue); }
-        .tool-link.active { background-color: #eff6ff; color: var(--dlg-blue); font-weight: 700; }
-        .tool-icon-small { width: 24px; text-align: center; margin-right: 12px; font-size: 1.1rem; }
-
-
-        /* --- 2. MAIN LIST CARD (KARTU DEPAN/BAWAH) --- */
+        /* 2. KARTU PUTIH (Main Content) */
         .main-list-card {
-            max-width: 1000px; /* LEBIH BESAR dari card project */
-            width: 100%;
-            background: white;
-            border-radius: 12px;
-            /* Shadow tebal & soft */
+            max-width: 1000px; width: 100%; margin: 0 auto 50px auto;
+            background: white; border-radius: 16px;
             box-shadow: 0 10px 40px -5px rgba(0, 0, 0, 0.1);
-            margin: 0 auto 50px auto;
-            padding: 50px 60px;
-            position: relative;
-            z-index: 2; /* Layer atas (meniban) */
-            border: 1px solid #d1d5db;
+            padding: 60px; position: relative; z-index: 2;
+            border: 1px solid #d1d5db; min-height: 400px;
         }
 
-        /* Header Title di dalam Card List */
-        .list-title-area {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .list-title-h1 {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #111;
-            margin-bottom: 5px;
-        }
-        .list-meta {
-            font-size: 1rem;
-            color: #6b7280;
-        }
-        .list-meta-dot { color: #10b981; font-size: 0.8rem; margin: 0 5px; vertical-align: middle; }
-
-        /* Tombol New List (Floating Top Right inside card) */
+        /* Tombol New List */
         .btn-new-list {
-            position: absolute;
-            top: 40px; right: 40px;
-            background-color: var(--dlg-blue);
-            color: white;
-            border-radius: 50px;
-            padding: 6px 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: none;
-            box-shadow: 0 4px 10px rgba(11, 43, 106, 0.2);
-            transition: 0.2s;
+            position: absolute; top: 40px; right: 40px;
+            background-color: #0B2B6A; color: white; border-radius: 50px;
+            padding: 8px 24px; font-weight: 600; border: none;
+            box-shadow: 0 4px 10px rgba(11, 43, 106, 0.2); transition: 0.2s;
         }
         .btn-new-list:hover { background-color: #08204e; transform: translateY(-2px); }
 
-        /* --- KONTEN LIST --- */
-        .todo-group-label {
-            font-size: 1.1rem; font-weight: 800; color: #1f2937;
-            margin-top: 40px; margin-bottom: 15px; border-bottom: 3px solid #1f2937;
-            display: inline-block; padding-bottom: 2px;
-        }
-        
-        .todo-row {
-            display: flex; align-items: flex-start; padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6; transition: 0.2s;
-            font-size: 1.05rem; /* Font agak besar agar jelas */
-        }
-        .todo-row:hover { background-color: #f9fafb; padding-left: 10px; border-radius: 5px; margin-left: -10px; }
-        
-        .todo-check {
-            width: 26px; height: 26px; margin-right: 15px; margin-top: 2px; cursor: pointer;
-            border: 2px solid #cbd5e1; border-radius: 6px;
-        }
-        .todo-text { color: #374151; }
-        .todo-row.completed .todo-text { text-decoration: line-through; color: #9ca3af; }
-
-        .btn-add-todo {
-            margin-top: 15px; margin-left: 42px; border-radius: 50px; padding: 8px 24px;
-            font-size: 0.9rem; font-weight: 600; border: 1px solid #e5e7eb;
-            background: white; color: #6b7280; transition: 0.2s;
-        }
-        .btn-add-todo:hover { border-color: var(--dlg-blue); color: var(--dlg-blue); }
-
-        /* Responsive */
-        @media (max-width: 991px) {
-            .project-context-card { width: 95%; border-radius: 12px 12px 0 0; }
-            .main-list-card { width: 100%; border-radius: 20; padding: 30px 20px; }
-            .btn-new-list { position: static; display: block; margin: 20px auto; width: 100%; }
-            .ph-badge { display: none; }
-        }
-        
-        /* --- NEW LIST FORM STYLING --- */
+        /* Form New List */
         .new-list-form-wrapper {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            display: none; /* Tersembunyi secara default */
+            background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+            padding: 25px; margin-bottom: 40px; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-
-        /* Input Judul Besar */
         .input-list-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            border: none;
-            width: 100%;
-            outline: none;
-            margin-bottom: 15px;
-            color: #1f2937;
+            font-size: 1.5rem; font-weight: 700; border: none; width: 100%;
+            outline: none; margin-bottom: 15px; color: #1f2937; border-bottom: 2px solid transparent;
         }
-        .input-list-title::placeholder { color: #9ca3af; font-weight: 600; }
-
-        /* Editor Box (Toolbar + Textarea) */
-        .editor-box {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            transition: box-shadow 0.2s;
-        }
-        .editor-box:focus-within {
-            box-shadow: 0 0 0 3px rgba(11, 43, 106, 0.1);
-            border-color: var(--dlg-blue);
-        }
-
-        .editor-toolbar {
-            background-color: #fff;
-            border-bottom: 1px solid #f3f4f6;
-            padding: 8px 12px;
-            display: flex;
-            gap: 15px;
-            color: #4b5563;
-        }
-        .editor-icon {
-            font-size: 1rem;
-            cursor: pointer;
-            color: #6b7280;
-            transition: 0.2s;
-        }
-        .editor-icon:hover { color: #111; }
-
-        .editor-textarea {
-            border: none;
-            width: 100%;
-            padding: 15px;
-            resize: vertical;
-            outline: none;
-            font-size: 0.95rem;
-            min-height: 120px;
-        }
-
-        /* Tombol Hijau (Sesuai Screenshot) */
-        .btn-save-list {
-            background-color: #108a00; /* Basecamp Green ish */
-            color: white;
-            font-weight: 600;
-            padding: 8px 20px;
-            border-radius: 50px;
-            border: none;
-            transition: 0.2s;
-        }
-        .btn-save-list:hover { background-color: #0c6b00; color: white; }
-
-        .btn-cancel-list {
-            background: white;
-            border: 1px solid #d1d5db;
-            color: #374151;
-            font-weight: 600;
-            padding: 8px 20px;
-            border-radius: 50px;
-            margin-left: 10px;
-            transition: 0.2s;
-        }
-        .btn-cancel-list:hover { background: #f3f4f6; }
+        .input-list-title:focus { border-bottom-color: #e5e7eb; }
         
-        /* --- NEW TODO ITEM FORM STYLING --- */
-        .todo-creation-wrapper {
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
-
-        .new-todo-card {
-            background: white;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            display: none; /* Tersembunyi default */
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        /* Header: Checkbox + Description */
-        .todo-form-header {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        .todo-form-check {
-            width: 24px; height: 24px;
-            border: 2px solid #9ca3af;
-            border-radius: 4px;
-            margin-right: 15px;
-        }
-        .todo-input-desc {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 1.1rem;
-            color: #374151;
-        }
-        .todo-input-desc::placeholder { color: #9ca3af; }
-
-        /* Body: Details (Assigned, Date, etc) */
-        .todo-form-body {
-            padding: 20px;
-        }
-        .todo-form-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .todo-label {
-            width: 140px; /* Lebar label tetap */
-            text-align: right;
-            margin-right: 20px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.95rem;
-        }
-        .todo-input-detail {
-            flex-grow: 1;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            padding: 6px 10px;
-            color: #4b5563;
-            font-size: 0.95rem;
-            transition: 0.2s;
-        }
-        .todo-input-detail:hover, .todo-input-detail:focus {
-            border-color: #d1d5db;
-            background: #f9fafb;
-            outline: none;
-        }
-
-        /* Footer: Buttons */
-        .todo-form-footer {
-            padding: 15px 20px;
-            background: #f9fafb; /* Sedikit abu di footer */
-            border-top: 1px solid #f3f4f6;
-            border-radius: 0 0 8px 8px;
-            display: flex;
-            gap: 10px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* --- RICH TEXT EDITOR STYLING --- */
-        .editor-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            background: #fff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 8px 12px;
-            align-items: center;
-        }
-
-        .editor-btn {
-            background: none;
-            border: 1px solid transparent;
-            color: #4b5563;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: 0.2s;
-        }
-
-        .editor-btn:hover {
-            background: #f3f4f6;
-            color: #111;
-        }
-
-        /* Container untuk contenteditable */
-        .rich-editor-content {
-            min-height: 150px;
-            padding: 15px;
-            outline: none;
-            font-size: 1rem;
-            color: #374151;
-            background: white;
-        }
-
-        .rich-editor-content:empty:before {
-            content: attr(data-placeholder);
-            color: #9ca3af;
-        }
-
-        /* Color Picker Dropdown */
-        .color-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-
-        .color-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: white;
-            border: 1px solid #d1d5db;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-            padding: 10px;
-            border-radius: 8px;
-            width: 250px;
-        }
-
-        .color-grid {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 5px;
-        }
-
-        .color-swatch {
-            width: 22px;
-            height: 22px;
-            border-radius: 3px;
-            cursor: pointer;
-            border: 1px solid #e5e7eb;
-        }
-
-        .color-swatch:hover { transform: scale(1.1); }
-
-        /* Dropdown Visible State */
-        .color-dropdown:hover .color-menu {
-            display: block;
-        }
-
-        /* Heading Select */
-        .heading-select {
-            border: none;
-            background: #f3f4f6;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px;
-            outline: none;
-        }
-        
-        /* --- EMPTY STATE STYLING --- */
+        /* Empty State */
         .empty-state-card {
-            border: 2px dashed #FDE047; /* Garis putus-putus kuning */
-            background-color: #FFFCF5; /* Background kuning sangat muda */
-            border-radius: 12px;
-            padding: 40px;
-            text-align: center;
-            margin-top: 30px;
-            margin-bottom: 50px;
+            border: 2px dashed #FDE047; background-color: #FFFCF5;
+            border-radius: 12px; padding: 50px 20px; text-align: center;
+            margin-top: 30px; display: none;
         }
 
-        .empty-state-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 20px auto;
-            color: #cbd5e1; /* Warna ikon abu */
+        /* List Items Styling */
+        .todo-group-label {
+            font-size: 1.2rem; font-weight: 800; color: #1f2937;
+            margin-top: 40px; margin-bottom: 15px; border-bottom: 3px solid #1f2937;
+            display: inline-block; padding-bottom: 5px;
         }
-
-        .empty-state-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: #4b5563;
-            margin-bottom: 10px;
+        .todo-row {
+            padding: 12px 10px; border-bottom: 1px solid #f3f4f6;
+            display: flex; align-items: start; transition: 0.2s;
         }
-
-        .empty-state-desc {
-            color: #6b7280;
-            font-size: 0.95rem;
-            max-width: 500px;
-            margin: 0 auto;
-            line-height: 1.5;
+        .todo-row:hover { background-color: #f8fafc; border-radius: 6px; }
+        .todo-check { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .ph-badge { display: none; }
+            .main-list-card { padding: 30px 20px; border-radius: 0; }
+            .btn-new-list { position: static; display: block; width: 100%; margin-bottom: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. TOP BAR FIXED -->
+    <!-- 1. TOP BAR -->
     <nav class="top-bar">
-        <!-- Left: Mobile Toggle & Search -->
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="input-group d-none d-md-flex" style="width: 250px;">
-                <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Search...">
-            </div>
+            <button class="mobile-toggle me-3" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <div class="logo-center"><img src="https://www.dialogika.co/assets/img/logo.webp" height="35"></div>
         </div>
-
-        <!-- CENTER: LOGO DIALOGIKA -->
-        <div class="logo-center">
-            <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" height="35">
-        </div>
-
-        <!-- Right: Profile -->
         <div class="d-flex align-items-center gap-3">
-            <div class="text-end d-none d-lg-block lh-1">
-                <span class="d-block fw-bold small text-dark">Rizky A.</span>
-                <small class="text-muted" style="font-size:0.7rem">Super Admin</small>
-            </div>
-            <div class="profile-img-container">
-                <img src="https://i.pravatar.cc/300?img=11" alt="Profile" class="profile-img">
-            </div>
+            <div class="profile-img-container"><img src="https://i.pravatar.cc/300?img=11" class="profile-img"></div>
         </div>
     </nav>
 
-    <!-- WRAPPER UTAMA (PENTING) -->
     <div class="dashboard-container">
         
-        <!-- 2. SIDEBAR (Light, Smart Filters, Pending Widget) -->
+        <!-- 2. SIDEBAR -->
         <aside class="sidebar" id="sidebarNav">
-            
-            <!-- WRAPPER UNTUK AREA YANG BISA DI-SCROLL -->
             <div class="sidebar-scroll-wrapper">
-                
-                <!-- Smart Filters (4 Kotak Besar) -->
-                <div class="smart-filters-grid">
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-dark"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
-                        <div class="filter-label">All Tasks</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-blue"><i class="bi bi-calendar-event-fill"></i></div><div class="filter-count">25</div></div>
-                        <div class="filter-label">Today</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-orange"><i class="bi bi-flag-fill"></i></div><div class="filter-count">21</div></div>
-                        <div class="filter-label">Urgent</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-red"><i class="bi bi-calendar-check-fill"></i></div><div class="filter-count">30</div></div>
-                        <div class="filter-label">Assigned</div>
-                    </a>
-                </div>
-
-                <!-- Navigation Links -->
                 <div class="nav-category">Main Navigation</div>
-                <a href="#" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup <span class="sidebar-badge">4</span></a>
-                <a href="#" class="sidebar-link"><i class="bi bi-chat-dots"></i> Pings</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-bell"></i> Hey!</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-activity"></i> Activity</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-person-circle"></i> My Stuff</a>
-
-                <div class="nav-category mt-4">System</div>
-                <a href="#" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
-                <a href="#" class="sidebar-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
-
-            </div> <!-- End Scroll Wrapper -->
-
-            <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
-            <div class="pending-widget">
-                <div class="fire-icon-wrapper"><i class="bi bi-fire fire-icon"></i></div>
-                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Tasks</h6>
-                <p class="small text-muted mb-3">You have 5 approvals waiting.</p>
-                <button class="btn-review">Review Now</button>
-                
-                <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
-                <div class="sidebar-copyright">
-                    &copy; 2025 PT Dialogika Persona Indonesia
-                </div>
+                <a href="../home.html" class="sidebar-link"><i class="bi bi-columns-gap"></i> Dashboard</a>
+                <a href="#" class="sidebar-link active"><i class="bi bi-list-columns-reverse"></i> Lineup</a>
+                <div class="sidebar-copyright">&copy; 2025 PT Dialogika Persona Indonesia</div>
             </div>
-
         </aside>
 
-        <!-- MAIN CONTENT -->
+        <!-- 3. MAIN CONTENT -->
         <main class="main-content">
             
-            <!-- A. KARTU ATAS (PROJECT CONTEXT) -->
-            <div class="project-context-card d-flex align-items-center">
-                <div class="ph-badge">Project</div>
-                <div class="project-name-link d-flex align-items-center">
-                    <a href="#" id="backToProjectLink">Loading...</a> <!-- Akan diisi JS -->
-                    <span>›</span>
-                    <span class="active-page text-white-50">To-dos</span>
+            <!-- A. KARTU BELAKANG (HEADER HITAM) -->
+            <div class="project-context-card">
+                <!-- Badge Department -->
+                <div class="ph-badge" id="projectBadge">Loading...</div>
+
+                <!-- Dropdown Menu & Title -->
+                <div class="dropdown">
+                    <div class="ph-nav-group" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill text-secondary"></i>
+                        <span class="ph-project-name" id="projectNameHeader">Loading Project...</span>
+                    </div>
+                    <ul class="dropdown-menu shadow border-0 rounded-4 mt-2 p-2">
+                        <li><h6 class="dropdown-header text-uppercase small fw-bold">Jump to tool</h6></li>
+                        <li><a class="dropdown-item rounded-2" href="#" id="linkBackToProject"><i class="bi bi-arrow-left me-2"></i> Back to Project</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item rounded-2" href="#"><i class="bi bi-kanban me-2 text-warning"></i> Kanban</a></li>
+                        <li><a class="dropdown-item rounded-2" href="#"><i class="bi bi-file-earmark-text me-2 text-info"></i> Files</a></li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- B. KARTU BAWAH (CONTENT) -->
-            <div class="main-card-white">
+            <!-- B. KARTU DEPAN (LIST KONTEN) -->
+            <div class="main-list-card">
                 
-                <!-- Header Title & New Button -->
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div class="text-center w-100 position-relative">
-                        <h1 class="fw-bold display-5 mb-1" style="color:#111;">To-dos</h1>
-                        <!-- Progress (Optional) -->
-                        <span class="text-muted small" id="totalProgress"></span>
-                        
-                        <!-- Tombol New List (Absolute Right) -->
-                        <button class="btn btn-dlg-blue rounded-pill px-4 btn-new-list" onclick="toggleNewListForm()">
-                            <i class="bi bi-plus-lg me-1"></i> New List
-                        </button>
-                    </div>
+                <!-- Tombol New List -->
+                <button class="btn-new-list" onclick="toggleNewListForm()">
+                    <i class="bi bi-plus-lg me-1"></i> New List
+                </button>
+
+                <!-- Judul Halaman -->
+                <div class="text-center mb-5">
+                    <h1 class="fw-bold display-5 mb-1" style="color:#111;">To-dos</h1>
+                    <p class="text-muted">Manage your tasks efficiently.</p>
                 </div>
 
-                <!-- FORM CREATE NEW LIST (Hidden by Default) -->
+                <!-- FORM NEW LIST (Hidden) -->
                 <div id="newListForm" class="new-list-form-wrapper">
-                    <div class="d-flex justify-content-between mb-2">
-                        <h5 class="fw-bold">Name this list...</h5>
-                        <a href="#" class="text-decoration-none small text-primary">Use a template...</a>
-                    </div>
-                    
-                    <input type="text" id="inputListName" class="input-list-title" placeholder="e.g. Phase 1: Planning">
-                    
-                    <div class="editor-box">
-                        <div class="editor-toolbar">
-                            <i class="bi bi-type-bold"></i><i class="bi bi-type-italic"></i><i class="bi bi-link"></i><i class="bi bi-list-ul"></i>
-                        </div>
-                        <div id="inputListDesc" class="editor-textarea" contenteditable="true" data-placeholder="Add extra details..."></div>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <button class="btn-save-list" onclick="saveNewList()">Add this list</button>
-                            <button class="btn-cancel-list" onclick="toggleNewListForm()">Cancel</button>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="hillChart">
-                            <label class="form-check-label small text-muted" for="hillChart">Track on Hill Chart</label>
-                        </div>
+                    <input type="text" id="inputListName" class="input-list-title" placeholder="Name this list...">
+                    <div class="border rounded mb-3 p-2 bg-white" style="min-height: 100px;" contenteditable="true" id="inputListDesc"></div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success rounded-pill px-4 btn-save-list" onclick="saveNewList()">Add this list</button>
+                        <button class="btn btn-light border rounded-pill px-4" onclick="toggleNewListForm()">Cancel</button>
                     </div>
                 </div>
 
-                <!-- LOADING STATE -->
+                <!-- LOADING INDICATOR -->
                 <div id="loadingState" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
                     <p class="text-muted mt-2">Loading lists...</p>
                 </div>
 
-                <!-- EMPTY STATE (Muncul jika tidak ada list) -->
-                <div id="emptyState" class="empty-state-card" style="display: none;">
-                    <i class="bi bi-check-circle empty-state-icon display-4"></i>
-                    <h3 class="empty-state-title">No to-do lists just yet</h3>
-                    <p class="empty-state-desc">Organize work across teams to get things done on time. Assign tasks, set due dates, and discuss. Get started by creating a new list above.</p>
+                <!-- EMPTY STATE -->
+                <div id="emptyState" class="empty-state-card">
+                    <i class="bi bi-check-circle display-4 text-warning mb-3 d-block"></i>
+                    <h3 class="fw-bold text-secondary">No to-do lists just yet</h3>
+                    <p class="text-muted">Get started by creating a new list above.</p>
                 </div>
 
-                <!-- LIST CONTAINER (Tempat List & Task dirender) -->
+                <!-- ERROR STATE -->
+                <div id="errorState" class="alert alert-danger text-center" style="display: none;"></div>
+
+                <!-- LIST CONTAINER -->
                 <div id="listsContainer"></div>
 
             </div>
         </main>
+    </div>
 
-        <!-- MOBILE BOTTOM NAVIGATION -->
-        <div class="bottom-nav">
-            <a href="#" class="nav-item-mobile active"><i class="bi bi-house-door-fill"></i></a>
-            <a href="#" class="nav-item-mobile"><i class="bi bi-search"></i></a>
-            
-            <button class="nav-btn-plus" type="button" data-bs-toggle="offcanvas" data-bs-target="#actionSheet">
-                <i class="bi bi-plus-lg"></i>
-            </button>
-            
-            <a href="#" class="nav-item-mobile position-relative">
-                <i class="bi bi-bell"></i>
-                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width:10px; height:10px; margin-left:-15px; margin-top:10px;"></span>
-            </a>
-            <a href="#" class="nav-item-mobile"><i class="bi bi-person"></i></a>
-        </div>
-
-        <!-- MOBILE ACTION SHEET -->
-        <div class="offcanvas offcanvas-bottom custom-bottom-sheet" tabindex="-1" id="actionSheet">
-            <div class="offcanvas-header justify-content-center pb-0">
-                <div style="width: 40px; height: 4px; background: #e2e8f0; border-radius: 10px;"></div>
-            </div>
-            <div class="offcanvas-body pt-4">
-                <h6 class="fw-bold mb-3 ps-2">Create New</h6>
-                <a href="#" class="action-option">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width:40px; height:40px; background:#e0f2fe; color:#0284c7;"><i class="bi bi-sticky"></i></div>
-                    <div><span class="d-block fw-bold small">Capture</span><small class="text-muted" style="font-size: 0.7rem;">Quick ideas & memos</small></div>
-                </a>
-                <a href="#" class="action-option">
-                    <div class="d-flex align-items-center justify-content-center rounded-3 me-3" style="width:40px; height:40px; background:#f0fdf4; color:#16a34a;"><i class="bi bi-check2-square"></i></div>
-                    <div><span class="d-block fw-bold small">Reminder</span><small class="text-muted" style="font-size: 0.7rem;">Assign to yourself or team</small></div>
-                </a>
-            </div>
-        </div>
-
-    </div> <!-- End Dashboard Container -->
-
+    <!-- Script JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. KONFIGURASI API (PASTIKAN INI BENAR) ---
-        // Ganti dengan URL Web App (akhiran /exec) hasil deploy terbaru Anda
+        // --- 1. KONFIGURASI API (WAJIB DIGANTI) ---
+        // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA YANG BERAKHIRAN /exec
         const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
 
-        // Ambil ID Project dari URL
+        // Ambil ID dari URL
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('id');
 
-        // --- 2. SAAT HALAMAN DIMUAT ---
+        // --- 2. INIT LOAD ---
         document.addEventListener("DOMContentLoaded", function() {
-            console.log("Page Loaded. Project ID:", projectId); // Cek Console
+            console.log("Project ID:", projectId);
 
-            // Cek apakah Project ID ada
+            // Validasi ID
             if(!projectId) {
-                document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('listsContainer').innerHTML = `
-                    <div class="alert alert-danger text-center">
-                        <strong>Error:</strong> Tidak ada Project ID di URL.<br>
-                        <a href="../home.html" class="btn btn-sm btn-outline-danger mt-2">Kembali ke Dashboard</a>
-                    </div>
-                `;
-                document.getElementById('backToProjectLink').innerText = "Unknown Project";
+                showError("Error: Tidak ada Project ID di URL. <br><a href='../home.html' class='btn btn-sm btn-outline-danger mt-2'>Kembali ke Dashboard</a>");
                 return;
             }
-            
-            // Set Link Back default sementara
-            document.getElementById('backToProjectLink').href = `../project/project.html?id=${projectId}`;
-            
-            // Load Data
+            if(!API_URL || API_URL.includes("PASTE_URL")) {
+                showError("Error: API URL belum dikonfigurasi di file list.html");
+                return;
+            }
+
+            // Set Link Back
+            const backLink = document.getElementById('linkBackToProject');
+            if(backLink) backLink.href = `../project/project.html?id=${projectId}`;
+
+            // Fetch Data
             fetchListsData();
         });
 
-        // --- 3. FUNGSI FETCH DATA (DIPERBAIKI) ---
+        // --- 3. FETCH DATA ---
         function fetchListsData() {
-            console.log("Fetching data from:", API_URL); // Debugging
+            const loading = document.getElementById('loadingState');
+            loading.style.display = 'block';
 
-            // Panggil Backend dengan action=getProjectData
             fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
-            .then(res => {
-                // Cek apakah response jaringan sukses
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
-                console.log("Data received:", response); // Debugging
+                loading.style.display = 'none';
 
                 if(response.status === 'success') {
-                    // 1. Update Header Nama Project
-                    const projName = response.data.project ? response.data.project.name : "Unnamed Project";
-                    document.getElementById('backToProjectLink').innerText = projName;
-                    
-                    // 2. Render Lists
+                    // Update Header
+                    const proj = response.data.project;
+                    document.getElementById('projectNameHeader').innerText = proj.name;
+                    document.getElementById('projectBadge').innerText = proj.department || 'Project';
+
+                    // Render List
                     renderLists(response.data.lists);
                 } else {
-                    // Jika Backend mengirim status error (misal ID tidak ketemu)
-                    showError(`Gagal memuat data: ${response.message}`);
+                    showError(response.message);
                 }
             })
             .catch(err => {
-                console.error("Fetch Error:", err);
-                showError("Terjadi kesalahan koneksi. Pastikan URL Script benar.");
-            })
-            .finally(() => {
-                // --- KUNCI UTAMA: APAPUN YANG TERJADI, MATIKAN LOADING ---
-                const loader = document.getElementById('loadingState');
-                if(loader) loader.style.display = 'none';
+                loading.style.display = 'none';
+                console.error(err);
+                showError("Gagal mengambil data. Cek koneksi internet.");
             });
         }
 
-        // Fungsi Render Tampilan List
+        // --- 4. RENDER LISTS ---
         function renderLists(lists) {
             const container = document.getElementById('listsContainer');
             const emptyState = document.getElementById('emptyState');
             
-            container.innerHTML = ''; // Reset konten sebelumnya
+            container.innerHTML = ''; // Reset
 
-            // Cek apakah lists null atau array kosong
             if (!lists || lists.length === 0) {
-                emptyState.style.display = 'block'; // Tampilkan Gambar Kosong
+                emptyState.style.display = 'block';
             } else {
-                emptyState.style.display = 'none'; // Sembunyikan Gambar Kosong
+                emptyState.style.display = 'none';
                 
                 lists.forEach(list => {
                     let tasksHtml = '';
                     
-                    // Render Tasks jika ada
+                    // Render Tasks
                     if (list.tasks && list.tasks.length > 0) {
                         list.tasks.forEach(task => {
-                            const isDone = ['done', 'completed', 'true'].includes(String(task.status).toLowerCase());
-                            const checkedAttr = isDone ? 'checked' : '';
-                            const strikethroughClass = isDone ? 'text-decoration-line-through text-muted' : 'text-dark';
-
+                            // Cek status (case insensitive)
+                            const status = String(task.status).toLowerCase();
+                            const isDone = ['done', 'completed', 'true'].includes(status);
+                            
                             tasksHtml += `
-                                <div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded">
-                                    <input type="checkbox" class="todo-check me-3" ${checkedAttr} onclick="event.stopPropagation()">
-                                    <div>
-                                        <div class="${strikethroughClass}">${task.title}</div>
-                                        ${task.assignedTo ? `<small class="text-muted ms-1"><i class="bi bi-person-fill"></i> ${task.assignedTo}</small>` : ''}
+                                <div class="todo-row">
+                                    <input type="checkbox" class="todo-check" ${isDone ? 'checked' : ''} disabled>
+                                    <div class="ms-3">
+                                        <div class="${isDone ? 'text-decoration-line-through text-muted' : 'text-dark'}">${task.title}</div>
+                                        ${task.assignedTo ? `<small class="text-muted"><i class="bi bi-person-fill"></i> ${task.assignedTo}</small>` : ''}
                                     </div>
                                 </div>
                             `;
                         });
+                    } else {
+                        tasksHtml = '<div class="text-muted small ps-4 fst-italic">No tasks yet.</div>';
                     }
 
-                    // Render Group List
-                    const listHtml = `
+                    // Render Group
+                    const groupHtml = `
                         <div class="mb-5">
-                            <div class="todo-group-label" style="font-size: 1.2rem; border-bottom: 2px solid #1f2937; padding-bottom:5px; margin-bottom:15px;">
-                                ${list.name}
-                            </div>
-                            <p class="text-muted small mb-3">${list.desc || ''}</p>
-                            
-                            <div class="todo-list-items">
-                                ${tasksHtml}
-                            </div>
-
-                            <!-- Tombol Add Todo Per List -->
-                            <div class="mt-3 ps-3">
-                                <button class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold">Add a to-do</button>
-                            </div>
+                            <div class="todo-group-label">${list.name}</div>
+                            <p class="text-muted small mb-2">${list.desc || ''}</p>
+                            <div class="border-top">${tasksHtml}</div>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill mt-3 ms-4 fw-bold">Add a to-do</button>
                         </div>
                     `;
-                    
-                    container.insertAdjacentHTML('beforeend', listHtml);
+                    container.insertAdjacentHTML('beforeend', groupHtml);
                 });
             }
         }
 
-        // Fungsi Menampilkan Error di Layar (Bukan cuma console)
-        function showError(msg) {
-            const container = document.getElementById('listsContainer');
-            container.innerHTML = `
-                <div class="alert alert-warning text-center">
-                    <i class="bi bi-exclamation-triangle fs-1"></i><br>
-                    ${msg}
-                </div>
-            `;
-            document.getElementById('backToProjectLink').innerText = "Error Loading";
-        }
-
-        // --- CREATE NEW LIST ---
+        // --- 5. CREATE NEW LIST ---
         function saveNewList() {
             const name = document.getElementById('inputListName').value;
             const desc = document.getElementById('inputListDesc').innerText;
             const btn = document.querySelector('.btn-save-list');
 
             if(!name) { alert("List name cannot be empty"); return; }
-            if(!projectId) { alert("Error: Missing Project ID"); return; }
-
+            
             btn.innerText = "Saving...";
             btn.disabled = true;
-            
+
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'createList',
-                    projectId: projectId,
+                    projectId: projectId, // ID Project wajib dikirim
                     listName: name,
                     description: desc
                 })
@@ -881,21 +339,18 @@
             .then(res => res.json())
             .then(resp => {
                 if(resp.status === 'success') {
+                    // Reset
                     document.getElementById('inputListName').value = '';
                     document.getElementById('inputListDesc').innerText = '';
                     toggleNewListForm();
-                    
-                    // Tampilkan loading lagi saat refresh data
-                    document.getElementById('loadingState').style.display = 'block';
-                    document.getElementById('listsContainer').innerHTML = '';
+                    // Reload Data
                     fetchListsData();
                 } else {
-                    alert('Gagal menyimpan: ' + resp.message);
+                    alert('Error: ' + resp.message);
                 }
             })
             .catch(err => {
-                console.error(err);
-                alert("Terjadi kesalahan koneksi.");
+                alert("Gagal menyimpan. Cek koneksi.");
             })
             .finally(() => {
                 btn.innerText = "Add this list";
@@ -903,117 +358,29 @@
             });
         }
 
-        // UI Toggles
+        // Helpers
         function toggleNewListForm() {
             const form = document.getElementById('newListForm');
-            const emptyState = document.getElementById('emptyState');
-            const listContainer = document.getElementById('listsContainer');
+            const empty = document.getElementById('emptyState');
+            const container = document.getElementById('listsContainer');
 
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block";
-                if(emptyState) emptyState.style.display = 'none';
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+                if(empty) empty.style.display = 'none';
             } else {
-                form.style.display = "none";
-                // Jika container kosong, munculkan empty state lagi
-                if(listContainer.innerHTML.trim() === '') {
-                    if(emptyState) emptyState.style.display = 'block';
-                }
+                form.style.display = 'none';
+                if(container.innerHTML === '') empty.style.display = 'block';
             }
+        }
+
+        function showError(msg) {
+            document.getElementById('loadingState').style.display = 'none';
+            const errDiv = document.getElementById('errorState');
+            errDiv.innerHTML = msg;
+            errDiv.style.display = 'block';
         }
 
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
-        function execCmd(command, value = null) { document.execCommand(command, false, value); }
-        function toggleTask(checkbox) { /* ... Logic Checkbox ... */ }
-    </script>
-    
-    <script>
-        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
-        function toggleTask(checkbox) {
-            const row = checkbox.closest('.todo-row');
-            if (checkbox.checked) row.classList.add('completed');
-            else row.classList.remove('completed');
-        }
-    </script>
-    <script>
-        // Toggle Sidebar Mobile
-        function toggleSidebar() {
-            document.getElementById('sidebarNav').classList.toggle('show');
-        }
-        
-        // Toggle Checkbox Strikethrough
-        function toggleTask(checkbox) {
-            const row = checkbox.closest('.todo-row');
-            if (checkbox.checked) row.classList.add('completed');
-            else row.classList.remove('completed');
-        }
-
-        // --- FUNGSI BARU: TOGGLE NEW LIST FORM ---
-        function toggleNewListForm() {
-            const form = document.getElementById('newListForm');
-            const titleInput = document.getElementById('listTitleInput');
-            
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block"; // Munculkan form
-                titleInput.focus(); // Otomatis fokus ke input judul
-                
-                // Opsional: Scroll sedikit ke form jika di mobile
-                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                form.style.display = "none"; // Sembunyikan form
-            }
-        }
-        
-    </script>
-    <script>
-        // ... fungsi-fungsi sebelumnya ...
-
-        // FUNGSI UNTUK MEMUNCULKAN FORM TODO
-        function showTodoForm(btn) {
-            const wrapper = btn.closest('.todo-creation-wrapper');
-            const form = wrapper.querySelector('.new-todo-card');
-            
-            // Sembunyikan tombol
-            btn.style.display = 'none';
-            // Munculkan form
-            form.style.display = 'block';
-            
-            // Otomatis fokus ke input deskripsi
-            form.querySelector('.todo-input-desc').focus();
-        }
-
-        // FUNGSI UNTUK MENYEMBUNYIKAN FORM TODO (CANCEL)
-        function hideTodoForm(cancelBtn) {
-            const wrapper = cancelBtn.closest('.todo-creation-wrapper');
-            const btnAdd = wrapper.querySelector('.btn-add-todo');
-            const form = wrapper.querySelector('.new-todo-card');
-
-            // Sembunyikan form
-            form.style.display = 'none';
-            // Munculkan tombol kembali
-            btnAdd.style.display = 'block'; // atau 'inline-block' sesuai CSS asli btn-add-todo
-        }
-    </script>
-    <script>
-        // Fungsi Utama untuk Editor Buat bikin tulisan bold di notes
-        function execCmd(command, value = null) {
-            document.execCommand(command, false, value);
-        }
-
-        // Tambahan: Pastikan file upload memberikan feedback (opsional)
-        document.getElementById('fileInput').addEventListener('change', function() {
-            if(this.files.length > 0) {
-                alert('File "' + this.files[0].name + '" attached!');
-                // Di aplikasi asli, Anda akan mengunggah file ini ke server.
-            }
-        });
-
-        // Menangani Enter di dalam Blockquote atau Code agar tidak terjebak
-        document.querySelector('.rich-editor-content').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                // Logika tambahan jika diperlukan untuk handle markdown-like behavior
-            }
-        });
     </script>
 </body>
 </html>
-

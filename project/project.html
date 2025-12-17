@@ -325,19 +325,17 @@
                         </a>
                     </div>
                     
-                    <!-- 1. LIST (DINAMIS) -->
+                    <!-- GANTI BAGIAN CARD LIST DENGAN INI -->
                     <div class="col-lg-4 col-md-6">
-                        <a href="list.html" class="text-decoration-none">
+                        <!-- Tambahkan id="linkToList" agar bisa diakses JS -->
+                        <a href="list.html" class="text-decoration-none" id="linkToList">
                             <div class="tool-card">
                                 <div class="tool-header"><h5 class="tool-title">List</h5></div>
                                 <div class="tool-body">
                                     <h6 class="fw-bold small mb-2 text-dark">Pending Tasks:</h6>
-                                    
-                                    <!-- Container Task Belum Selesai -->
                                     <div id="pendingTaskList">
                                         <div class="text-muted small fst-italic">Loading tasks...</div>
                                     </div>
-
                                 </div>
                             </div>
                         </a>
@@ -479,127 +477,111 @@
         }
 
         function renderProjectData(data) {
-            // 1. UPDATE BADGE DEPARTMENT (AMBIL DARI SPREADSHEET)
-                const badgeEl = document.getElementById('projectBadge');
-                if (badgeEl) {
-                    // Ambil data.department, jika kosong tulis 'Project'
-                    badgeEl.innerText = data.department || "Project";
+                // --- DATA SUDAH FLAT (TIDAK PERLU response.project) ---
+                // Karena script backend baru sudah merapikan datanya langsung di root object.
+                const project = data;
+                
+                console.log("Render Project Data:", project);
+
+                // 1. RENDER HEADER & DESKRIPSI
+                const headerContainer = document.getElementById('projectHeader');
+                
+                let fullDesc = project.desc || "No description provided.";
+                let words = fullDesc.split(" ");
+                let shortDesc = words.slice(0, 8).join(" ");
+                let descHtml = '';
+
+                if (words.length > 8) {
+                    descHtml = `
+                        <span id="descShort">${shortDesc}...</span>
+                        <span id="descFull" style="display:none;">${fullDesc}</span>
+                        <a href="javascript:void(0)" class="desc-more-btn" onclick="toggleDesc()" id="readMoreBtn">Read more</a>
+                    `;
+                } else {
+                    descHtml = fullDesc;
                 }
 
-            // 1. RENDER HEADER & DESKRIPSI
-            const headerContainer = document.getElementById('projectHeader');
-            
-            
-            // Logika Truncate Deskripsi (8 kata)
-            let fullDesc = data.desc || "No description provided.";
-            // Bersihkan deskripsi dari tag HTML jika ada
-            fullDesc = fullDesc.replace(/<[^>]*>?/gm, '');
-            
-            let words = fullDesc.split(" ");
-            let shortDesc = words.slice(0, 8).join(" ");
-            let descHtml = '';
-
-            if (words.length > 8) {
-                descHtml = `
-                    <span id="descShort">${shortDesc}...</span>
-                    <span id="descFull" style="display:none;">${fullDesc}</span>
-                    <a href="javascript:void(0)" class="desc-more-btn" onclick="toggleDesc()" id="readMoreBtn">Read more</a>
+                headerContainer.innerHTML = `
+                    <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">${project.name}</h1>
+                    <p class="text-muted mx-auto fs-6 desc-text" style="max-width: 650px;">
+                        ${descHtml}
+                    </p>
                 `;
-            } else {
-                descHtml = fullDesc;
-            }
 
-            headerContainer.innerHTML = `
-                <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">${data.name}</h1>
-                <p class="text-muted mx-auto fs-6 desc-text" style="max-width: 650px;">
-                    ${descHtml}
-                </p>
-            `;
+                // 2. UPDATE BADGE DEPARTMENT (PENTING)
+                const badgeEl = document.getElementById('projectBadge');
+                if(badgeEl) {
+                     // Cek department, default 'Project' jika kosong
+                     badgeEl.innerText = (project.department && project.department !== "") ? project.department : "Project";
+                }
 
-            // 2. RENDER GAUGE METER (Progress)
-            // Set default 0 jika data progress tidak ada
-            let progress = data.progress || 0;
-            animateGauge(progress);
+                // 3. RENDER GAUGE METER
+                let progress = project.progress || 0;
+                animateGauge(progress);
 
-            // 3. RENDER PENDING TASK DI KARTU LIST
-            const taskContainer = document.getElementById('pendingTaskList');
-            if (data.pendingTasks && data.pendingTasks.length > 0) {
-                let taskHtml = '';
-                data.pendingTasks.forEach(taskName => {
-                    taskHtml += `
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <input class="form-check-input" type="checkbox" onclick="event.stopPropagation()"> 
-                            <span class="text-dark small text-truncate">${taskName}</span>
-                        </div>
-                    `;
-                });
-                taskContainer.innerHTML = taskHtml;
-            } else {
-                taskContainer.innerHTML = '<div class="text-success small"><i class="bi bi-check-circle-fill"></i> All tasks completed!</div>';
-            }
-            
-            // 4. RENDER ASSIGNED MEMBERS (NEW)
-                const membersContainer = document.getElementById('projectMembersContainer');
-                membersContainer.innerHTML = ''; // Bersihkan container
+                // 4. UPDATE LINK KE LIST.HTML
+                const linkToList = document.getElementById('linkToList');
+                if (linkToList) {
+                    linkToList.href = `list.html?id=${project.id}`;
+                }
 
-                // Cek apakah ada assignedTo dan isinya tidak kosong
-                if (data.assignedTo && data.assignedTo.length > 0 && data.assignedTo[0] !== "") {
-                    
-                    let membersHtml = '<div class="avatar-pile">';
-                    
-                    // Batasi tampilan maksimal 8 orang
-                    const maxShow = 8;
-                    const totalMembers = data.assignedTo.length;
-                    const showCount = Math.min(totalMembers, maxShow);
+                // 5. RENDER MEMBERS
+                renderMembers(project.assignedTo);
 
-                    for (let i = 0; i < showCount; i++) {
-                        let userId = data.assignedTo[i];
-                        // Karena kita belum punya database User Profile (Nama/Foto),
-                        // Kita generate Avatar acak berdasarkan ID user agar terlihat bagus.
-                        // Di sistem asli, Anda akan lookup nama user berdasarkan userId.
-                        let imgUrl = `https://i.pravatar.cc/150?u=${userId}`;
-                        
-                        membersHtml += `
-                            <img src="${imgUrl}" title="${userId}" data-bs-toggle="tooltip" data-bs-placement="top">
-                        `;
-                    }
+                // 6. RENDER PENDING TASKS
+                const taskContainer = document.getElementById('pendingTaskList');
+                const pendingTasks = project.pendingTasks || [];
 
-                    // Jika ada sisa member (> 8)
-                    if (totalMembers > maxShow) {
-                        let remaining = totalMembers - maxShow;
-                        membersHtml += `
-                            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold shadow-sm" 
-                                 style="width:35px; height:35px; border:2px solid white; margin-left:-12px; font-size:0.7rem; position:relative; z-index:0;">
-                                +${remaining}
+                if (pendingTasks.length > 0) {
+                    let taskHtml = '';
+                    pendingTasks.forEach(taskName => {
+                        taskHtml += `
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <input class="form-check-input" type="checkbox" onclick="event.stopPropagation()"> 
+                                <span class="text-dark small text-truncate">${taskName}</span>
                             </div>
                         `;
-                    }
-
-                    membersHtml += '</div>'; // Tutup avatar-pile
-
-                    // Tambahkan tombol Add People setelah avatar
-                    membersHtml += `
-                        <button class="btn-add-people ms-3">
-                            <i class="bi bi-plus-lg me-1"></i> Add people
-                        </button>
-                    `;
-
-                    membersContainer.innerHTML = membersHtml;
-
-                    // Re-init tooltip bootstrap karena elemen baru dibuat
-                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.map(function (tooltipTriggerEl) {
-                      return new bootstrap.Tooltip(tooltipTriggerEl);
                     });
-
+                    taskContainer.innerHTML = taskHtml;
                 } else {
-                    // JIKA KOSONG / TIDAK ADA MEMBER
-                    membersContainer.innerHTML = `
-                        <button class="btn-add-people">
-                            <i class="bi bi-plus-lg me-1"></i> Add people
-                        </button>
-                    `;
+                    taskContainer.innerHTML = '<div class="text-muted small fst-italic">No pending tasks.</div>';
                 }
+            }
+
+        // Fungsi Render Members (Helper)
+        function renderMembers(memberIds) {
+            const membersContainer = document.getElementById('projectMembersContainer');
+            if(!membersContainer) return;
+            
+            membersContainer.innerHTML = '';
+
+            if (memberIds && memberIds.length > 0 && memberIds[0] !== "") {
+                let membersHtml = '<div class="avatar-pile">';
+                const maxShow = 8;
+                const showCount = Math.min(memberIds.length, maxShow);
+
+                for (let i = 0; i < showCount; i++) {
+                    let userId = memberIds[i];
+                    let imgUrl = `https://i.pravatar.cc/150?u=${userId}`;
+                    membersHtml += `<img src="${imgUrl}" title="${userId}" data-bs-toggle="tooltip">`;
+                }
+
+                if (memberIds.length > maxShow) {
+                    let remaining = memberIds.length - maxShow;
+                    membersHtml += `<div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold shadow-sm" style="width:35px; height:35px; border:2px solid white; margin-left:-12px; font-size:0.7rem; position:relative; z-index:0;">+${remaining}</div>`;
+                }
+
+                membersHtml += '</div>';
+                membersHtml += `<button class="btn-add-people ms-3"><i class="bi bi-plus-lg me-1"></i> Add people</button>`;
+                membersContainer.innerHTML = membersHtml;
+                
+                // Re-init tooltip
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) { return new bootstrap.Tooltip(tooltipTriggerEl); });
+
+            } else {
+                membersContainer.innerHTML = `<button class="btn-add-people"><i class="bi bi-plus-lg me-1"></i> Add people</button>`;
+            }
         }
 
         // Fungsi Expand/Collapse Deskripsi
