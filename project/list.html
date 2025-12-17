@@ -474,23 +474,62 @@
             padding: 4px;
             outline: none;
         }
+        
+        /* --- EMPTY STATE STYLING --- */
+        .empty-state-card {
+            border: 2px dashed #FDE047; /* Garis putus-putus kuning */
+            background-color: #FFFCF5; /* Background kuning sangat muda */
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .empty-state-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px auto;
+            color: #cbd5e1; /* Warna ikon abu */
+        }
+
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #4b5563;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-desc {
+            color: #6b7280;
+            font-size: 0.95rem;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
 
     <!-- 1. TOP BAR FIXED -->
     <nav class="top-bar">
-        <!-- ... (Isi Top Bar sama seperti sebelumnya) ... -->
+        <!-- Left: Mobile Toggle & Search -->
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
             <div class="input-group d-none d-md-flex" style="width: 250px;">
                 <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Search...">
             </div>
         </div>
+
+        <!-- CENTER: LOGO DIALOGIKA -->
         <div class="logo-center">
             <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" height="35">
         </div>
+
+        <!-- Right: Profile -->
         <div class="d-flex align-items-center gap-3">
             <div class="text-end d-none d-lg-block lh-1">
                 <span class="d-block fw-bold small text-dark">Rizky A.</span>
@@ -561,575 +600,81 @@
 
         </aside>
 
-        <!-- 3. MAIN CONTENT -->
-        <main class="main-content" style="width: 100%;">
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
             
-            <!-- A. KARTU BELAKANG (PROJECT CONTEXT - KECIL) -->
-            <div class="project-context-card">
-                
-                <!-- Badge Sample Project -->
-                <div class="ph-badge">Sample Project</div>
-
-                <!-- Nama Project (Link Langsung ke Project Home) -->
-                <a href="project.html" class="project-name-link">Making a Podcast</a>
-
-                <!-- Right Side Option -->
-                <div class="position-absolute end-0 me-3">
-                    <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
+            <!-- A. KARTU ATAS (PROJECT CONTEXT) -->
+            <div class="project-context-card d-flex align-items-center">
+                <div class="ph-badge">Project</div>
+                <div class="project-name-link d-flex align-items-center">
+                    <a href="#" id="backToProjectLink">Loading...</a> <!-- Akan diisi JS -->
+                    <span>›</span>
+                    <span class="active-page text-white-50">To-dos</span>
                 </div>
-                
             </div>
 
-            <!-- B. KARTU DEPAN (LIST CONTENT - BESAR) -->
-            <div class="main-list-card">
+            <!-- B. KARTU BAWAH (CONTENT) -->
+            <div class="main-card-white">
                 
-                <!-- Tombol New List (Pojok Kanan Atas Kartu) -->
-                <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()">
-                    <i class="bi bi-plus-lg me-1"></i> New List
-                </button>
-                
-                <!-- Menu Icon (Trigger Dropdown) -->
-                <div class="dropdown">
-                    <button class="menu-trigger-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                    </button>
-                    
-                    <!-- DROPDOWN MENU (Tools) -->
-                    <ul class="dropdown-menu tools-dropdown-menu">
-                        <li><h6 class="dropdown-header text-uppercase small fw-bold">Jump to tool</h6></li>
-                        <li><a class="tool-link" href="urgent.html"><i class="bi bi-exclamation-circle text-danger tool-icon-small"></i> Urgent</a></li>
-                        <li><a class="tool-link active" href="list.html"><i class="bi bi-check2-circle text-primary tool-icon-small"></i> List </a></li>
-                        <li><a class="tool-link" href="kanban.html"><i class="bi bi-kanban text-warning tool-icon-small"></i> Kanban</a></li>
-                        <li><a class="tool-link" href="files.html"><i class="bi bi-file-earmark-text text-info tool-icon-small"></i> Files</a></li>
-                        <li><a class="tool-link" href="discuss.html"><i class="bi bi-chat-text text-success tool-icon-small"></i> Discuss</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="tool-link" href="project.html"><i class="bi bi-arrow-left tool-icon-small"></i> Back to Project</a></li>
-                    </ul>
-                </div>
-
-                <!-- Judul Halaman -->
-                <div class="list-title-area">
-                    
-                    <h1 class="list-title-h1">To-dos <span class="list-meta"><i class="bi bi-circle-fill list-meta-dot"></i> 0/32</span></h1>
-                    <p class="text-muted">Want to accomplish more with less friction? Here's how!</p>
-                </div>
-
-                <!-- LIST CONTENT START -->
-                
-                <!-- --- FORM NEW LIST (ACCORDION STYLE) --- -->
-                <div id="newListForm" class="new-list-form-wrapper">
-                    
-                    <!-- Top Link -->
-                    <div class="d-flex justify-content-end mb-2">
-                        <a href="#" class="text-decoration-none small fw-bold text-primary">Use a to-do list template...</a>
-                    </div>
-
-                    <!-- Input Title -->
-                    <input type="text" class="input-list-title" placeholder="Name this list..." id="listTitleInput">
-
-                    <div class="editor-box">
-                        <!-- Toolbar Lengkap -->
-                        <div class="editor-toolbar">
-                            <button type="button" class="editor-btn" onclick="execCmd('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><i class="bi bi-type-strikethrough"></i></button>
-                            
-                            <span class="border-end mx-1" style="height: 20px;"></span>
-                            
-                            <button type="button" class="editor-btn" onclick="execCmd('createLink', prompt('Enter URL:', 'https://'))" title="Link"><i class="bi bi-link-45deg"></i></button>
-                            
-                            <!-- Color Picker Dropdown -->
-                            <div class="color-dropdown">
-                                <button type="button" class="editor-btn" title="Text Color"><i class="bi bi-paint-bucket"></i></button>
-                                <div class="color-menu shadow">
-                                    <div class="color-grid">
-                                        <!-- Row 1: Text Colors -->
-                                        <div class="color-swatch" style="background:#854D0E" onclick="execCmd('foreColor', '#854D0E')"></div>
-                                        <div class="color-swatch" style="background:#B45309" onclick="execCmd('foreColor', '#B45309')"></div>
-                                        <div class="color-swatch" style="background:#B91C1C" onclick="execCmd('foreColor', '#B91C1C')"></div>
-                                        <div class="color-swatch" style="background:#BE185D" onclick="execCmd('foreColor', '#BE185D')"></div>
-                                        <div class="color-swatch" style="background:#7E22CE" onclick="execCmd('foreColor', '#7E22CE')"></div>
-                                        <div class="color-swatch" style="background:#1D4ED8" onclick="execCmd('foreColor', '#1D4ED8')"></div>
-                                        <div class="color-swatch" style="background:#15803D" onclick="execCmd('foreColor', '#15803D')"></div>
-                                        <div class="color-swatch" style="background:#92400E" onclick="execCmd('foreColor', '#92400E')"></div>
-                                        <div class="color-swatch" style="background:#4B5563" onclick="execCmd('foreColor', '#4B5563')"></div>
-                                        
-                                        <!-- Row 2: Highlights -->
-                                        <div class="color-swatch" style="background:#FEF9C3" onclick="execCmd('hiliteColor', '#FEF9C3')"></div>
-                                        <div class="color-swatch" style="background:#FFEDD5" onclick="execCmd('hiliteColor', '#FFEDD5')"></div>
-                                        <div class="color-swatch" style="background:#FEE2E2" onclick="execCmd('hiliteColor', '#FEE2E2')"></div>
-                                        <div class="color-swatch" style="background:#FCE7F3" onclick="execCmd('hiliteColor', '#FCE7F3')"></div>
-                                        <div class="color-swatch" style="background:#F3E8FF" onclick="execCmd('hiliteColor', '#F3E8FF')"></div>
-                                        <div class="color-swatch" style="background:#DBEAFE" onclick="execCmd('hiliteColor', '#DBEAFE')"></div>
-                                        <div class="color-swatch" style="background:#DCFCE7" onclick="execCmd('hiliteColor', '#DCFCE7')"></div>
-                                        <div class="color-swatch" style="background:#F5F5F4" onclick="execCmd('hiliteColor', '#F5F5F4')"></div>
-                                        <div class="color-swatch" style="background:#E5E7EB" onclick="execCmd('hiliteColor', '#E5E7EB')"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Heading Selector -->
-                            <select class="heading-select" onchange="execCmd('formatBlock', this.value); this.selectedIndex=0;">
-                                <option value="" selected disabled>Headings</option>
-                                <option value="H1">Heading 1</option>
-                                <option value="H2">Heading 2</option>
-                                <option value="H3">Heading 3</option>
-                                <option value="H4">Heading 4</option>
-                                <option value="H5">Heading 5</option>
-                                <option value="P">Paragraph</option>
-                            </select>
-
-                            <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('justifyCenter')" title="Center Align"><i class="bi bi-text-center"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('insertHorizontalRule')" title="Separator"><i class="bi bi-hr"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'pre')" title="Code"><i class="bi bi-code-slash"></i></button>
-                            
-                            <span class="border-end mx-1" style="height: 20px;"></span>
-
-                            <button type="button" class="editor-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                            <button type="button" class="editor-btn" onclick="execCmd('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                            
-                            <button type="button" class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
-                            <input type="file" id="fileInput" style="display:none">
-
-                            <div class="ms-auto d-flex gap-2">
-                                <button type="button" class="editor-btn" onclick="execCmd('undo')"><i class="bi bi-arrow-counterclockwise"></i></button>
-                                <button type="button" class="editor-btn" onclick="execCmd('redo')"><i class="bi bi-arrow-clockwise"></i></button>
-                            </div>
-                        </div>
-
-                        <!-- Area Menulis (Rich Content) -->
-                        <div class="rich-editor-content" contenteditable="true" data-placeholder="Add extra details or attach a file..."></div>
-                    </div>
-
-                    <!-- Footer Actions -->
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                <!-- Header Title & New Button -->
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div class="text-center w-100 position-relative">
+                        <h1 class="fw-bold display-5 mb-1" style="color:#111;">To-dos</h1>
+                        <!-- Progress (Optional) -->
+                        <span class="text-muted small" id="totalProgress"></span>
                         
-                        <!-- Buttons -->
+                        <!-- Tombol New List (Absolute Right) -->
+                        <button class="btn btn-dlg-blue rounded-pill px-4 btn-new-list" onclick="toggleNewListForm()">
+                            <i class="bi bi-plus-lg me-1"></i> New List
+                        </button>
+                    </div>
+                </div>
+
+                <!-- FORM CREATE NEW LIST (Hidden by Default) -->
+                <div id="newListForm" class="new-list-form-wrapper">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5 class="fw-bold">Name this list...</h5>
+                        <a href="#" class="text-decoration-none small text-primary">Use a template...</a>
+                    </div>
+                    
+                    <input type="text" id="inputListName" class="input-list-title" placeholder="e.g. Phase 1: Planning">
+                    
+                    <div class="editor-box">
+                        <div class="editor-toolbar">
+                            <i class="bi bi-type-bold"></i><i class="bi bi-type-italic"></i><i class="bi bi-link"></i><i class="bi bi-list-ul"></i>
+                        </div>
+                        <div id="inputListDesc" class="editor-textarea" contenteditable="true" data-placeholder="Add extra details..."></div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <button class="btn-save-list btn-dlg-blue">Add this list</button>
+                            <button class="btn-save-list" onclick="saveNewList()">Add this list</button>
                             <button class="btn-cancel-list" onclick="toggleNewListForm()">Cancel</button>
                         </div>
-
-                        <!-- Hill Chart Checkbox -->
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="hillChartCheck" style="width: 1.2em; height: 1.2em;">
-                            <label class="form-check-label text-muted" for="hillChartCheck" style="padding-top: 2px;">
-                                Track this list on the Hill Chart
-                            </label>
+                            <input class="form-check-input" type="checkbox" id="hillChart">
+                            <label class="form-check-label small text-muted" for="hillChart">Track on Hill Chart</label>
                         </div>
                     </div>
                 </div>
-                <!-- --- END FORM NEW LIST --- -->
-                
-                <!-- Group 1 -->
-                <div class="todo-group-label">Basecamp essentials</div>
-                
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Start here 🎯 <i class="bi bi-file-text ms-2 text-muted small"></i></div>
+
+                <!-- LOADING STATE -->
+                <div id="loadingState" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted mt-2">Loading lists...</p>
                 </div>
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Check out a real-world project <i class="bi bi-file-earmark-text ms-2 text-muted small"></i></div>
+
+                <!-- EMPTY STATE (Muncul jika tidak ada list) -->
+                <div id="emptyState" class="empty-state-card" style="display: none;">
+                    <i class="bi bi-check-circle empty-state-icon display-4"></i>
+                    <h3 class="empty-state-title">No to-do lists just yet</h3>
+                    <p class="empty-state-desc">Organize work across teams to get things done on time. Assign tasks, set due dates, and discuss. Get started by creating a new list above.</p>
                 </div>
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Make your first project <i class="bi bi-card-text ms-2 text-muted small"></i></div>
-                </div>
-                <!-- TODO CREATION WRAPPER (Copy paste blok ini untuk setiap tombol Add) -->
-                <div class="todo-creation-wrapper">
-                    
-                    <!-- 1. Tombol Trigger (Akan hilang saat diklik) -->
-                    <button class="btn-add-todo" onclick="showTodoForm(this)">
-                        <i class="bi bi-plus-circle me-2"></i> Add a to-do
-                    </button>
 
-                    <!-- 2. Form (Muncul saat tombol diklik) -->
-                    <div class="new-todo-card">
-                        
-                        <!-- Header: Deskripsi -->
-                        <div class="todo-form-header">
-                            <div class="todo-form-check"></div>
-                            <input type="text" class="todo-input-desc" placeholder="Describe this to-do...">
-                        </div>
-
-                        <!-- Body: Detail -->
-                        <div class="todo-form-body">
-                            <!-- Row 1 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Assigned to</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to assign...">
-                            </div>
-                            <!-- Row 2 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">When done, notify</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to notify...">
-                            </div>
-                            <!-- Row 3 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Due on</label>
-                                <input type="date" class="todo-input-detail text-muted">
-                            </div>
-                            <!-- Row 4 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Notes</label>
-                                <div class="editor-box">
-                                    <!-- Toolbar Lengkap -->
-                                    <div class="editor-toolbar">
-                                        <button type="button" class="editor-btn" onclick="execCmd('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><i class="bi bi-type-strikethrough"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-                                        
-                                        <button type="button" class="editor-btn" onclick="execCmd('createLink', prompt('Enter URL:', 'https://'))" title="Link"><i class="bi bi-link-45deg"></i></button>
-                                        
-                                        <!-- Color Picker Dropdown -->
-                                        <div class="color-dropdown">
-                                            <button type="button" class="editor-btn" title="Text Color"><i class="bi bi-paint-bucket"></i></button>
-                                            <div class="color-menu shadow">
-                                                <div class="color-grid">
-                                                    <!-- Row 1: Text Colors -->
-                                                    <div class="color-swatch" style="background:#854D0E" onclick="execCmd('foreColor', '#854D0E')"></div>
-                                                    <div class="color-swatch" style="background:#B45309" onclick="execCmd('foreColor', '#B45309')"></div>
-                                                    <div class="color-swatch" style="background:#B91C1C" onclick="execCmd('foreColor', '#B91C1C')"></div>
-                                                    <div class="color-swatch" style="background:#BE185D" onclick="execCmd('foreColor', '#BE185D')"></div>
-                                                    <div class="color-swatch" style="background:#7E22CE" onclick="execCmd('foreColor', '#7E22CE')"></div>
-                                                    <div class="color-swatch" style="background:#1D4ED8" onclick="execCmd('foreColor', '#1D4ED8')"></div>
-                                                    <div class="color-swatch" style="background:#15803D" onclick="execCmd('foreColor', '#15803D')"></div>
-                                                    <div class="color-swatch" style="background:#92400E" onclick="execCmd('foreColor', '#92400E')"></div>
-                                                    <div class="color-swatch" style="background:#4B5563" onclick="execCmd('foreColor', '#4B5563')"></div>
-                                                    
-                                                    <!-- Row 2: Highlights -->
-                                                    <div class="color-swatch" style="background:#FEF9C3" onclick="execCmd('hiliteColor', '#FEF9C3')"></div>
-                                                    <div class="color-swatch" style="background:#FFEDD5" onclick="execCmd('hiliteColor', '#FFEDD5')"></div>
-                                                    <div class="color-swatch" style="background:#FEE2E2" onclick="execCmd('hiliteColor', '#FEE2E2')"></div>
-                                                    <div class="color-swatch" style="background:#FCE7F3" onclick="execCmd('hiliteColor', '#FCE7F3')"></div>
-                                                    <div class="color-swatch" style="background:#F3E8FF" onclick="execCmd('hiliteColor', '#F3E8FF')"></div>
-                                                    <div class="color-swatch" style="background:#DBEAFE" onclick="execCmd('hiliteColor', '#DBEAFE')"></div>
-                                                    <div class="color-swatch" style="background:#DCFCE7" onclick="execCmd('hiliteColor', '#DCFCE7')"></div>
-                                                    <div class="color-swatch" style="background:#F5F5F4" onclick="execCmd('hiliteColor', '#F5F5F4')"></div>
-                                                    <div class="color-swatch" style="background:#E5E7EB" onclick="execCmd('hiliteColor', '#E5E7EB')"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Heading Selector -->
-                                        <select class="heading-select" onchange="execCmd('formatBlock', this.value); this.selectedIndex=0;">
-                                            <option value="" selected disabled>Headings</option>
-                                            <option value="H1">Heading 1</option>
-                                            <option value="H2">Heading 2</option>
-                                            <option value="H3">Heading 3</option>
-                                            <option value="H4">Heading 4</option>
-                                            <option value="H5">Heading 5</option>
-                                            <option value="P">Paragraph</option>
-                                        </select>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('justifyCenter')" title="Center Align"><i class="bi bi-text-center"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertHorizontalRule')" title="Separator"><i class="bi bi-hr"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'pre')" title="Code"><i class="bi bi-code-slash"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                                        
-                                        <button type="button" class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
-                                        <input type="file" id="fileInput" style="display:none">
-
-                                        <div class="ms-auto d-flex gap-2">
-                                            <button type="button" class="editor-btn" onclick="execCmd('undo')"><i class="bi bi-arrow-counterclockwise"></i></button>
-                                            <button type="button" class="editor-btn" onclick="execCmd('redo')"><i class="bi bi-arrow-clockwise"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Area Menulis (Rich Content) -->
-                                    <div class="rich-editor-content" contenteditable="true" data-placeholder="Add extra details or attach a file..."></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer: Action Buttons -->
-                        <div class="todo-form-footer">
-                            <button class="btn-save-list btn-dlg-blue" style="border-radius: 50px; padding: 8px 20px;">Add this to-do</button>
-                            <button class="btn-cancel-list" onclick="hideTodoForm(this)" style="border-radius: 50px; padding: 8px 20px;">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- END TODO CREATION WRAPPER -->
-
-                <!-- Group 2 -->
-                <div class="todo-group-label mt-5">Learn what you can do</div>
-                
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Organize your projects <i class="bi bi-list-task ms-2 text-muted small"></i></div>
-                </div>
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Choose the right tools <i class="bi bi-tools ms-2 text-muted small"></i></div>
-                </div>
-                <!-- TODO CREATION WRAPPER (Copy paste blok ini untuk setiap tombol Add) -->
-                <div class="todo-creation-wrapper">
-                    
-                    <!-- 1. Tombol Trigger (Akan hilang saat diklik) -->
-                    <button class="btn-add-todo" onclick="showTodoForm(this)">
-                        <i class="bi bi-plus-circle me-2"></i> Add a to-do
-                    </button>
-
-                    <!-- 2. Form (Muncul saat tombol diklik) -->
-                    <div class="new-todo-card">
-                        
-                        <!-- Header: Deskripsi -->
-                        <div class="todo-form-header">
-                            <div class="todo-form-check"></div>
-                            <input type="text" class="todo-input-desc" placeholder="Describe this to-do...">
-                        </div>
-
-                        <!-- Body: Detail -->
-                        <div class="todo-form-body">
-                            <!-- Row 1 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Assigned to</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to assign...">
-                            </div>
-                            <!-- Row 2 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">When done, notify</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to notify...">
-                            </div>
-                            <!-- Row 3 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Due on</label>
-                                <input type="date" class="todo-input-detail text-muted">
-                            </div>
-                            <!-- Row 4 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Notes</label>
-                                <div class="editor-box">
-                                    <!-- Toolbar Lengkap -->
-                                    <div class="editor-toolbar">
-                                        <button type="button" class="editor-btn" onclick="execCmd('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><i class="bi bi-type-strikethrough"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-                                        
-                                        <button type="button" class="editor-btn" onclick="execCmd('createLink', prompt('Enter URL:', 'https://'))" title="Link"><i class="bi bi-link-45deg"></i></button>
-                                        
-                                        <!-- Color Picker Dropdown -->
-                                        <div class="color-dropdown">
-                                            <button type="button" class="editor-btn" title="Text Color"><i class="bi bi-paint-bucket"></i></button>
-                                            <div class="color-menu shadow">
-                                                <div class="color-grid">
-                                                    <!-- Row 1: Text Colors -->
-                                                    <div class="color-swatch" style="background:#854D0E" onclick="execCmd('foreColor', '#854D0E')"></div>
-                                                    <div class="color-swatch" style="background:#B45309" onclick="execCmd('foreColor', '#B45309')"></div>
-                                                    <div class="color-swatch" style="background:#B91C1C" onclick="execCmd('foreColor', '#B91C1C')"></div>
-                                                    <div class="color-swatch" style="background:#BE185D" onclick="execCmd('foreColor', '#BE185D')"></div>
-                                                    <div class="color-swatch" style="background:#7E22CE" onclick="execCmd('foreColor', '#7E22CE')"></div>
-                                                    <div class="color-swatch" style="background:#1D4ED8" onclick="execCmd('foreColor', '#1D4ED8')"></div>
-                                                    <div class="color-swatch" style="background:#15803D" onclick="execCmd('foreColor', '#15803D')"></div>
-                                                    <div class="color-swatch" style="background:#92400E" onclick="execCmd('foreColor', '#92400E')"></div>
-                                                    <div class="color-swatch" style="background:#4B5563" onclick="execCmd('foreColor', '#4B5563')"></div>
-                                                    
-                                                    <!-- Row 2: Highlights -->
-                                                    <div class="color-swatch" style="background:#FEF9C3" onclick="execCmd('hiliteColor', '#FEF9C3')"></div>
-                                                    <div class="color-swatch" style="background:#FFEDD5" onclick="execCmd('hiliteColor', '#FFEDD5')"></div>
-                                                    <div class="color-swatch" style="background:#FEE2E2" onclick="execCmd('hiliteColor', '#FEE2E2')"></div>
-                                                    <div class="color-swatch" style="background:#FCE7F3" onclick="execCmd('hiliteColor', '#FCE7F3')"></div>
-                                                    <div class="color-swatch" style="background:#F3E8FF" onclick="execCmd('hiliteColor', '#F3E8FF')"></div>
-                                                    <div class="color-swatch" style="background:#DBEAFE" onclick="execCmd('hiliteColor', '#DBEAFE')"></div>
-                                                    <div class="color-swatch" style="background:#DCFCE7" onclick="execCmd('hiliteColor', '#DCFCE7')"></div>
-                                                    <div class="color-swatch" style="background:#F5F5F4" onclick="execCmd('hiliteColor', '#F5F5F4')"></div>
-                                                    <div class="color-swatch" style="background:#E5E7EB" onclick="execCmd('hiliteColor', '#E5E7EB')"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Heading Selector -->
-                                        <select class="heading-select" onchange="execCmd('formatBlock', this.value); this.selectedIndex=0;">
-                                            <option value="" selected disabled>Headings</option>
-                                            <option value="H1">Heading 1</option>
-                                            <option value="H2">Heading 2</option>
-                                            <option value="H3">Heading 3</option>
-                                            <option value="H4">Heading 4</option>
-                                            <option value="H5">Heading 5</option>
-                                            <option value="P">Paragraph</option>
-                                        </select>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('justifyCenter')" title="Center Align"><i class="bi bi-text-center"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertHorizontalRule')" title="Separator"><i class="bi bi-hr"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'pre')" title="Code"><i class="bi bi-code-slash"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                                        
-                                        <button type="button" class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
-                                        <input type="file" id="fileInput" style="display:none">
-
-                                        <div class="ms-auto d-flex gap-2">
-                                            <button type="button" class="editor-btn" onclick="execCmd('undo')"><i class="bi bi-arrow-counterclockwise"></i></button>
-                                            <button type="button" class="editor-btn" onclick="execCmd('redo')"><i class="bi bi-arrow-clockwise"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Area Menulis (Rich Content) -->
-                                    <div class="rich-editor-content" contenteditable="true" data-placeholder="Add extra details or attach a file..."></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer: Action Buttons -->
-                        <div class="todo-form-footer">
-                            <button class="btn-save-list btn-dlg-blue" style="border-radius: 50px; padding: 8px 20px;">Add this to-do</button>
-                            <button class="btn-cancel-list" onclick="hideTodoForm(this)" style="border-radius: 50px; padding: 8px 20px;">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- END TODO CREATION WRAPPER -->
-
-                <!-- Group 3 -->
-                <div class="todo-group-label mt-5">Work with others</div>
-                
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Invite a few people to join you <i class="bi bi-person-plus ms-2 text-muted small"></i></div>
-                </div>
-                <div class="todo-row">
-                    <input type="checkbox" class="todo-check" onclick="toggleTask(this)">
-                    <div class="todo-text ms-2">Send someone a ping <i class="bi bi-chat-dots ms-2 text-muted small"></i></div>
-                </div>
-                <!-- TODO CREATION WRAPPER (Copy paste blok ini untuk setiap tombol Add) -->
-                <div class="todo-creation-wrapper">
-                    
-                    <!-- 1. Tombol Trigger (Akan hilang saat diklik) -->
-                    <button class="btn-add-todo" onclick="showTodoForm(this)">
-                        <i class="bi bi-plus-circle me-2"></i> Add a to-do
-                    </button>
-
-                    <!-- 2. Form (Muncul saat tombol diklik) -->
-                    <div class="new-todo-card">
-                        
-                        <!-- Header: Deskripsi -->
-                        <div class="todo-form-header">
-                            <div class="todo-form-check"></div>
-                            <input type="text" class="todo-input-desc" placeholder="Describe this to-do...">
-                        </div>
-
-                        <!-- Body: Detail -->
-                        <div class="todo-form-body">
-                            <!-- Row 1 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Assigned to</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to assign...">
-                            </div>
-                            <!-- Row 2 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">When done, notify</label>
-                                <input type="text" class="todo-input-detail" placeholder="Type names to notify...">
-                            </div>
-                            <!-- Row 3 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Due on</label>
-                                <input type="date" class="todo-input-detail text-muted">
-                            </div>
-                            <!-- Row 4 -->
-                            <div class="todo-form-row">
-                                <label class="todo-label">Notes</label>
-                                <div class="editor-box">
-                                    <!-- Toolbar Lengkap -->
-                                    <div class="editor-toolbar">
-                                        <button type="button" class="editor-btn" onclick="execCmd('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><i class="bi bi-type-strikethrough"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-                                        
-                                        <button type="button" class="editor-btn" onclick="execCmd('createLink', prompt('Enter URL:', 'https://'))" title="Link"><i class="bi bi-link-45deg"></i></button>
-                                        
-                                        <!-- Color Picker Dropdown -->
-                                        <div class="color-dropdown">
-                                            <button type="button" class="editor-btn" title="Text Color"><i class="bi bi-paint-bucket"></i></button>
-                                            <div class="color-menu shadow">
-                                                <div class="color-grid">
-                                                    <!-- Row 1: Text Colors -->
-                                                    <div class="color-swatch" style="background:#854D0E" onclick="execCmd('foreColor', '#854D0E')"></div>
-                                                    <div class="color-swatch" style="background:#B45309" onclick="execCmd('foreColor', '#B45309')"></div>
-                                                    <div class="color-swatch" style="background:#B91C1C" onclick="execCmd('foreColor', '#B91C1C')"></div>
-                                                    <div class="color-swatch" style="background:#BE185D" onclick="execCmd('foreColor', '#BE185D')"></div>
-                                                    <div class="color-swatch" style="background:#7E22CE" onclick="execCmd('foreColor', '#7E22CE')"></div>
-                                                    <div class="color-swatch" style="background:#1D4ED8" onclick="execCmd('foreColor', '#1D4ED8')"></div>
-                                                    <div class="color-swatch" style="background:#15803D" onclick="execCmd('foreColor', '#15803D')"></div>
-                                                    <div class="color-swatch" style="background:#92400E" onclick="execCmd('foreColor', '#92400E')"></div>
-                                                    <div class="color-swatch" style="background:#4B5563" onclick="execCmd('foreColor', '#4B5563')"></div>
-                                                    
-                                                    <!-- Row 2: Highlights -->
-                                                    <div class="color-swatch" style="background:#FEF9C3" onclick="execCmd('hiliteColor', '#FEF9C3')"></div>
-                                                    <div class="color-swatch" style="background:#FFEDD5" onclick="execCmd('hiliteColor', '#FFEDD5')"></div>
-                                                    <div class="color-swatch" style="background:#FEE2E2" onclick="execCmd('hiliteColor', '#FEE2E2')"></div>
-                                                    <div class="color-swatch" style="background:#FCE7F3" onclick="execCmd('hiliteColor', '#FCE7F3')"></div>
-                                                    <div class="color-swatch" style="background:#F3E8FF" onclick="execCmd('hiliteColor', '#F3E8FF')"></div>
-                                                    <div class="color-swatch" style="background:#DBEAFE" onclick="execCmd('hiliteColor', '#DBEAFE')"></div>
-                                                    <div class="color-swatch" style="background:#DCFCE7" onclick="execCmd('hiliteColor', '#DCFCE7')"></div>
-                                                    <div class="color-swatch" style="background:#F5F5F4" onclick="execCmd('hiliteColor', '#F5F5F4')"></div>
-                                                    <div class="color-swatch" style="background:#E5E7EB" onclick="execCmd('hiliteColor', '#E5E7EB')"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Heading Selector -->
-                                        <select class="heading-select" onchange="execCmd('formatBlock', this.value); this.selectedIndex=0;">
-                                            <option value="" selected disabled>Headings</option>
-                                            <option value="H1">Heading 1</option>
-                                            <option value="H2">Heading 2</option>
-                                            <option value="H3">Heading 3</option>
-                                            <option value="H4">Heading 4</option>
-                                            <option value="H5">Heading 5</option>
-                                            <option value="P">Paragraph</option>
-                                        </select>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('justifyCenter')" title="Center Align"><i class="bi bi-text-center"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertHorizontalRule')" title="Separator"><i class="bi bi-hr"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('formatBlock', 'pre')" title="Code"><i class="bi bi-code-slash"></i></button>
-                                        
-                                        <span class="border-end mx-1" style="height: 20px;"></span>
-
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List"><i class="bi bi-list-ul"></i></button>
-                                        <button type="button" class="editor-btn" onclick="execCmd('insertOrderedList')" title="Numbered List"><i class="bi bi-list-ol"></i></button>
-                                        
-                                        <button type="button" class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
-                                        <input type="file" id="fileInput" style="display:none">
-
-                                        <div class="ms-auto d-flex gap-2">
-                                            <button type="button" class="editor-btn" onclick="execCmd('undo')"><i class="bi bi-arrow-counterclockwise"></i></button>
-                                            <button type="button" class="editor-btn" onclick="execCmd('redo')"><i class="bi bi-arrow-clockwise"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Area Menulis (Rich Content) -->
-                                    <div class="rich-editor-content" contenteditable="true" data-placeholder="Add extra details or attach a file..."></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Footer: Action Buttons -->
-                        <div class="todo-form-footer">
-                            <button class="btn-save-list btn-dlg-blue" style="border-radius: 50px; padding: 8px 20px;">Add this to-do</button>
-                            <button class="btn-cancel-list" onclick="hideTodoForm(this)" style="border-radius: 50px; padding: 8px 20px;">Cancel</button>
-                        </div>
-                    </div>
-                </div>
-                <!-- END TODO CREATION WRAPPER -->
+                <!-- LIST CONTAINER (Tempat List & Task dirender) -->
+                <div id="listsContainer"></div>
 
             </div>
-
         </main>
 
         <!-- MOBILE BOTTOM NAVIGATION -->
@@ -1169,6 +714,218 @@
     </div> <!-- End Dashboard Container -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // --- 1. KONFIGURASI API (PASTIKAN INI BENAR) ---
+        // Ganti dengan URL Web App (akhiran /exec) hasil deploy terbaru Anda
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
+
+        // Ambil ID Project dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('id');
+
+        // --- 2. SAAT HALAMAN DIMUAT ---
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("Page Loaded. Project ID:", projectId); // Cek Console
+
+            // Cek apakah Project ID ada
+            if(!projectId) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('listsContainer').innerHTML = `
+                    <div class="alert alert-danger text-center">
+                        <strong>Error:</strong> Tidak ada Project ID di URL.<br>
+                        <a href="../home.html" class="btn btn-sm btn-outline-danger mt-2">Kembali ke Dashboard</a>
+                    </div>
+                `;
+                document.getElementById('backToProjectLink').innerText = "Unknown Project";
+                return;
+            }
+            
+            // Set Link Back default sementara
+            document.getElementById('backToProjectLink').href = `../project/project.html?id=${projectId}`;
+            
+            // Load Data
+            fetchListsData();
+        });
+
+        // --- 3. FUNGSI FETCH DATA (DIPERBAIKI) ---
+        function fetchListsData() {
+            console.log("Fetching data from:", API_URL); // Debugging
+
+            // Panggil Backend dengan action=getProjectData
+            fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
+            .then(res => {
+                // Cek apakah response jaringan sukses
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(response => {
+                console.log("Data received:", response); // Debugging
+
+                if(response.status === 'success') {
+                    // 1. Update Header Nama Project
+                    const projName = response.data.project ? response.data.project.name : "Unnamed Project";
+                    document.getElementById('backToProjectLink').innerText = projName;
+                    
+                    // 2. Render Lists
+                    renderLists(response.data.lists);
+                } else {
+                    // Jika Backend mengirim status error (misal ID tidak ketemu)
+                    showError(`Gagal memuat data: ${response.message}`);
+                }
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                showError("Terjadi kesalahan koneksi. Pastikan URL Script benar.");
+            })
+            .finally(() => {
+                // --- KUNCI UTAMA: APAPUN YANG TERJADI, MATIKAN LOADING ---
+                const loader = document.getElementById('loadingState');
+                if(loader) loader.style.display = 'none';
+            });
+        }
+
+        // Fungsi Render Tampilan List
+        function renderLists(lists) {
+            const container = document.getElementById('listsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            container.innerHTML = ''; // Reset konten sebelumnya
+
+            // Cek apakah lists null atau array kosong
+            if (!lists || lists.length === 0) {
+                emptyState.style.display = 'block'; // Tampilkan Gambar Kosong
+            } else {
+                emptyState.style.display = 'none'; // Sembunyikan Gambar Kosong
+                
+                lists.forEach(list => {
+                    let tasksHtml = '';
+                    
+                    // Render Tasks jika ada
+                    if (list.tasks && list.tasks.length > 0) {
+                        list.tasks.forEach(task => {
+                            const isDone = ['done', 'completed', 'true'].includes(String(task.status).toLowerCase());
+                            const checkedAttr = isDone ? 'checked' : '';
+                            const strikethroughClass = isDone ? 'text-decoration-line-through text-muted' : 'text-dark';
+
+                            tasksHtml += `
+                                <div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded">
+                                    <input type="checkbox" class="todo-check me-3" ${checkedAttr} onclick="event.stopPropagation()">
+                                    <div>
+                                        <div class="${strikethroughClass}">${task.title}</div>
+                                        ${task.assignedTo ? `<small class="text-muted ms-1"><i class="bi bi-person-fill"></i> ${task.assignedTo}</small>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Render Group List
+                    const listHtml = `
+                        <div class="mb-5">
+                            <div class="todo-group-label" style="font-size: 1.2rem; border-bottom: 2px solid #1f2937; padding-bottom:5px; margin-bottom:15px;">
+                                ${list.name}
+                            </div>
+                            <p class="text-muted small mb-3">${list.desc || ''}</p>
+                            
+                            <div class="todo-list-items">
+                                ${tasksHtml}
+                            </div>
+
+                            <!-- Tombol Add Todo Per List -->
+                            <div class="mt-3 ps-3">
+                                <button class="btn btn-outline-secondary rounded-pill px-4 btn-sm fw-bold">Add a to-do</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.insertAdjacentHTML('beforeend', listHtml);
+                });
+            }
+        }
+
+        // Fungsi Menampilkan Error di Layar (Bukan cuma console)
+        function showError(msg) {
+            const container = document.getElementById('listsContainer');
+            container.innerHTML = `
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-exclamation-triangle fs-1"></i><br>
+                    ${msg}
+                </div>
+            `;
+            document.getElementById('backToProjectLink').innerText = "Error Loading";
+        }
+
+        // --- CREATE NEW LIST ---
+        function saveNewList() {
+            const name = document.getElementById('inputListName').value;
+            const desc = document.getElementById('inputListDesc').innerText;
+            const btn = document.querySelector('.btn-save-list');
+
+            if(!name) { alert("List name cannot be empty"); return; }
+            if(!projectId) { alert("Error: Missing Project ID"); return; }
+
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+            
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'createList',
+                    projectId: projectId,
+                    listName: name,
+                    description: desc
+                })
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if(resp.status === 'success') {
+                    document.getElementById('inputListName').value = '';
+                    document.getElementById('inputListDesc').innerText = '';
+                    toggleNewListForm();
+                    
+                    // Tampilkan loading lagi saat refresh data
+                    document.getElementById('loadingState').style.display = 'block';
+                    document.getElementById('listsContainer').innerHTML = '';
+                    fetchListsData();
+                } else {
+                    alert('Gagal menyimpan: ' + resp.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Terjadi kesalahan koneksi.");
+            })
+            .finally(() => {
+                btn.innerText = "Add this list";
+                btn.disabled = false;
+            });
+        }
+
+        // UI Toggles
+        function toggleNewListForm() {
+            const form = document.getElementById('newListForm');
+            const emptyState = document.getElementById('emptyState');
+            const listContainer = document.getElementById('listsContainer');
+
+            if (form.style.display === "none" || form.style.display === "") {
+                form.style.display = "block";
+                if(emptyState) emptyState.style.display = 'none';
+            } else {
+                form.style.display = "none";
+                // Jika container kosong, munculkan empty state lagi
+                if(listContainer.innerHTML.trim() === '') {
+                    if(emptyState) emptyState.style.display = 'block';
+                }
+            }
+        }
+
+        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        function execCmd(command, value = null) { document.execCommand(command, false, value); }
+        function toggleTask(checkbox) { /* ... Logic Checkbox ... */ }
+    </script>
+    
     <script>
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
         function toggleTask(checkbox) {
@@ -1259,3 +1016,4 @@
     </script>
 </body>
 </html>
+

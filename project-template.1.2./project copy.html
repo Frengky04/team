@@ -3,25 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Detail - Dialogika</title>
-    <!-- CSS & Fonts -->
+    <title>Dialogika Dashboard - Final Unified</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="../assets/css/style.css" rel="stylesheet" />
-    
     <style>
-        /* (Style Gauge & Card Container tetap sama seperti sebelumnya) */
-        .project-container { max-width: 1400px; margin: 20px auto; background: white; border-radius: 24px; box-shadow: 0 20px 50px rgba(11, 43, 106, 0.1); padding: 50px 40px;
-            margin-top: 40px; /* Tambah margin atas agar badge tidak kepotong browser */
-                border: 0px solid #e5e7eb;
-                
-                /* SOLUSI: Pastikan overflow visible agar badge bisa 'nongol' keluar */
-                overflow: visible !important;
-                position: relative; /* Wajib ada agar absolute badge mengacu kesini */
-        
+        /* --- CARD CONTAINER UTAMA --- */
+        .project-container {
+            margin-left:auto;
+            margin-right:auto;
+            position: relative;
+            max-width: 1400px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(11, 43, 106, 0.1); /* Bayangan lembut */
+            padding: 50px 40px;
+            margin-top: 20px;
+            border: 0px solid #e5e7eb;
         }
-        
+
         /* --- STICKY BADGE "SAMPLE PROJECT" --- */
         .sticky-badge {
             position: absolute;
@@ -38,19 +44,87 @@
             font-size: 0.8rem;
             z-index: 10;
         }
-        
-        
-        .gauge-wrapper { margin: 40px auto 20px auto; display: flex; justify-content: center; position: relative; max-width: 400px; }
-        .gauge-container { position: relative; width: 320px; height: 170px; }
-        .gauge-svg { width: 100%; height: 100%; overflow: visible; }
-        .gauge-bg, .gauge-fill { fill: none; stroke-width: 18; stroke-linecap: round; stroke-dasharray: 251.2; }
-        .gauge-bg { stroke: #f3f4f6; }
-        .gauge-fill { stroke: url(#gaugeGradient); stroke-dashoffset: 251.2; transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .gauge-ticks-label { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .gauge-ticks-label span { position: absolute; font-size: 0.85rem; font-weight: 700; color: #9ca3af; }
-        .tick-0 { bottom: 45px; left: 0px; } .tick-25 { top: 40px; left: 25px; } .tick-50 { top: -5px; left: 50%; transform: translateX(-50%); } .tick-75 { top: 40px; right: 25px; } .tick-100 { bottom: 45px; right: 0px; }
-        .gauge-center-text { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; color: #0B2B6A; }
-        
+        /* Efek lipatan kecil di pojok (opsional, aesthetic touch) */
+        .sticky-badge::before {
+            content: '';
+            position: absolute;
+            top: 0; right: -8px;
+            width: 8px; height: 8px;
+            background: #CA8A04; /* Warna lebih gelap untuk lipatan */
+            clip-path: polygon(0 0, 0 100%, 100% 100%);
+        }
+
+        /* --- GAUGE / SPEEDOMETER STYLING --- */
+        .gauge-wrapper {
+            margin: 40px auto 20px auto;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            max-width: 400px;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 320px; /* Lebar Gauge */
+            height: 170px; /* Tinggi disesuaikan agar label bawah muat */
+        }
+
+        .gauge-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        /* Garis Gauge */
+        .gauge-bg, .gauge-fill {
+            fill: none;
+            stroke-width: 18; /* Ketebalan garis */
+            stroke-linecap: round; /* Ujung bulat */
+        }
+
+        .gauge-bg {
+            stroke: #f3f4f6; /* Warna track kosong (abu muda) */
+        }
+
+        .gauge-fill {
+            stroke: url(#gaugeGradient); /* Menggunakan Gradasi Merah-Biru-Hijau */
+            /* Panjang busur setengah lingkaran (r=80) ~251.2 */
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2; /* Default kosong (0%) */
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Posisi Label Angka */
+        .gauge-ticks-label {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+
+        .gauge-ticks-label span {
+            position: absolute;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #9ca3af; /* Warna abu-abu teks */
+        }
+
+        /* Koordinat Label (Manual adjustment untuk lengkungan) */
+        .tick-0   { bottom: 45px; left: 0px; }
+        .tick-25  { top: 40px; left: 25px; }
+        .tick-50  { top: -5px; left: 50%; transform: translateX(-50%); }
+        .tick-75  { top: 40px; right: 25px; }
+        .tick-100 { bottom: 45px; right: 0px; }
+
+        /* Teks Tengah Besar */
+        .gauge-center-text {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #0B2B6A; /* Dialogika Blue */
+        }
+
         /* Update pada bagian invite-section & avatar-pile */
         .invite-section {
             background: #F8FAFC;
@@ -172,27 +246,36 @@
             .project-container { padding: 30px 20px; }
             .invite-section { flex-direction: column; width: 100%; gap: 10px; padding: 20px; }
         }
-
-        /* Description Expand */
-        .desc-text { transition: all 0.3s; }
-        .desc-more-btn { color: var(--dlg-blue); font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.9rem; }
-        .desc-more-btn:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <!-- NAV BAR (Tetap Sama) -->
+    <!-- 1. TOP BAR FIXED -->
     <nav class="top-bar">
+        <!-- ... (Isi Top Bar sama seperti sebelumnya) ... -->
         <div class="d-flex align-items-center">
             <button class="mobile-toggle me-3" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-            <div class="logo-center"><img src="https://www.dialogika.co/assets/img/logo.webp" height="35"></div>
+            <div class="input-group d-none d-md-flex" style="width: 250px;">
+                <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Search...">
+            </div>
+        </div>
+        <div class="logo-center">
+            <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" height="35">
         </div>
         <div class="d-flex align-items-center gap-3">
-            <div class="profile-img-container"><img src="https://i.pravatar.cc/300?img=11" class="profile-img"></div>
+            <div class="text-end d-none d-lg-block lh-1">
+                <span class="d-block fw-bold small text-dark">Rizky A.</span>
+                <small class="text-muted" style="font-size:0.7rem">Super Admin</small>
+            </div>
+            <div class="profile-img-container">
+                <img src="https://i.pravatar.cc/300?img=11" alt="Profile" class="profile-img">
+            </div>
         </div>
     </nav>
 
     <div class="dashboard-container">
+        
         <!-- 2. SIDEBAR (Light, Smart Filters, Pending Widget) -->
         <aside class="sidebar" id="sidebarNav">
             
@@ -249,47 +332,65 @@
 
         </aside>
 
-        <!-- MAIN CONTENT -->
+        <!-- 3. MAIN CONTENT (WRAPPER PENTING AGAR TIDAK TERTUTUP SIDEBAR) -->
         <main class="main-content">
             
-            
+            <!-- CARD CONTAINER UTAMA -->
             <div class="project-container">
+                
                 <!-- STICKY BADGE -->
-                <div id="projectBadge" class="sticky-badge">Loading...</div>
-                
-                
-                <a href="../home.html" class="btn btn-sm btn-light rounded-pill position-absolute top-0 end-0 mt-4 me-4 border"><i class="bi bi-x-lg"></i> Close</a>
+                <div class="sticky-badge">Sample Project</div>
 
-                <!-- HEADER PROJECT (DINAMIS) -->
-                <div class="text-center" id="projectHeader">
-                    <!-- Loading State -->
-                    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+                <!-- TOMBOL BACK -->
+                <a href="home.html" class="btn btn-sm btn-light rounded-pill position-absolute top-0 end-0 mt-4 me-4 border">
+                    <i class="bi bi-x-lg"></i> Close
+                </a>
+
+                <!-- HEADER -->
+                <div class="text-center">
+                    <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">Making a Podcast</h1>
+                    <p class="text-muted mx-auto fs-6" style="max-width: 650px;">
+                        👋 This is a sample project to showcase how we use Dialogika Dashboard.
+                    </p>
                 </div>
 
-                <!-- GAUGE METER (DINAMIS) -->
+                <!-- GAUGE CHART SECTION (0% - 100%) -->
                 <div class="gauge-wrapper">
                     <div class="gauge-container">
                         <svg class="gauge-svg" viewBox="0 0 200 110">
+                            <!-- Definisi Gradasi Warna: Merah -> Biru -> Hijau -->
                             <defs>
                                 <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" style="stop-color:#e7181a; stop-opacity:1" />
-                                    <stop offset="50%" style="stop-color:#0B2B6A; stop-opacity:1" />
-                                    <stop offset="100%" style="stop-color:#009d74; stop-opacity:1" />
+                                    <stop offset="0%" style="stop-color:#e7181a; stop-opacity:1" /> <!-- Merah -->
+                                    <stop offset="50%" style="stop-color:#0B2B6A; stop-opacity:1" /> <!-- Biru -->
+                                    <stop offset="100%" style="stop-color:#009d74; stop-opacity:1" /> <!-- Hijau -->
                                 </linearGradient>
                             </defs>
+                            
+                            <!-- Track Background (Abu-abu) -->
                             <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" />
+                            
+                            <!-- Track Fill (Berwarna dengan Gradasi) -->
                             <path class="gauge-fill" id="gaugeFill" d="M 20 100 A 80 80 0 0 1 180 100" />
                         </svg>
+
+                        <!-- Label Angka 0% - 100% -->
                         <div class="gauge-ticks-label">
-                            <span class="tick-0">0%</span><span class="tick-25">25%</span><span class="tick-50">50%</span><span class="tick-75">75%</span><span class="tick-100">100%</span>
+                            <span class="tick-0">0%</span>
+                            <span class="tick-25">25%</span>
+                            <span class="tick-50">50%</span>
+                            <span class="tick-75">75%</span>
+                            <span class="tick-100">100%</span>
                         </div>
+
+                        <!-- Teks Tengah (Nilai Saat Ini) -->
                         <div class="gauge-center-text">
                             <h2 class="mb-0 fw-bold display-6" id="gaugeValue">0%</h2>
                             <p class="text-muted small mb-0">Completed</p>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- INVITE PEOPLE SECTION -->
                 <div class="d-flex justify-content-center">
                     <div class="invite-section">
@@ -298,16 +399,36 @@
                             <span class="text-muted small fw-bold">Who's on this project?</span>
                         </div>
 
-                        <!-- Container Dinamis: Diisi oleh JS -->
-                        <div class="d-flex align-items-center flex-wrap justify-content-center gap-3" id="projectMembersContainer">
-                            <!-- Default Loading State -->
-                            <span class="spinner-border spinner-border-sm text-secondary" role="status"></span>
+                        <!-- Avatar Pile (Menampilkan 8 Orang + Sisa) -->
+                        <div class="d-flex align-items-center flex-wrap justify-content-center gap-3">
+                            <div class="avatar-pile">
+                                <!-- 8 Orang Pertama -->
+                                <img src="https://i.pravatar.cc/150?img=12" title="Sarah" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=3" title="Dimas" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=5" title="Putri" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=8" title="Andi" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=11" title="Budi" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=9" title="Citra" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=33" title="Victor" data-bs-toggle="tooltip" data-bs-placement="top">
+                                <img src="https://i.pravatar.cc/150?img=25" title="Indah" data-bs-toggle="tooltip" data-bs-placement="top">
+                                
+                                <!-- Indikator Sisa Anggota (+4) -->
+                                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold shadow-sm"
+                                     style="width:35px; height:35px; border:2px solid white; margin-left:-12px; font-size:0.7rem; position:relative; z-index:0;">
+                                    +4
+                                </div>
+                            </div>
+                            
+                            <!-- Button Invite -->
+                            <button class="btn-add-people">
+                                <i class="bi bi-plus-lg me-1"></i> Add people
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- TOOLS GRID -->
-                <div class="row g-3 mt-4">
+                <!-- TOOLS GRID (Updated Names & Links) -->
+                <div class="row g-3">
                     
                     <!-- 1. URGENT (ex Message Board) -->
                     <div class="col-lg-4 col-md-6">
@@ -324,25 +445,23 @@
                             </div>
                         </a>
                     </div>
-                    
-                    <!-- 1. LIST (DINAMIS) -->
+
+                    <!-- 2. LIST (ex To-dos) -->
                     <div class="col-lg-4 col-md-6">
                         <a href="list.html" class="text-decoration-none">
                             <div class="tool-card">
                                 <div class="tool-header"><h5 class="tool-title">List</h5></div>
                                 <div class="tool-body">
-                                    <h6 class="fw-bold small mb-2 text-dark">Pending Tasks:</h6>
-                                    
-                                    <!-- Container Task Belum Selesai -->
-                                    <div id="pendingTaskList">
-                                        <div class="text-muted small fst-italic">Loading tasks...</div>
+                                    <h6 class="fw-bold small mb-2">Newsletter updates</h6>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <input class="form-check-input" type="checkbox" checked onclick="event.stopPropagation()"> <!-- Stop prop agar tidak klik link -->
+                                        <span class="text-muted text-decoration-line-through small">Signup page</span>
                                     </div>
-
                                 </div>
                             </div>
                         </a>
                     </div>
-                    
+
                     <!-- 3. KANBAN (ex Card Table) -->
                     <div class="col-lg-4 col-md-6">
                         <a href="kanban.html" class="text-decoration-none">
@@ -404,249 +523,58 @@
                         </a>
                     </div>
 
-                    <!-- ... Tools Lainnya (Static Placeholder) ... -->
-                    <div class="col-lg-4 col-md-6">
-                        <div class="tool-card border-dashed bg-light d-flex align-items-center justify-content-center">
-                            <span class="text-muted">Other Tools Placeholder</span>
-                        </div>
-                    </div>
-
                 </div>
-            </div>
+                
+            </div> <!-- End Project Container -->
         </main>
-    </div>
 
+    </div>
     <!-- Script JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- KONFIGURASI API ---
-        // PASTE URL WEB APP BARU SETELAH DEPLOY DI SINI!
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
-
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Ambil ID dari URL (contoh: project.html?id=123)
-            const urlParams = new URLSearchParams(window.location.search);
-            const projectId = urlParams.get('id');
-
-            console.log("Project ID detected:", projectId); // Cek di Console Browser
-
-            const headerContainer = document.getElementById('projectHeader');
-
-            if(projectId) {
-                fetchProjectDetail(projectId);
-            } else {
-                headerContainer.innerHTML = `
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong> Tidak ada ID Project di URL.<br>
-                        <small>Pastikan Anda membuka halaman ini dengan mengklik project dari Home.</small>
-                        <br><a href="../home.html" class="btn btn-sm btn-outline-danger mt-2">Kembali ke Home</a>
-                    </div>`;
-            }
-        });
-
-        function fetchProjectDetail(id) {
-            const headerContainer = document.getElementById('projectHeader');
-            
-            // Tampilkan Loading yang jelas
-            headerContainer.innerHTML = `
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="text-muted mt-2">Sedang mengambil data dari Google Sheet...</p>
-            `;
-
-            // Panggil API
-            fetch(`${API_URL}?id=${id}`)
-            .then(response => response.json())
-            .then(response => {
-                console.log("Data diterima:", response); // Cek data di Console
-
-                if(response.status === 'success') {
-                    renderProjectData(response.data);
-                } else {
-                    headerContainer.innerHTML = `
-                        <div class="alert alert-warning">
-                            <strong>Gagal:</strong> ${response.message}
-                        </div>`;
-                }
-            })
-            .catch(error => {
-                console.error('Fetch Error:', error);
-                headerContainer.innerHTML = `
-                    <div class="alert alert-danger">
-                        <strong>Koneksi Error:</strong> Gagal menghubungi server.<br>
-                        <small>Cek URL Script atau koneksi internet Anda.</small>
-                    </div>`;
-            });
-        }
-
-        function renderProjectData(data) {
-            // 1. UPDATE BADGE DEPARTMENT (AMBIL DARI SPREADSHEET)
-                const badgeEl = document.getElementById('projectBadge');
-                if (badgeEl) {
-                    // Ambil data.department, jika kosong tulis 'Project'
-                    badgeEl.innerText = data.department || "Project";
-                }
-
-            // 1. RENDER HEADER & DESKRIPSI
-            const headerContainer = document.getElementById('projectHeader');
-            
-            
-            // Logika Truncate Deskripsi (8 kata)
-            let fullDesc = data.desc || "No description provided.";
-            // Bersihkan deskripsi dari tag HTML jika ada
-            fullDesc = fullDesc.replace(/<[^>]*>?/gm, '');
-            
-            let words = fullDesc.split(" ");
-            let shortDesc = words.slice(0, 8).join(" ");
-            let descHtml = '';
-
-            if (words.length > 8) {
-                descHtml = `
-                    <span id="descShort">${shortDesc}...</span>
-                    <span id="descFull" style="display:none;">${fullDesc}</span>
-                    <a href="javascript:void(0)" class="desc-more-btn" onclick="toggleDesc()" id="readMoreBtn">Read more</a>
-                `;
-            } else {
-                descHtml = fullDesc;
-            }
-
-            headerContainer.innerHTML = `
-                <h1 class="fw-bold display-5 mb-3" style="color: var(--dlg-blue);">${data.name}</h1>
-                <p class="text-muted mx-auto fs-6 desc-text" style="max-width: 650px;">
-                    ${descHtml}
-                </p>
-            `;
-
-            // 2. RENDER GAUGE METER (Progress)
-            // Set default 0 jika data progress tidak ada
-            let progress = data.progress || 0;
-            animateGauge(progress);
-
-            // 3. RENDER PENDING TASK DI KARTU LIST
-            const taskContainer = document.getElementById('pendingTaskList');
-            if (data.pendingTasks && data.pendingTasks.length > 0) {
-                let taskHtml = '';
-                data.pendingTasks.forEach(taskName => {
-                    taskHtml += `
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <input class="form-check-input" type="checkbox" onclick="event.stopPropagation()"> 
-                            <span class="text-dark small text-truncate">${taskName}</span>
-                        </div>
-                    `;
-                });
-                taskContainer.innerHTML = taskHtml;
-            } else {
-                taskContainer.innerHTML = '<div class="text-success small"><i class="bi bi-check-circle-fill"></i> All tasks completed!</div>';
-            }
-            
-            // 4. RENDER ASSIGNED MEMBERS (NEW)
-                const membersContainer = document.getElementById('projectMembersContainer');
-                membersContainer.innerHTML = ''; // Bersihkan container
-
-                // Cek apakah ada assignedTo dan isinya tidak kosong
-                if (data.assignedTo && data.assignedTo.length > 0 && data.assignedTo[0] !== "") {
-                    
-                    let membersHtml = '<div class="avatar-pile">';
-                    
-                    // Batasi tampilan maksimal 8 orang
-                    const maxShow = 8;
-                    const totalMembers = data.assignedTo.length;
-                    const showCount = Math.min(totalMembers, maxShow);
-
-                    for (let i = 0; i < showCount; i++) {
-                        let userId = data.assignedTo[i];
-                        // Karena kita belum punya database User Profile (Nama/Foto),
-                        // Kita generate Avatar acak berdasarkan ID user agar terlihat bagus.
-                        // Di sistem asli, Anda akan lookup nama user berdasarkan userId.
-                        let imgUrl = `https://i.pravatar.cc/150?u=${userId}`;
-                        
-                        membersHtml += `
-                            <img src="${imgUrl}" title="${userId}" data-bs-toggle="tooltip" data-bs-placement="top">
-                        `;
-                    }
-
-                    // Jika ada sisa member (> 8)
-                    if (totalMembers > maxShow) {
-                        let remaining = totalMembers - maxShow;
-                        membersHtml += `
-                            <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center small fw-bold shadow-sm" 
-                                 style="width:35px; height:35px; border:2px solid white; margin-left:-12px; font-size:0.7rem; position:relative; z-index:0;">
-                                +${remaining}
-                            </div>
-                        `;
-                    }
-
-                    membersHtml += '</div>'; // Tutup avatar-pile
-
-                    // Tambahkan tombol Add People setelah avatar
-                    membersHtml += `
-                        <button class="btn-add-people ms-3">
-                            <i class="bi bi-plus-lg me-1"></i> Add people
-                        </button>
-                    `;
-
-                    membersContainer.innerHTML = membersHtml;
-
-                    // Re-init tooltip bootstrap karena elemen baru dibuat
-                    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.map(function (tooltipTriggerEl) {
-                      return new bootstrap.Tooltip(tooltipTriggerEl);
-                    });
-
-                } else {
-                    // JIKA KOSONG / TIDAK ADA MEMBER
-                    membersContainer.innerHTML = `
-                        <button class="btn-add-people">
-                            <i class="bi bi-plus-lg me-1"></i> Add people
-                        </button>
-                    `;
-                }
-        }
-
-        // Fungsi Expand/Collapse Deskripsi
-        window.toggleDesc = function() {
-            const shortSpan = document.getElementById('descShort');
-            const fullSpan = document.getElementById('descFull');
-            const btn = document.getElementById('readMoreBtn');
-
-            if (shortSpan.style.display === 'none') {
-                shortSpan.style.display = 'inline';
-                fullSpan.style.display = 'none';
-                btn.innerText = 'Read more';
-            } else {
-                shortSpan.style.display = 'none';
-                fullSpan.style.display = 'inline';
-                btn.innerText = 'Show less';
-            }
-        }
-
-        // Fungsi Animasi Gauge
-        function animateGauge(percent) {
+            // --- GAUGE ANIMATION LOGIC ---
             const gaugeFill = document.getElementById('gaugeFill');
             const gaugeValueText = document.getElementById('gaugeValue');
             
-            if(!gaugeFill || !gaugeValueText) return; // Safety check
-
-            const totalLength = 251.2;
-            const offset = totalLength - ((percent / 100) * totalLength);
+            // SET NILAI PROGRESS DI SINI (Contoh: 75%)
+            const targetPercent = 75;
             
-            // Animasi Garis
-            setTimeout(() => { gaugeFill.style.strokeDashoffset = offset; }, 300);
+            // Panjang total path SVG (Semi-circle r=80) adalah approx 251.2
+            const totalLength = 251.2;
+            
+            // Hitung offset: (Makin kecil offset, makin panjang garis warna)
+            const offset = totalLength - ((targetPercent / 100) * totalLength);
+            
+            // 1. Jalankan animasi garis (delay sedikit agar smooth saat load)
+            setTimeout(() => {
+                gaugeFill.style.strokeDashoffset = offset;
+            }, 300);
 
-            // Animasi Angka
+            // 2. Jalankan animasi angka (Counter up)
             let currentVal = 0;
-            const timer = setInterval(() => {
-                if (currentVal >= percent) {
-                    currentVal = percent;
-                    gaugeValueText.innerText = currentVal + "%";
-                    clearInterval(timer);
-                } else {
-                    currentVal++;
-                    gaugeValueText.innerText = currentVal + "%";
-                }
-            }, 20);
-        }
+            const duration = 1500; // durasi dalam ms (sama dengan css transition)
+            const intervalTime = 20;
+            const steps = duration / intervalTime;
+            const increment = targetPercent / steps;
 
-        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+            const timer = setInterval(() => {
+                currentVal += increment;
+                if (currentVal >= targetPercent) {
+                    currentVal = targetPercent;
+                    clearInterval(timer);
+                }
+                gaugeValueText.innerText = Math.round(currentVal) + "%";
+            }, intervalTime);
+        });
     </script>
+    <script>
+        // Inisialisasi Tooltip Bootstrap (agar nama muncul saat hover)
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+    <script>function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }</script>
 </body>
 </html>
