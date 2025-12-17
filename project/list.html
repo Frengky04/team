@@ -101,6 +101,21 @@
         .todo-row:hover { background-color: #f8fafc; border-radius: 6px; }
         .todo-check { width: 22px; height: 22px; margin-right: 15px; cursor: pointer; }
         
+        /* New Todo Form (Inner) */
+        .todo-creation-wrapper { margin-top: 15px; margin-bottom: 20px; }
+        .new-todo-card {
+            background: white; border: 1px solid #d1d5db; border-radius: 8px; padding: 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: none;
+        }
+        .todo-form-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #f3f4f6; }
+        .todo-input-desc { border: none; outline: none; width: 100%; font-size: 1.1rem; color: #374151; }
+        .todo-form-body { padding: 20px; }
+        .todo-form-row { display: flex; align-items: center; margin-bottom: 12px; }
+        .todo-label { width: 140px; text-align: right; margin-right: 20px; font-weight: 600; color: #374151; font-size: 0.95rem; }
+        .todo-input-detail { flex-grow: 1; border: 1px solid transparent; border-radius: 4px; padding: 6px 10px; color: #4b5563; font-size: 0.95rem; }
+        .todo-input-detail:hover, .todo-input-detail:focus { border-color: #d1d5db; background: #f9fafb; outline: none; }
+        .todo-form-footer { padding: 15px 20px; background: #f9fafb; border-top: 1px solid #f3f4f6; display: flex; gap: 10px; }
+
         @media (max-width: 768px) {
             .ph-badge { display: none; }
             .main-list-card { padding: 30px 20px; border-radius: 0; }
@@ -188,7 +203,7 @@
                 </div>
 
                 <!-- EMPTY STATE -->
-                <div id="emptyState" class="empty-state-card">
+                <div id="emptyState" class="empty-state-card" style="display: none;">
                     <i class="bi bi-check-circle display-4 text-warning mb-3 d-block"></i>
                     <h3 class="fw-bold text-secondary">No to-do lists just yet</h3>
                     <p class="text-muted">Get started by creating a new list above.</p>
@@ -207,8 +222,7 @@
     <!-- Script JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // --- 1. KONFIGURASI API (WAJIB DIGANTI) ---
-        // GANTI URL DI BAWAH INI DENGAN URL WEB APP ANDA YANG BERAKHIRAN /exec
+        // --- 1. KONFIGURASI API (PASTIKAN URL SUDAH BENAR) ---
         const API_URL = 'https://script.google.com/macros/s/AKfycbzsRHbU5WcucXdIhQeOFBaWQFvqO1kwGk72dHIfYWKtNcQF7ds5tTOyZNAmEWCQX_M/exec';
 
         // Ambil ID dari URL
@@ -217,15 +231,11 @@
 
         // --- 2. INIT LOAD ---
         document.addEventListener("DOMContentLoaded", function() {
-            console.log("Project ID:", projectId);
+            console.log("Start Loading Page. Project ID:", projectId);
 
-            // Validasi ID
             if(!projectId) {
-                showError("Error: Tidak ada Project ID di URL. <br><a href='../home.html' class='btn btn-sm btn-outline-danger mt-2'>Kembali ke Dashboard</a>");
-                return;
-            }
-            if(!API_URL || API_URL.includes("PASTE_URL")) {
-                showError("Error: API URL belum dikonfigurasi di file list.html");
+                alert("Error: Tidak ada Project ID di URL.");
+                document.getElementById('loadingState').innerHTML = '<span class="text-danger">Error: Missing ID</span>';
                 return;
             }
 
@@ -240,80 +250,115 @@
         // --- 3. FETCH DATA ---
         function fetchListsData() {
             const loading = document.getElementById('loadingState');
+            const container = document.getElementById('listsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
             loading.style.display = 'block';
+            container.innerHTML = '';
+            if(emptyState) emptyState.style.display = 'none';
+
+            console.log("Fetching data from API...");
 
             fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
             .then(res => res.json())
             .then(response => {
-                loading.style.display = 'none';
+                console.log("Full API Response:", response); // LIHAT INI DI CONSOLE
 
                 if(response.status === 'success') {
-                    // Update Header
-                    const proj = response.data.project;
-                    document.getElementById('projectNameHeader').innerText = proj.name;
-                    document.getElementById('projectBadge').innerText = proj.department || 'Project';
+                    const data = response.data;
+                    
+                    // 1. Update Header Project
+                    if(data.project) {
+                        document.getElementById('projectNameHeader').innerText = data.project.name;
+                        document.getElementById('projectBadge').innerText = data.project.department || 'Project';
+                    }
 
-                    // Render List
-                    renderLists(response.data.lists);
+                    // 2. Render Lists
+                    // Gunakan array kosong jika data.lists null/undefined
+                    const lists = data.lists || [];
+                    console.log("Lists data:", lists);
+                    
+                    renderLists(lists);
                 } else {
-                    showError(response.message);
+                    console.error("API Error Message:", response.message);
+                    showError("Gagal memuat data: " + response.message);
                 }
             })
             .catch(err => {
+                console.error("Fetch/JS Error:", err);
+                showError("Terjadi kesalahan sistem (Cek Console).");
+            })
+            .finally(() => {
+                // MATIKAN LOADING APAPUN YANG TERJADI
                 loading.style.display = 'none';
-                console.error(err);
-                showError("Gagal mengambil data. Cek koneksi internet.");
             });
         }
 
-        // --- 4. RENDER LISTS ---
+        // --- 4. RENDER LISTS (DIPERBAIKI) ---
         function renderLists(lists) {
             const container = document.getElementById('listsContainer');
             const emptyState = document.getElementById('emptyState');
             
             container.innerHTML = ''; // Reset
 
-            if (!lists || lists.length === 0) {
-                emptyState.style.display = 'block';
-            } else {
-                emptyState.style.display = 'none';
-                
-                lists.forEach(list => {
-                    let tasksHtml = '';
-                    
-                    // Render Tasks
-                    if (list.tasks && list.tasks.length > 0) {
-                        list.tasks.forEach(task => {
-                            // Cek status (case insensitive)
-                            const status = String(task.status).toLowerCase();
-                            const isDone = ['done', 'completed', 'true'].includes(status);
-                            
-                            tasksHtml += `
-                                <div class="todo-row">
-                                    <input type="checkbox" class="todo-check" ${isDone ? 'checked' : ''} disabled>
-                                    <div class="ms-3">
-                                        <div class="${isDone ? 'text-decoration-line-through text-muted' : 'text-dark'}">${task.title}</div>
-                                        ${task.assignedTo ? `<small class="text-muted"><i class="bi bi-person-fill"></i> ${task.assignedTo}</small>` : ''}
-                                    </div>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        tasksHtml = '<div class="text-muted small ps-4 fst-italic">No tasks yet.</div>';
-                    }
-
-                    // Render Group
-                    const groupHtml = `
-                        <div class="mb-5">
-                            <div class="todo-group-label">${list.name}</div>
-                            <p class="text-muted small mb-2">${list.desc || ''}</p>
-                            <div class="border-top">${tasksHtml}</div>
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill mt-3 ms-4 fw-bold">Add a to-do</button>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', groupHtml);
-                });
+            // Jika list kosong, tampilkan Empty State
+            if (lists.length === 0) {
+                console.log("Data list kosong, menampilkan Empty State.");
+                if(emptyState) emptyState.style.display = 'block';
+                return;
             }
+
+            // Jika ada data, sembunyikan Empty State
+            if(emptyState) emptyState.style.display = 'none';
+            
+            lists.forEach(list => {
+                let tasksHtml = '';
+                
+                // Render Tasks (Cek apakah tasks ada)
+                if (list.tasks && list.tasks.length > 0) {
+                    list.tasks.forEach(task => {
+                        const status = String(task.status || '').toLowerCase();
+                        const isDone = ['done', 'completed', 'true', 'checklist'].includes(status);
+                        const checkedAttr = isDone ? 'checked' : '';
+                        const textClass = isDone ? 'text-decoration-line-through text-muted' : 'text-dark';
+
+                        tasksHtml += `
+                            <div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded">
+                                <input type="checkbox" class="todo-check me-3" ${checkedAttr} onclick="event.stopPropagation()">
+                                <div class="w-100">
+                                    <div class="${textClass}">${task.title || '(No Title)'}</div>
+                                    ${task.assignedTo ? `<small class="text-muted"><i class="bi bi-person-fill"></i> ${task.assignedTo}</small>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    tasksHtml = '<div class="text-muted small ps-4 fst-italic">No tasks yet.</div>';
+                }
+
+                // Render Group HTML
+                const listHtml = `
+                    <div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
+                        <div class="todo-group-label" style="font-size: 1.2rem; border-bottom: 2px solid #1f2937; padding-bottom:5px; margin-bottom:15px;">
+                            ${list.name}
+                        </div>
+                        <p class="text-muted small mb-3">${list.desc || ''}</p>
+                        
+                        <div class="todo-list-items">
+                            ${tasksHtml}
+                        </div>
+
+                        <!-- Tombol Add di dalam List -->
+                        <div class="todo-creation-wrapper mt-3 ms-4">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="alert('Fitur Add Task Backend belum diaktifkan')">
+                                <i class="bi bi-plus"></i> Add a to-do
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', listHtml);
+            });
         }
 
         // --- 5. CREATE NEW LIST ---
@@ -331,7 +376,7 @@
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'createList',
-                    projectId: projectId, // ID Project wajib dikirim
+                    projectId: projectId,
                     listName: name,
                     description: desc
                 })
@@ -339,12 +384,10 @@
             .then(res => res.json())
             .then(resp => {
                 if(resp.status === 'success') {
-                    // Reset
                     document.getElementById('inputListName').value = '';
                     document.getElementById('inputListDesc').innerText = '';
                     toggleNewListForm();
-                    // Reload Data
-                    fetchListsData();
+                    fetchListsData(); // Reload
                 } else {
                     alert('Error: ' + resp.message);
                 }
@@ -369,7 +412,7 @@
                 if(empty) empty.style.display = 'none';
             } else {
                 form.style.display = 'none';
-                if(container.innerHTML === '') empty.style.display = 'block';
+                if(container.innerHTML === '') if(empty) empty.style.display = 'block';
             }
         }
 
@@ -381,6 +424,7 @@
         }
 
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        function execCmd(command, value = null) { document.execCommand(command, false, value); }
     </script>
 </body>
 </html>
