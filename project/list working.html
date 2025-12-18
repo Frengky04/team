@@ -26,47 +26,29 @@
             .main-content { margin-left: 0; width: 100%; padding: 20px; }
         }
 
-        /* --- 1. PROJECT CONTEXT CARD (KARTU BELAKANG/ATAS) --- */
+        /* 1. KARTU HITAM (Project Context) */
         .project-context-card {
-            max-width: 800px; /* LEBIH KECIL dari card list */
-            width: 90%;
-            background-color: #fff;
-            color: #1f2937; /* Dark Navy */
-            margin: 20px auto -20px auto; /* Margin bottom negatif agar tertiban card bawah */
-            padding: 15px 25px 35px 25px; /* Padding bawah lebih besar untuk area tiban */
-            border-radius: 16px 16px 0 0; /* Rounded atas */
-            position: relative;
-            z-index: 1; /* Layer bawah */
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 850px; width: 90%; margin: 20px auto -30px auto;
+            background-color: #1f2937; color: white;
+            padding: 20px 30px 45px 30px; border-radius: 16px 16px 0 0;
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         }
 
-        /* Badge Sample Project */
         .ph-badge {
-            background: #FDE047; /* Yellow */
-            color: #854D0E;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            margin-right: 15px;
-            letter-spacing: 0.5px;
-            position: absolute;
-            left: 30px;
-            top: 38%;
-            transform: translateY(-50%);
+            background: #FDE047; color: #854D0E; font-size: 0.7rem; font-weight: 800;
+            padding: 4px 8px; border-radius: 4px; text-transform: uppercase;
+            position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
         }
 
         /* Menu Trigger */
         .ph-nav-group {
             display: flex; align-items: center; gap: 10px;
-            background: #1f2937; padding: 6px 15px; border-radius: 50px;
+            background: rgba(255, 255, 255, 0.1); padding: 6px 15px; border-radius: 50px;
             cursor: pointer; transition: 0.2s;
         }
-        .ph-nav-group:hover { background: #0B2B6A; }
+        .ph-nav-group:hover { background: rgba(255, 255, 255, 0.2); }
         .ph-project-name { font-weight: 700; color: white; font-size: 1rem; }
 
         /* 2. KARTU PUTIH (Main Content) */
@@ -156,92 +138,45 @@
 
     <div class="dashboard-container">
         
-        <!-- 2. SIDEBAR (Light, Smart Filters, Pending Widget) -->
+        <!-- 2. SIDEBAR -->
         <aside class="sidebar" id="sidebarNav">
-            
-            <!-- WRAPPER UNTUK AREA YANG BISA DI-SCROLL -->
             <div class="sidebar-scroll-wrapper">
-                
-                <!-- Smart Filters (4 Kotak Besar) -->
-                <div class="smart-filters-grid">
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-dark"><i class="bi bi-archive-fill"></i></div><div class="filter-count">429</div></div>
-                        <div class="filter-label">All Tasks</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-blue"><i class="bi bi-calendar-event-fill"></i></div><div class="filter-count">25</div></div>
-                        <div class="filter-label">Today</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-orange"><i class="bi bi-flag-fill"></i></div><div class="filter-count">21</div></div>
-                        <div class="filter-label">Urgent</div>
-                    </a>
-                    <a href="#" class="filter-card">
-                        <div class="filter-top"><div class="filter-icon bg-icon-red"><i class="bi bi-calendar-check-fill"></i></div><div class="filter-count">30</div></div>
-                        <div class="filter-label">Assigned</div>
-                    </a>
-                </div>
-
-                <!-- Navigation Links -->
                 <div class="nav-category">Main Navigation</div>
-                <a href="#" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup <span class="sidebar-badge">4</span></a>
-                <a href="#" class="sidebar-link"><i class="bi bi-chat-dots"></i> Pings</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-bell"></i> Hey!</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-activity"></i> Activity</a>
-                <a href="#" class="sidebar-link"><i class="bi bi-person-circle"></i> My Stuff</a>
-
-                <div class="nav-category mt-4">System</div>
-                <a href="#" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
-                <a href="#" class="sidebar-link text-danger"><i class="bi bi-box-arrow-right"></i> Logout</a>
-
-            </div> <!-- End Scroll Wrapper -->
-
-            <!-- PENDING WIDGET (Pinned di Bawah, di luar scroll wrapper) -->
-            <div class="pending-widget">
-                <div class="fire-icon-wrapper"><i class="bi bi-fire fire-icon"></i></div>
-                <h6 class="fw-bold" style="color:#0B2B6A; margin-bottom: 5px;">Pending Tasks</h6>
-                <p class="small text-muted mb-3">You have 5 approvals waiting.</p>
-                <button class="btn-review">Review Now</button>
-                
-                <!-- COPYRIGHT (Muncul hanya saat scroll mentok bawah) -->
-                <div class="sidebar-copyright">
-                    &copy; 2025 PT Dialogika Persona Indonesia
-                </div>
+                <a href="../home.html" class="sidebar-link"><i class="bi bi-columns-gap"></i> Dashboard</a>
+                <a href="#" class="sidebar-link active"><i class="bi bi-list-columns-reverse"></i> Lineup</a>
+                <div class="sidebar-copyright">&copy; 2025 PT Dialogika Persona Indonesia</div>
             </div>
-
         </aside>
 
         <!-- 3. MAIN CONTENT -->
-        <main class="main-content" style="width: 100%;">
+        <main class="main-content">
             
-            
-            
-            <!-- A. KARTU BELAKANG (PROJECT CONTEXT - KECIL) -->
+            <!-- A. KARTU BELAKANG (HEADER HITAM) -->
             <div class="project-context-card">
-                
-                <!-- Badge Sample Project -->
+                <!-- Badge Department -->
                 <div class="ph-badge" id="projectBadge">Loading...</div>
-                
-                <div class="ph-nav-group" aria-expanded="false">
-                    <i class="bi bi-grid-3x3-gap-fill text-secondary"></i>
-                    <span class="ph-project-name" id="projectNameHeader">Loading Project...</span>
-                </div>
 
-                
-
-                <!-- Right Side Option -->
-                <div class="position-absolute end-0 me-3">
-                    <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
+                <!-- Dropdown Menu & Title -->
+                <div class="dropdown">
+                    <div class="ph-nav-group" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-grid-3x3-gap-fill text-secondary"></i>
+                        <span class="ph-project-name" id="projectNameHeader">Loading Project...</span>
+                    </div>
+                    <ul class="dropdown-menu shadow border-0 rounded-4 mt-2 p-2">
+                        <li><h6 class="dropdown-header text-uppercase small fw-bold">Jump to tool</h6></li>
+                        <li><a class="dropdown-item rounded-2" href="#" id="linkBackToProject"><i class="bi bi-arrow-left me-2"></i> Back to Project</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item rounded-2" href="#"><i class="bi bi-kanban me-2 text-warning"></i> Kanban</a></li>
+                        <li><a class="dropdown-item rounded-2" href="#"><i class="bi bi-file-earmark-text me-2 text-info"></i> Files</a></li>
+                    </ul>
                 </div>
-                
             </div>
 
             <!-- B. KARTU DEPAN (LIST KONTEN) -->
             <div class="main-list-card">
                 
                 <!-- Tombol New List -->
-                <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()">
+                <button class="btn-new-list" onclick="toggleNewListForm()">
                     <i class="bi bi-plus-lg me-1"></i> New List
                 </button>
 
@@ -281,7 +216,6 @@
                 <div id="listsContainer"></div>
 
             </div>
-            
         </main>
     </div>
 
