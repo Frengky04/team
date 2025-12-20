@@ -64,12 +64,127 @@
         .rich-editor-content pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 6px; font-size: 0.85rem; }
 
         /* TASK FORM STYLES */
-        .task-create-panel { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-top: 15px; display: none; background: #fff; animation: fadeIn 0.2s; }
-        .task-input-title { font-size: 1.1rem; font-weight: 600; border: none; outline: none; width: 100%; margin-bottom: 15px; }
-        .task-meta-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .task-meta-label { color: #64748b; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
-        .form-control-sm-custom { border: 1px solid transparent; padding: 4px 8px; border-radius: 4px; font-size: 0.9rem; transition: 0.2s; width: 100%; color: #334155; }
-        .form-control-sm-custom:hover, .form-control-sm-custom:focus { background: #f1f5f9; border-color: #cbd5e1; outline: none; }
+        /* --- CLICKUP-STYLE FORM CSS --- */
+                .task-create-panel {
+                    background: #fff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 30px;
+                    margin-top: 15px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+                    display: none; /* Hidden default */
+                    animation: fadeIn 0.2s;
+                }
+
+                /* Judul Besar */
+                .task-title-large {
+                    font-size: 1.8rem;
+                    font-weight: 700;
+                    color: #1f2937;
+                    border: none;
+                    outline: none;
+                    width: 100%;
+                    margin-bottom: 25px;
+                    background: transparent;
+                }
+                .task-title-large::placeholder { color: #cbd5e1; }
+
+                /* Grid Layout (Kiri & Kanan) */
+                .meta-grid-container {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr; /* 2 Kolom */
+                    gap: 10px 40px; /* Jarak vertikal 10px, horizontal 40px */
+                    margin-bottom: 30px;
+                }
+
+                .meta-row {
+                    display: flex;
+                    align-items: center;
+                    padding: 5px 0;
+                }
+
+                .meta-icon {
+                    width: 24px;
+                    text-align: center;
+                    color: #94a3b8;
+                    margin-right: 15px;
+                    font-size: 1.1rem;
+                }
+
+                .meta-label {
+                    width: 100px; /* Lebar label tetap */
+                    color: #64748b;
+                    font-size: 0.95rem;
+                }
+
+                .meta-value {
+                    flex-grow: 1;
+                }
+
+                /* Custom Inputs agar terlihat menyatu (Ghost Input) */
+                .ghost-input {
+                    border: 1px solid transparent;
+                    background: transparent;
+                    padding: 6px 10px;
+                    border-radius: 6px;
+                    width: 100%;
+                    color: #334155;
+                    font-size: 0.95rem;
+                    transition: 0.2s;
+                }
+                .ghost-input:hover, .ghost-input:focus {
+                    background: #f1f5f9;
+                    border-color: #cbd5e1;
+                    outline: none;
+                }
+
+                /* Status Badge (INITIATE Style) */
+                .status-badge-init {
+                    background-color: #007bff; /* Biru ClickUp */
+                    color: white;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                /* Description Area */
+                .desc-area-clean {
+                    border-top: 1px solid #f1f5f9;
+                    padding-top: 20px;
+                    margin-top: 10px;
+                    min-height: 100px;
+                    color: #475569;
+                    outline: none;
+                    font-size: 1rem;
+                    line-height: 1.6;
+                }
+                .desc-area-clean:empty:before {
+                    content: attr(data-placeholder);
+                    color: #94a3b8;
+                }
+
+                /* Footer Actions */
+                .form-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 10px;
+                    margin-top: 20px;
+                    border-top: 1px solid #f1f5f9;
+                    padding-top: 15px;
+                }
+
+                /* Override Tag Dropdown positioning */
+                .tag-input-container { position: relative; width: 100%; }
+                
+                @media (max-width: 768px) {
+                    .meta-grid-container { grid-template-columns: 1fr; gap: 10px; }
+                }
         
         /* TAG SYSTEM STYLES */
         .tag-input-container { position: relative; }
@@ -86,47 +201,47 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         /* HEADER LAYOUT */
-                .list-header-container {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 3rem; /* Jarak ke bawah (list item) */
-                    position: relative;
-                }
+        .list-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem; /* Jarak ke bawah (list item) */
+            position: relative;
+        }
 
-                /* TOMBOL NEW LIST */
-                .btn-new-list {
-                    background-color: #0B2B6A; /* Warna Dialogika Blue */
-                    color: white;
-                    border-radius: 50px; /* Rounded Pill */
-                    padding: 10px 24px;
-                    font-weight: 600;
-                    font-size: 0.95rem;
-                    border: none;
-                    transition: all 0.2s ease;
-                    white-space: nowrap; /* Agar teks tidak turun baris */
-                    box-shadow: 0 4px 6px rgba(11, 43, 106, 0.2); /* Shadow halus */
-                    
-                    /* Hapus posisi absolute lama */
-                    position: static;
-                }
+        /* TOMBOL NEW LIST */
+        .btn-new-list {
+            background-color: #0B2B6A; /* Warna Dialogika Blue */
+            color: white;
+            border-radius: 50px; /* Rounded Pill */
+            padding: 10px 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            transition: all 0.2s ease;
+            white-space: nowrap; /* Agar teks tidak turun baris */
+            box-shadow: 0 4px 6px rgba(11, 43, 106, 0.2); /* Shadow halus */
+            
+            /* Hapus posisi absolute lama */
+            position: static;
+        }
 
-                .btn-new-list:hover {
-                    background-color: #08204e; /* Warna lebih gelap saat hover */
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 12px rgba(11, 43, 106, 0.3);
-                }
+        .btn-new-list:hover {
+            background-color: #08204e; /* Warna lebih gelap saat hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(11, 43, 106, 0.3);
+        }
 
-                /* Responsive di HP */
-                @media (max-width: 768px) {
-                    .list-header-container {
-                        flex-direction: column;
-                        gap: 20px;
-                    }
-                    .btn-new-list {
-                        width: 100%; /* Full width di HP */
-                    }
-                }
+        /* Responsive di HP */
+        @media (max-width: 768px) {
+            .list-header-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .btn-new-list {
+                width: 100%; /* Full width di HP */
+            }
+        }
     </style>
 </head>
 <body>
@@ -159,13 +274,12 @@
                     <i class="bi bi-chevron-right ph-sep"></i>
                     <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading...</a>
                     <i class="bi bi-chevron-right ph-sep"></i>
-                    <span class="ph-crumb-active">To-dos</span>
+                    <span class="ph-crumb-active">Lists</span>
                 </div>
                 <div class="position-absolute end-0 me-3"><button class="btn btn-link text-muted"><i class="bi bi-three-dots"></i></button></div>
             </div>
 
             <div class="main-list-card">
-                <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()"><i class="bi bi-plus-lg me-1"></i> New List</button>
                 <!-- HEADER SECTION (FLEXBOX) -->
                 <div class="list-header-container">
                     <!-- Spacer kosong di kiri (agar judul benar-benar di tengah) -->
@@ -180,7 +294,7 @@
                     <!-- Tombol di Kanan -->
                     <div style="flex: 1; text-align: right;">
                         <!-- Perhatikan: Class 'btn-dlg-blue' DIHAPUS agar tidak konflik -->
-                        <button class="btn-new-list" onclick="toggleNewListForm()">
+                        <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()">
                             <i class="bi bi-plus-lg me-1"></i> New List
                         </button>
                     </div>
@@ -243,105 +357,165 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // GANTI DENGAN URL DEPLOY TERBARU!
+        // GANTI DENGAN URL DEPLOY TERBARU ANDA!
         const API_URL = 'https://script.google.com/macros/s/AKfycbySwjMcxFHkBC4z591KpmOQmRJkQAyfcnPSMocjLigMHO-5tqL4ncRJ2Op7yucmqDntRQ/exec';
         
         const projectId = new URLSearchParams(window.location.search).get('id');
         const dialogikaColors = ['#0B2B6A', '#F9C72E', '#231f20', '#7204cf', '#006a4e', '#e7181a', '#f7b12c', '#0163ea', '#1c84e3', '#444444', '#011548'];
-        let globalTags = []; 
+        
+        let globalTags = [];
         let selectedTags = [];
         let selectedFile = null;
 
         document.addEventListener("DOMContentLoaded", () => {
-            if(!projectId) return alert("Missing Project ID");
+            if (!projectId) return alert("Missing Project ID");
             fetchData();
         });
 
         function fetchData() {
             document.getElementById('loadingState').style.display = 'block';
-            fetch(`${API_URL}?action=getProjectData&id=${projectId}`).then(r=>r.json()).then(resp => {
-                if(resp.status === 'success') {
-                    const data = resp.data;
-                    // Header
-                    document.getElementById('projectNameHeader').innerText = (data.project?.name || data.name);
-                    document.getElementById('projectNameHeader').href = `../project/project.html?id=${projectId}`;
-                    document.getElementById('projectBadge').innerText = (data.project?.department || "Project");
-                    
-                    // Store Tags Globally
-                    globalTags = data.tags || [];
+            fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.status === 'success') {
+                        const data = resp.data;
+                        
+                        // Update Header
+                        const projName = data.project?.name || data.name || "Unnamed Project";
+                        document.getElementById('projectNameHeader').innerText = projName;
+                        document.getElementById('projectNameHeader').href = `../project/project.html?id=${projectId}`;
+                        document.getElementById('projectBadge').innerText = (data.project?.department || "Project");
+                        
+                        // Store Tags Globally untuk dropdown
+                        globalTags = data.tags || [];
 
-                    // Render
-                    renderLists(data.lists || []);
-                    renderComments(data.comments || []);
-                }
-            }).finally(()=> document.getElementById('loadingState').style.display='none');
+                        // Render Data
+                        renderLists(data.lists || []);
+                        renderComments(data.comments || []);
+                    }
+                })
+                .finally(() => {
+                    document.getElementById('loadingState').style.display = 'none';
+                });
         }
 
-        // --- RENDER LISTS & TASK FORM ---
+        // --- RENDER LISTS DENGAN UI CLICKUP-STYLE (UPDATE v1.0) ---
         function renderLists(lists) {
             const container = document.getElementById('listsContainer');
             container.innerHTML = '';
-            if(lists.length === 0) return document.getElementById('emptyState').style.display='block';
-            document.getElementById('emptyState').style.display='none';
+            
+            if (lists.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            document.getElementById('emptyState').style.display = 'none';
 
             lists.forEach(list => {
                 let tasksHtml = '';
-                if(list.tasks) list.tasks.forEach(t => {
-                    const done = ['done','true'].includes(t.status);
-                    tasksHtml += `<div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" onclick="window.location.href='item-details.html?taskId=${t.id}&projectId=${projectId}'">
-                        <input type="checkbox" class="todo-check me-3" ${done?'checked':''} onclick="event.stopPropagation()">
-                        <div class="w-100"><div class="${done?'text-decoration-line-through text-muted':'text-dark'}">${t.title}</div></div>
-                    </div>`;
-                });
+                if (list.tasks) {
+                    list.tasks.forEach(t => {
+                        const done = ['done', 'true', 'completed'].includes(t.status);
+                        tasksHtml += `
+                            <div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" 
+                                 onclick="window.location.href='item-details.html?taskId=${t.id}&projectId=${projectId}'">
+                                <input type="checkbox" class="todo-check me-3" ${done ? 'checked' : ''} onclick="event.stopPropagation()">
+                                <div class="w-100">
+                                    <div class="${done ? 'text-decoration-line-through text-muted' : 'text-dark'}">${t.title}</div>
+                                </div>
+                            </div>`;
+                    });
+                }
 
                 const html = `
                 <div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
-                    <div class="d-flex justify-content-between border-bottom pb-2 mb-3"><a href="list-detail.html?listId=${list.id}&projectId=${projectId}" class="text-dark fw-bold h4 text-decoration-none hover-text-blue">${list.name}</a></div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-3">
+                        <a href="list-detail.html?listId=${list.id}&projectId=${projectId}" 
+                           class="text-dark fw-bold h4 text-decoration-none hover-text-blue">${list.name}</a>
+                    </div>
+                    
                     <div class="todo-list-items">${tasksHtml}</div>
                     
                     <!-- ADD TASK BUTTON -->
                     <div class="mt-3">
-                        <button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskForm('${list.id}')"><i class="bi bi-plus"></i> Add a to-do</button>
+                        <button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskForm('${list.id}')">
+                            <i class="bi bi-plus"></i> Add a to-do
+                        </button>
                         
-                        <!-- DETAILED TASK FORM -->
-                        <div id="form-add-${list.id}" class="task-create-panel">
-                            <input type="text" id="task-title-${list.id}" class="task-input-title" placeholder="Describe this to-do...">
+                        <!-- NEW CLICKUP-STYLE FORM (UPDATE) -->
+                        <div id="form-add-${list.id}" class="task-create-panel" style="display:none;">
                             
-                            <div class="task-meta-grid">
-                                <div class="task-meta-label"><i class="bi bi-calendar"></i> Dates</div>
-                                <div class="d-flex gap-2">
-                                    <input type="date" id="task-start-${list.id}" class="form-control-sm-custom" title="Start Date">
-                                    <span class="text-muted">→</span>
-                                    <input type="date" id="task-due-${list.id}" class="form-control-sm-custom" title="Due Date">
+                            <!-- 1. Task Title -->
+                            <input type="text" id="task-title-${list.id}" class="task-title-large" placeholder="Task Name">
+                            
+                            <!-- 2. Meta Grid (2 Kolom) -->
+                            <div class="meta-grid-container mt-3">
+                                <div class="row g-3">
+                                    <!-- Kolom Kiri -->
+                                    <div class="col-md-6">
+                                        <div class="meta-row d-flex align-items-center mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-record-circle"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Status</div>
+                                            <div class="meta-value">
+                                                <span class="status-badge-init">OPEN <i class="bi bi-caret-right-fill" style="font-size:0.6rem"></i></span>
+                                            </div>
+                                        </div>
+                                        <div class="meta-row d-flex align-items-center mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-calendar4"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Dates</div>
+                                            <div class="meta-value d-flex align-items-center gap-2">
+                                                <input type="date" id="task-start-${list.id}" class="ghost-input">
+                                                <span class="text-muted small"><i class="bi bi-arrow-right"></i></span>
+                                                <input type="date" id="task-due-${list.id}" class="ghost-input">
+                                            </div>
+                                        </div>
+                                        <div class="meta-row d-flex align-items-center mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-hourglass-split"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Time est.</div>
+                                            <div class="meta-value"><span class="text-muted small">Empty</span></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Kolom Kanan -->
+                                    <div class="col-md-6">
+                                        <div class="meta-row d-flex align-items-center mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-flag"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Priority</div>
+                                            <div class="meta-value">
+                                                <select id="task-priority-${list.id}" class="ghost-input">
+                                                    <option value="normal" selected>Normal</option>
+                                                    <option value="high">High</option>
+                                                    <option value="urgent">Urgent</option>
+                                                    <option value="low">Low</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="meta-row d-flex align-items-center mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-star"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Points</div>
+                                            <div class="meta-value">
+                                                <input type="number" id="task-points-${list.id}" class="ghost-input" placeholder="0" style="width:60px;">
+                                            </div>
+                                        </div>
+                                        <div class="meta-row d-flex align-items-start mb-2">
+                                            <div class="meta-icon me-2"><i class="bi bi-tags"></i></div>
+                                            <div class="meta-label text-muted small me-3" style="width:80px;">Tags</div>
+                                            <div class="meta-value tag-input-container w-100">
+                                                <div id="selected-tags-${list.id}" class="selected-tags mb-1"></div>
+                                                <input type="text" class="ghost-input w-100" placeholder="Empty" oninput="handleTagSearch(this, '${list.id}')">
+                                                <div id="tag-dropdown-${list.id}" class="tag-dropdown"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="task-meta-grid">
-                                <div class="task-meta-label"><i class="bi bi-flag"></i> Priority</div>
-                                <select id="task-priority-${list.id}" class="form-control-sm-custom">
-                                    <option value="normal">Normal</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                    <option value="low">Low</option>
-                                </select>
-                            </div>
+                            <!-- 3. Description Area -->
+                            <div class="desc-area-clean mt-3 p-2 border rounded" contenteditable="true" 
+                                 id="task-desc-${list.id}" data-placeholder="Write description or type '/' for commands"></div>
 
-                            <div class="task-meta-grid">
-                                <div class="task-meta-label"><i class="bi bi-trophy"></i> Score Points</div>
-                                <input type="number" id="task-points-${list.id}" class="form-control-sm-custom" placeholder="0" style="width:80px;">
-                            </div>
-
-                            <div class="task-meta-grid">
-                                <div class="task-meta-label"><i class="bi bi-tags"></i> Tags</div>
-                                <div class="w-100 tag-input-container">
-                                    <div id="selected-tags-${list.id}" class="selected-tags"></div>
-                                    <input type="text" class="form-control-sm-custom" placeholder="Search or add tags..." oninput="handleTagSearch(this, '${list.id}')">
-                                    <div id="tag-dropdown-${list.id}" class="tag-dropdown"></div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex gap-2 mt-4 pt-3 border-top">
-                                <button class="btn btn-success rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button>
+                            <!-- 4. Footer (Buttons) -->
+                            <div class="form-footer mt-4 pt-3 border-top d-flex gap-2">
+                                <button class="btn btn-dlg-blue rounded-pill px-4 text-white" style="background-color:#0B2B6A" onclick="saveTask('${list.id}')">Add to-do</button>
                                 <button class="btn btn-light border rounded-pill px-4" onclick="hideTaskForm('${list.id}')">Cancel</button>
                             </div>
                         </div>
@@ -351,9 +525,57 @@
             });
         }
 
-        // --- TASK UI LOGIC ---
-        function showTaskForm(lid) { document.getElementById(`btn-add-${lid}`).style.display='none'; document.getElementById(`form-add-${lid}`).style.display='block'; selectedTags=[]; }
-        function hideTaskForm(lid) { document.getElementById(`btn-add-${lid}`).style.display='inline-block'; document.getElementById(`form-add-${lid}`).style.display='none'; }
+        // --- UI LOGIC ---
+        function showTaskForm(lid) {
+            document.getElementById(`btn-add-${lid}`).style.display = 'none';
+            document.getElementById(`form-add-${lid}`).style.display = 'block';
+            selectedTags = [];
+        }
+
+        function hideTaskForm(lid) {
+            document.getElementById(`btn-add-${lid}`).style.display = 'inline-block';
+            document.getElementById(`form-add-${lid}`).style.display = 'none';
+        }
+
+        // --- SAVE TASK (UPDATE v1.0 MENDUKUNG DESCRIPTION) ---
+        function saveTask(lid) {
+            const title = document.getElementById(`task-title-${lid}`).value;
+            const start = document.getElementById(`task-start-${lid}`).value;
+            const due = document.getElementById(`task-due-${lid}`).value;
+            const priority = document.getElementById(`task-priority-${lid}`).value;
+            const points = document.getElementById(`task-points-${lid}`).value;
+            // Ambil deskripsi dari div contenteditable (sesuai update-script)
+            const desc = document.getElementById(`task-desc-${lid}`).innerText;
+
+            if (!title) return alert("Task title required");
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Penting jika domain berbeda
+                body: JSON.stringify({
+                    action: 'createTask',
+                    listId: lid,
+                    title: title,
+                    startDate: start,
+                    dueDate: due,
+                    priority: priority,
+                    points: points,
+                    description: desc, // Sekarang dikirim ke Appscript
+                    tagIds: selectedTags.map(t => t.id)
+                })
+            }).then(() => {
+                fetchData(); // Refresh data setelah simpan
+            }).catch(err => {
+                console.error(err);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
+        }
 
         // --- TAG SYSTEM ---
         function handleTagSearch(input, lid) {
@@ -364,29 +586,27 @@
 
             const filtered = globalTags.filter(t => t.name.toLowerCase().includes(query));
             
-            // Render existing tags
             filtered.forEach(tag => {
                 const div = document.createElement('div');
-                div.className = 'tag-option';
-                div.innerHTML = `<span class="tag-pill" style="background:${tag.color};color:${getTextColor(tag.color)}">${tag.name}</span>`;
+                div.className = 'tag-option p-2 hover-bg-light cursor-pointer';
+                div.innerHTML = `<span class="tag-pill px-2 py-1 rounded small" style="background:${tag.color};color:${getTextColor(tag.color)}">${tag.name}</span>`;
                 div.onclick = () => addTagToSelection(tag, lid, input, dropdown);
                 dropdown.appendChild(div);
             });
 
-            // Allow Create New
-            if(query.length > 0 && !filtered.find(t => t.name.toLowerCase() === query)) {
+            if (query.length > 0 && !filtered.find(t => t.name.toLowerCase() === query)) {
                 const createDiv = document.createElement('div');
-                createDiv.className = 'tag-option border-top';
-                createDiv.innerHTML = `<span>Create "<strong>${query}</strong>"</span>`;
+                createDiv.className = 'tag-option border-top p-2 cursor-pointer';
+                createDiv.innerHTML = `<span class="small">Create "<strong>${query}</strong>"</span>`;
                 createDiv.onclick = () => createNewTag(input.value, lid, input, dropdown);
                 dropdown.appendChild(createDiv);
             }
 
-            if(dropdown.innerHTML === '') dropdown.style.display = 'none';
+            if (dropdown.innerHTML === '') dropdown.style.display = 'none';
         }
 
         function addTagToSelection(tag, lid, input, dropdown) {
-            if(!selectedTags.find(t => t.id === tag.id)) {
+            if (!selectedTags.find(t => t.id === tag.id)) {
                 selectedTags.push(tag);
                 renderSelectedTags(lid);
             }
@@ -396,24 +616,21 @@
 
         function createNewTag(name, lid, input, dropdown) {
             const randomColor = dialogikaColors[Math.floor(Math.random() * dialogikaColors.length)];
+            const tempTag = { id: 'temp-' + Date.now(), name: name, color: randomColor };
             
-            // Optimistic UI
-            const tempTag = { id: 'temp-'+Date.now(), name: name, color: randomColor };
             selectedTags.push(tempTag);
             renderSelectedTags(lid);
             input.value = '';
             dropdown.style.display = 'none';
 
-            // Backend Call
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'createTag', tagName: name, color: randomColor })
-            }).then(r=>r.json()).then(resp => {
-                // Update global tags and fix temp ID
+            }).then(r => r.json()).then(resp => {
                 const realTag = { id: resp.tagId, name: resp.name, color: resp.color };
                 globalTags.push(realTag);
                 const idx = selectedTags.findIndex(t => t.id === tempTag.id);
-                if(idx !== -1) selectedTags[idx] = realTag;
+                if (idx !== -1) selectedTags[idx] = realTag;
             });
         }
 
@@ -421,7 +638,10 @@
             const container = document.getElementById(`selected-tags-${lid}`);
             container.innerHTML = '';
             selectedTags.forEach((tag, index) => {
-                container.innerHTML += `<span class="tag-pill" style="background:${tag.color};color:${getTextColor(tag.color)}">${tag.name} <i class="bi bi-x tag-remove ms-1" onclick="removeTag(${index}, '${lid}')"></i></span>`;
+                container.innerHTML += `
+                    <span class="tag-pill badge me-1" style="background:${tag.color};color:${getTextColor(tag.color)}">
+                        ${tag.name} <i class="bi bi-x cursor-pointer ms-1" onclick="removeTag(${index}, '${lid}')"></i>
+                    </span>`;
             });
         }
 
@@ -438,59 +658,55 @@
             return (yiq >= 128) ? 'black' : 'white';
         }
 
-        // --- SAVE TASK ---
-        function saveTask(lid) {
-            const title = document.getElementById(`task-title-${lid}`).value;
-            const start = document.getElementById(`task-start-${lid}`).value;
-            const due = document.getElementById(`task-due-${lid}`).value;
-            const priority = document.getElementById(`task-priority-${lid}`).value;
-            const points = document.getElementById(`task-points-${lid}`).value;
-
-            if(!title) return alert("Task title required");
-
-            const btn = event.target; btn.innerText="Saving..."; btn.disabled=true;
-
-            fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'createTask',
-                    listId: lid,
-                    title: title,
-                    startDate: start,
-                    dueDate: due,
-                    priority: priority,
-                    points: points,
-                    tagIds: selectedTags.map(t => t.id)
-                })
-            }).then(() => fetchData());
-        }
-
-        // --- RICH EDITOR & COMMENTS ---
-        function execCmd(cmd, val=null) { document.execCommand(cmd, false, val); }
-        function insertCode() { const html=`<pre><code>Your code here...</code></pre>`; execCmd('insertHTML', html); }
-        function addLink() { const url=prompt("Enter URL"); if(url) execCmd("createLink", url); }
+        // --- COMMENTS & FILE UPLOAD ---
         function handleFile(input) {
-            if(input.files[0]) {
+            if (input.files[0]) {
                 const f = input.files[0];
                 const r = new FileReader();
                 r.onload = e => {
-                    selectedFile = { data: e.target.result.split(',')[1], name: f.name, type: f.type };
-                    document.getElementById('filePreview').style.display='block';
-                    document.getElementById('fileName').innerText=f.name;
+                    // FIXED: Logika split base64 agar sesuai backend v3.0 Final
+                    selectedFile = {
+                        data: e.target.result.split(',')[1],
+                        name: f.name,
+                        type: f.type
+                    };
+                    document.getElementById('filePreview').style.display = 'block';
+                    document.getElementById('fileName').innerText = f.name;
                 };
                 r.readAsDataURL(f);
             }
         }
-        function clearFile() { selectedFile=null; document.getElementById('fileInput').value=''; document.getElementById('filePreview').style.display='none'; }
+
+        function clearFile() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+        }
         
         function postComment() {
             const text = document.getElementById('richCommentInput').innerHTML;
-            if(!text && !selectedFile) return;
-            const btn = document.getElementById('postBtn'); btn.innerText='Posting...'; btn.disabled=true;
+            if (!text && !selectedFile) return;
+            
+            const btn = document.getElementById('postBtn');
+            btn.innerText = 'Posting...';
+            btn.disabled = true;
 
-            if(selectedFile) {
-                fetch(API_URL, { method:'POST', body:JSON.stringify({ action:'uploadFile', fileData:selectedFile.data, fileName:selectedFile.name, mimeType:selectedFile.type }) })
-                .then(r=>r.json()).then(res => sendComment(text, res.fileUrl));
+            if (selectedFile) {
+                fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'uploadFile',
+                        fileData: selectedFile.data,
+                        fileName: selectedFile.name,
+                        mimeType: selectedFile.type
+                    })
+                })
+                .then(r => r.json())
+                .then(res => sendComment(text, res.fileUrl))
+                .catch(() => {
+                    alert("Upload failed, posting text only.");
+                    sendComment(text, null);
+                });
             } else {
                 sendComment(text, null);
             }
@@ -499,29 +715,62 @@
         function sendComment(text, url) {
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action:'createComment', contextType:'project', contextId:projectId, text:text, attachmentUrl:url })
-            }).then(()=> {
-                document.getElementById('richCommentInput').innerHTML='';
+                body: JSON.stringify({
+                    action: 'createComment',
+                    contextType: 'project',
+                    contextId: projectId,
+                    text: text,
+                    attachmentUrl: url
+                })
+            }).then(() => {
+                document.getElementById('richCommentInput').innerHTML = '';
                 clearFile();
                 fetchData();
-                document.getElementById('postBtn').innerText='Post comment';
-                document.getElementById('postBtn').disabled=false;
+                document.getElementById('postBtn').innerText = 'Post comment';
+                document.getElementById('postBtn').disabled = false;
             });
         }
 
         function renderComments(comments) {
-            const w = document.getElementById('commentsWrapper'); w.innerHTML='';
+            const w = document.getElementById('commentsWrapper');
+            w.innerHTML = '';
             const projComments = comments.filter(c => c.contextId === projectId);
             projComments.forEach(c => {
-                let fileHtml = c.attachment ? `<div class="mt-2 pt-2 border-top"><a href="${c.attachment}" target="_blank" class="small text-primary"><i class="bi bi-paperclip"></i> Attachment</a></div>` : '';
-                w.innerHTML += `<div class="d-flex gap-3"><div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div><div class="bg-white border rounded p-3 w-100 shadow-sm"><div class="d-flex justify-content-between mb-1"><strong class="small text-dark">User Demo</strong><small class="text-muted" style="font-size:0.7rem">${new Date(c.date).toLocaleDateString()}</small></div><div class="text-dark small">${c.text}</div>${fileHtml}</div></div>`;
+                let fileHtml = c.attachment ?
+                    `<div class="mt-2 pt-2 border-top"><a href="${c.attachment}" target="_blank" class="small text-primary"><i class="bi bi-paperclip"></i> View Attachment</a></div>` : '';
+                w.innerHTML += `
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div>
+                        <div class="bg-white border rounded p-3 w-100 shadow-sm">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong class="small text-dark">User Demo</strong>
+                                <small class="text-muted" style="font-size:0.7rem">${new Date(c.date).toLocaleDateString()}</small>
+                            </div>
+                            <div class="text-dark small">${c.text}</div>
+                            ${fileHtml}
+                        </div>
+                    </div>`;
             });
         }
 
         // Helpers
-        function toggleNewListForm() { const f=document.getElementById('newListForm'); f.style.display = (f.style.display==='none')?'block':'none'; }
-        function saveNewList() { const n=document.getElementById('inputListName').value; fetch(API_URL,{method:'POST',body:JSON.stringify({action:'createList',projectId:projectId,listName:n})}).then(()=>fetchData()); }
-        function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+        function toggleNewListForm() {
+            const f = document.getElementById('newListForm');
+            f.style.display = (f.style.display === 'none') ? 'block' : 'none';
+        }
+        
+        function saveNewList() {
+            const n = document.getElementById('inputListName').value;
+            if(!n) return;
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'createList', projectId: projectId, listName: n })
+            }).then(() => fetchData());
+        }
+        
+        function toggleSidebar() {
+            document.getElementById('sidebarNav').classList.toggle('show');
+        }
     </script>
 </body>
 </html>
