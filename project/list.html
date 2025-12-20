@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>List - Dialogika</title>
-    
-    <!-- Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -16,51 +14,28 @@
         .main-content { margin-left: 290px; width: calc(100% - 290px); padding: 40px; min-height: 100vh; }
         @media (max-width: 991px) { .main-content { margin-left: 0; width: 100%; padding: 20px; } }
 
-        /* Project Context Card (Breadcrumb Style) */
+        /* Project Context Card */
         .project-context-card {
-            max-width: 800px;
-            width: 90%;
-            background: white; /* UBAH JADI PUTIH */
-            color: #1f2937;    /* UBAH TEXT JADI GELAP (agar terbaca) */
-            margin: 20px auto -20px auto;
-            padding: 15px 25px 35px 25px;
-            border-radius: 16px 16px 0 0;
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 800px; width: 90%; background: white; color: #1f2937;
+            margin: 20px auto -20px auto; padding: 15px 25px 35px 25px;
+            border-radius: 16px 16px 0 0; position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
         }
-
         .ph-badge {
-            background: #FDE047;
-            color: #854D0E;
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            position: absolute;
-            left: 30px;
-            top: 38%;
-            transform: translateY(-50%);
+            background: #FDE047; color: #854D0E; font-size: 0.7rem; font-weight: 800;
+            padding: 4px 8px; border-radius: 4px; text-transform: uppercase;
+            position: absolute; left: 30px; top: 38%; transform: translateY(-50%);
         }
-
         .ph-crumb-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #1f2937; /* UBAH JADI BIRU GELAP SOLID */
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 0.95rem;
-            color: white; /* Pastikan separator/panah di dalamnya berwarna putih */
+            display: flex; align-items: center; gap: 12px;
+            background: #1f2937; padding: 8px 20px;
+            border-radius: 50px; font-size: 0.95rem; color: white;
         }
         .ph-crumb-link { text-decoration: none; color: #d1d5db; font-weight: 500; transition: 0.2s; display: flex; align-items: center; }
         .ph-crumb-link:hover { color: white; }
         .ph-crumb-active { color: white; font-weight: 700; border-bottom: 2px solid #FDE047; padding-bottom: 2px; }
-        .ph-sep { font-size: 0.8rem; color: #6b7280; }
+        .ph-sep { font-size: 0.8rem; color: white; }
 
         /* Main List Card */
         .main-list-card {
@@ -72,10 +47,34 @@
         }
         .btn-new-list {
             position: absolute; top: 40px; right: 40px; background: #0B2B6A; color: white;
-            border-radius: 50px; padding: 8px 24px; font-weight: 600; border: none;
-            transition: 0.2s;
+            border-radius: 50px; padding: 8px 24px; font-weight: 600; border: none; transition: 0.2s;
         }
         .btn-new-list:hover { background: #08204e; transform: translateY(-2px); }
+
+        /* Styles for Rich Text Editor */
+        .rich-editor-box {
+            border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: white;
+        }
+        .rich-editor-toolbar {
+            background: #f9fafb; border-bottom: 1px solid #f3f4f6; padding: 8px 12px;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .editor-btn {
+            border: none; background: none; color: #4b5563; font-size: 1.1rem;
+            cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: 0.2s;
+        }
+        .editor-btn:hover { background: #e5e7eb; color: #111; }
+        .rich-editor-content {
+            min-height: 100px; padding: 15px; outline: none; color: #374151; font-size: 0.95rem;
+        }
+        .rich-editor-content:empty:before { content: attr(data-placeholder); color: #9ca3af; }
+        
+        /* Attachment Preview */
+        .attachment-preview {
+            display: none; align-items: center; gap: 10px;
+            background: #eff6ff; padding: 8px 12px; border-radius: 6px;
+            margin: 10px 15px; border: 1px solid #bfdbfe; font-size: 0.9rem;
+        }
 
         /* List Items */
         .todo-row { padding: 12px 10px; border-bottom: 1px solid #f3f4f6; display: flex; align-items: start; transition: 0.2s; }
@@ -105,37 +104,22 @@
                 <div class="nav-category">Main Navigation</div>
                 <a href="../home.html" class="sidebar-link active"><i class="bi bi-columns-gap"></i> Dashboard</a>
                 <a href="#" class="sidebar-link"><i class="bi bi-list-columns-reverse"></i> Lineup</a>
-                <div class="sidebar-copyright">&copy; 2025 PT Dialogika Persona Indonesia</div>
             </div>
         </aside>
 
         <main class="main-content">
-            
             <!-- BREADCRUMB HEADER -->
             <div class="project-context-card">
                 <div class="ph-badge" id="projectBadge">Loading...</div>
-                <!-- Breadcrumb Navigation -->
                 <div class="ph-crumb-container">
-                    <!-- 1. Home Link -->
-                    <a href="../home.html" class="ph-crumb-link" title="Back to Dashboard">
-                        <i class="bi bi-house-fill"></i>
-                    </a>
-                    
-                    <!-- Separator -->
+                    <a href="../home.html" class="ph-crumb-link" title="Dashboard"><i class="bi bi-house-fill"></i></a>
                     <i class="bi bi-chevron-right ph-sep"></i>
-
-                    <!-- 2. Project Name (SEKARANG JADI LINK) -->
-                    <!-- Ubah dari SPAN ke A, dan class jadi ph-crumb-link -->
-                    <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading Project...</a>
-
-                    <!-- Separator -->
+                    <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading...</a>
                     <i class="bi bi-chevron-right ph-sep"></i>
-
-                    <!-- 3. Halaman Aktif (To-dos) -->
                     <span class="ph-crumb-active">Lists</span>
                 </div>
                 <div class="position-absolute end-0 me-3">
-                    <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
+                    <button class="btn btn-link text-muted"><i class="bi bi-three-dots"></i></button>
                 </div>
             </div>
 
@@ -168,40 +152,55 @@
 
                 <hr class="my-5 opacity-25">
 
-                <!-- COMMENT SECTION (PROJECT LEVEL) -->
+                <!-- COMMENT SECTION (RICH TEXT & FILE UPLOAD) -->
                 <div class="mt-5">
                     <h5 class="fw-bold mb-4 text-dark">Discussion</h5>
                     
-                    <div id="commentsWrapper" class="d-flex flex-column gap-3 mb-4">
-                        <!-- Comments will be loaded here -->
-                    </div>
+                    <!-- Comments Container -->
+                    <div id="commentsWrapper" class="d-flex flex-column gap-3 mb-4"></div>
 
-                    <!-- Comment Input -->
+                    <!-- Comment Input with Rich Editor -->
                     <div class="d-flex gap-3">
                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">RA</div>
-                        <div class="w-100 border rounded-3 overflow-hidden">
-                            <div id="commentInput" class="p-3 bg-light text-muted" contenteditable="true" style="min-height:80px; outline:none;">Add a comment...</div>
-                            <div class="p-2 bg-white border-top text-end">
-                                <button class="btn btn-success rounded-pill px-4 btn-sm fw-bold" onclick="postComment()">Post comment</button>
+                        
+                        <div class="w-100">
+                            <div class="rich-editor-box">
+                                <div class="rich-editor-toolbar">
+                                    <button class="editor-btn" onclick="formatDoc('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
+                                    <button class="editor-btn" onclick="formatDoc('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
+                                    <button class="editor-btn" onclick="addLink()" title="Link"><i class="bi bi-link-45deg"></i></button>
+                                    <div style="width:1px; height:20px; background:#d1d5db; margin:0 5px;"></div>
+                                    <button class="editor-btn" onclick="document.getElementById('fileInput').click()" title="Attach File"><i class="bi bi-paperclip"></i></button>
+                                </div>
+                                
+                                <div id="richCommentInput" class="rich-editor-content" contenteditable="true" data-placeholder="Add a comment..."></div>
+                                
+                                <!-- File Upload Preview -->
+                                <div id="filePreview" class="attachment-preview">
+                                    <i class="bi bi-file-earmark-text text-primary"></i>
+                                    <span id="fileName" class="text-truncate" style="max-width: 200px;">filename.pdf</span>
+                                    <button class="btn-close ms-auto" style="font-size:0.7rem;" onclick="clearFile()"></button>
+                                </div>
+                            </div>
+
+                            <!-- Hidden File Input -->
+                            <input type="file" id="fileInput" style="display:none" onchange="handleFileSelect(this)">
+
+                            <div class="mt-2 text-end">
+                                <button id="postBtn" class="btn btn-success rounded-pill px-4 btn-sm fw-bold" onclick="postComment()">Post comment</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SUBSCRIBER SECTION (PROJECT LEVEL) -->
+                <!-- SUBSCRIBER SECTION -->
                 <div class="mt-5 pt-4 border-top">
                     <h6 class="fw-bold">Subscribers</h6>
                     <p class="small text-muted mb-3">People listed below will be notified when comments are posted on this project.</p>
-                    
-                    <div class="d-flex align-items-center gap-2 flex-wrap" id="subsContainer">
-                        <!-- Subs avatars here -->
-                        <button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small">Add/remove people...</button>
-                    </div>
-                    
-                    <!-- Subscribe Button -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap" id="subsContainer"></div>
                     <div class="mt-3 p-2 bg-light rounded-pill d-inline-block border">
-                        <small class="text-dark fw-bold px-2" id="subStatusText">You’re subscribed</small>
-                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0" style="font-size:0.8rem;" id="subToggleBtn" onclick="toggleSubscription()">Unsubscribe me</button>
+                        <small class="text-dark fw-bold px-2" id="subStatusText">Loading...</small>
+                        <button class="btn btn-sm btn-link text-muted text-decoration-none p-0" style="font-size:0.8rem;" id="subToggleBtn" onclick="toggleSubscription()">Change</button>
                     </div>
                 </div>
 
@@ -217,120 +216,62 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('id');
-        let isSubscribed = false; // State lokal untuk status subscribe
+        let isSubscribed = false;
+        let selectedFileBase64 = null;
+        let selectedFileName = null;
+        let selectedMimeType = null;
 
         document.addEventListener("DOMContentLoaded", function() {
-            if(!projectId) {
-                alert("Error: Missing Project ID");
-                return;
-            }
-            // Logic placeholder text
-            const input = document.getElementById('commentInput');
-            input.addEventListener('focus', () => { if(input.innerText === 'Add a comment...') input.innerText = ''; });
-            input.addEventListener('blur', () => { if(input.innerText.trim() === '') input.innerText = 'Add a comment...'; });
-
+            if(!projectId) { alert("Error: Missing Project ID"); return; }
             fetchListsData();
         });
 
         // --- FETCH DATA ---
         function fetchListsData() {
-            const loading = document.getElementById('loadingState');
-            const container = document.getElementById('listsContainer');
-            const emptyState = document.getElementById('emptyState');
-            
-            loading.style.display = 'block';
-            container.innerHTML = '';
-            if(emptyState) emptyState.style.display = 'none';
-
+            document.getElementById('loadingState').style.display = 'block';
             fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
             .then(res => res.json())
             .then(response => {
                 if(response.status === 'success') {
                     const data = response.data;
-                    
-                    // Update Header Logic (Hybrid Data Support)
                     const pName = (data.project && data.project.name) ? data.project.name : data.name;
-                    const pDept = (data.project && data.project.department) ? data.project.department : (data.department || 'Project');
+                    const pDept = (data.project && data.project.department) ? data.project.department : "Project";
+                    
+                    const header = document.getElementById('projectNameHeader');
+                    if(header) { header.innerText = pName; header.href = `../project/project.html?id=${projectId}`; }
+                    document.getElementById('projectBadge').innerText = pDept;
 
-                    const headerEl = document.getElementById('projectNameHeader');
-                    const badgeEl = document.getElementById('projectBadge');
+                    renderLists(data.lists || []);
+                    
+                    // Filter Comment: contextId === projectId
+                    const projComments = data.comments ? data.comments.filter(c => c.contextId === projectId) : [];
+                    renderComments(projComments);
 
-                    if (headerEl) {
-                        headerEl.innerText = pName || "Project";
-                        // --- TAMBAHKAN BARIS INI: Membuat Nama Project jadi link
-                        headerEl.href = `../project/project.html?id=${projectId}`;
-                    }
-                    if (badgeEl) badgeEl.innerText = pDept;
-
-                    // Render Lists
-                    const lists = data.lists || [];
-                    renderLists(lists);
-                } else {
-                    showError("Gagal memuat data: " + response.message);
+                    // Filter Subs: contextId === projectId
+                    const projSubs = data.subscribers ? data.subscribers.filter(s => s.contextId === projectId) : [];
+                    renderSubscribers(projSubs);
                 }
             })
-            .catch(err => {
-                console.error(err);
-                showError("Terjadi kesalahan sistem.");
-            })
-            .finally(() => {
-                loading.style.display = 'none';
-            });
+            .finally(() => document.getElementById('loadingState').style.display = 'none');
         }
 
-        // --- RENDER FUNCTIONS ---
-        function renderLists(lists) {
-            const container = document.getElementById('listsContainer');
-            container.innerHTML = '';
-            if(lists.length === 0) { document.getElementById('emptyState').style.display='block'; return; }
-            document.getElementById('emptyState').style.display='none';
-
-            lists.forEach(list => {
-                let tasksHtml = '';
-                if (list.tasks && list.tasks.length > 0) {
-                    list.tasks.forEach(task => {
-                        const isDone = ['done', 'true'].includes(task.status);
-                        const chk = isDone ? 'checked' : '';
-                        const cls = isDone ? 'text-decoration-line-through text-muted' : 'text-dark';
-                        tasksHtml += `
-                            <div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" 
-                                 style="cursor:pointer;" onclick="window.location.href='item-details.html?taskId=${task.id}&projectId=${projectId}'">
-                                <input type="checkbox" class="todo-check me-3" ${chk} onclick="toggleTaskStatus(this, '${task.id}'); event.stopPropagation();">
-                                <div class="w-100"><div class="${cls}" id="title-${task.id}">${task.title}</div></div>
-                            </div>`;
-                    });
-                } else { tasksHtml = '<div class="text-muted small ps-4 fst-italic mb-2">No tasks yet.</div>'; }
-
-                const html = `
-                    <div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
-                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                            <a href="list-detail.html?listId=${list.id}&projectId=${projectId}" class="text-decoration-none text-dark">
-                                <h4 class="fw-bold mb-0 hover-text-blue">${list.name}</h4>
-                            </a>
-                            <button class="btn btn-sm btn-light text-muted"><i class="bi bi-three-dots"></i></button>
-                        </div>
-                        <p class="text-muted small mb-3">${list.desc || ''}</p>
-                        <div class="todo-list-items">${tasksHtml}</div>
-                        <div class="todo-creation-wrapper mt-3 ms-2">
-                            <button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskInput('${list.id}')"><i class="bi bi-plus"></i> Add a to-do</button>
-                            <div id="form-add-${list.id}" class="mt-2" style="display:none;">
-                                <input type="text" id="input-task-${list.id}" class="form-control mb-2" placeholder="Describe this to-do...">
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-success rounded-pill px-3" onclick="saveTask('${list.id}')">Add</button>
-                                    <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="hideTaskInput('${list.id}')">Cancel</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', html);
-            });
-        }
-
+        // --- RENDER COMMENTS (WITH HTML & ATTACHMENT) ---
         function renderComments(comments) {
             const wrapper = document.getElementById('commentsWrapper');
             wrapper.innerHTML = '';
             comments.forEach(c => {
                 const date = new Date(c.date).toLocaleDateString();
+                // Render attachment if exists
+                let attachmentHtml = '';
+                if(c.attachment) {
+                    attachmentHtml = `
+                        <div class="mt-2 pt-2 border-top">
+                            <a href="${c.attachment}" target="_blank" class="text-decoration-none small text-primary">
+                                <i class="bi bi-paperclip me-1"></i> View Attachment
+                            </a>
+                        </div>`;
+                }
+
                 const html = `
                     <div class="d-flex gap-3">
                         <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">U</div>
@@ -339,116 +280,178 @@
                                 <strong class="small text-dark">User Demo</strong>
                                 <small class="text-muted" style="font-size:0.7rem">${date}</small>
                             </div>
+                            <!-- GUNAKAN INNERHTML AGAR BOLD/ITALIC MUNCUL -->
                             <div class="text-dark small">${c.text}</div>
+                            ${attachmentHtml}
                         </div>
                     </div>`;
                 wrapper.insertAdjacentHTML('beforeend', html);
             });
         }
 
-        function renderSubscribers(subs) {
-            const container = document.getElementById('subsContainer');
-            // Bersihkan avatar lama tapi sisakan tombol add
-            container.innerHTML = '';
-            
-            isSubscribed = false; // Reset check
+        // --- RICH EDITOR LOGIC ---
+        function formatDoc(cmd, value=null) { document.execCommand(cmd, false, value); }
+        function addLink() { const url = prompt("Enter the URL"); if(url) formatDoc("createLink", url); }
 
-            subs.forEach(s => {
-                // Cek jika current user (USER-DEMO) ada di list
-                if(s.userId === "USER-DEMO") isSubscribed = true;
-
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" 
-                         style="width:30px; height:30px; font-size:0.7rem;" title="${s.userId}">
-                         ${s.userId.substring(0,2)}
-                    </div>
-                `);
-            });
-            container.insertAdjacentHTML('beforeend', `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small">Add/remove people...</button>`);
-
-            updateSubscribeBtn();
+        // --- FILE UPLOAD LOGIC ---
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedFileBase64 = e.target.result.split(',')[1]; // Ambil data setelah koma
+                    selectedFileName = file.name;
+                    selectedMimeType = file.type;
+                    
+                    // Show Preview
+                    document.getElementById('filePreview').style.display = 'flex';
+                    document.getElementById('fileName').innerText = file.name;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function clearFile() {
+            document.getElementById('fileInput').value = "";
+            document.getElementById('filePreview').style.display = 'none';
+            selectedFileBase64 = null; selectedFileName = null;
         }
 
-        function updateSubscribeBtn() {
-            const text = document.getElementById('subStatusText');
-            const btn = document.getElementById('subToggleBtn');
-            if(isSubscribed) {
-                text.innerText = "You’re subscribed";
-                btn.innerText = "Unsubscribe me";
+        // --- POST COMMENT ACTION ---
+        function postComment() {
+            const editor = document.getElementById('richCommentInput');
+            const htmlContent = editor.innerHTML;
+            
+            if(htmlContent.trim() === '' && !selectedFileBase64) {
+                alert("Please write a comment or attach a file.");
+                return;
+            }
+
+            const btn = document.getElementById('postBtn');
+            btn.innerText = "Posting...";
+            btn.disabled = true;
+
+            // Step 1: Upload File first if exists
+            if (selectedFileBase64) {
+                uploadFileAndPost(htmlContent, btn);
             } else {
-                text.innerText = "You’re not subscribed";
-                btn.innerText = "Subscribe me";
+                sendCommentData(htmlContent, null, btn);
             }
         }
 
-        // --- ACTIONS ---
-        function postComment() {
-            const input = document.getElementById('commentInput');
-            const text = input.innerText;
-            if(text === 'Add a comment...' || text.trim() === '') return;
+        function uploadFileAndPost(text, btn) {
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'uploadFile',
+                    fileData: selectedFileBase64,
+                    fileName: selectedFileName,
+                    mimeType: selectedMimeType
+                })
+            })
+            .then(res => res.json())
+            .then(resp => {
+                if(resp.status === 'success') {
+                    sendCommentData(text, resp.fileUrl, btn);
+                } else {
+                    alert("File upload failed: " + resp.message);
+                    btn.innerText = "Post comment"; btn.disabled = false;
+                }
+            });
+        }
 
+        function sendCommentData(text, fileUrl, btn) {
             fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'createComment',
-                    projectId: projectId,
-                    text: text
+                    contextType: 'project', // Konteks Project
+                    contextId: projectId,
+                    text: text,
+                    attachmentUrl: fileUrl
                 })
-            }).then(() => {
-                input.innerText = 'Add a comment...';
-                fetchListsData(); // Refresh to see new comment
+            })
+            .then(res => res.json())
+            .then(resp => {
+                // Reset UI
+                document.getElementById('richCommentInput').innerHTML = '';
+                clearFile();
+                fetchListsData(); // Refresh comments
+            })
+            .finally(() => {
+                btn.innerText = "Post comment";
+                btn.disabled = false;
             });
+        }
+
+        // --- SUBSCRIPTION & OTHERS ---
+        function renderSubscribers(subs) {
+            const container = document.getElementById('subsContainer');
+            container.innerHTML = '';
+            isSubscribed = false;
+            subs.forEach(s => {
+                if(s.userId === "USER-DEMO") isSubscribed = true;
+                container.insertAdjacentHTML('beforeend', `<div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:30px; height:30px; font-size:0.7rem;" title="${s.userId}">${s.userId.substring(0,2)}</div>`);
+            });
+            container.insertAdjacentHTML('beforeend', `<button class="btn btn-light border rounded-pill px-3 py-1 btn-sm text-muted small">Add/remove people...</button>`);
+            
+            const text = document.getElementById('subStatusText');
+            const btn = document.getElementById('subToggleBtn');
+            if(isSubscribed) { text.innerText="You’re subscribed"; btn.innerText="Unsubscribe me"; }
+            else { text.innerText="You’re not subscribed"; btn.innerText="Subscribe me"; }
         }
 
         function toggleSubscription() {
             const btn = document.getElementById('subToggleBtn');
             btn.disabled = true;
-            
             fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({
-                    action: 'toggleSubscription',
-                    contextType: 'project',
-                    contextId: projectId
-                })
-            }).then(res => res.json()).then(resp => {
-                if(resp.status === 'success') {
-                    fetchListsData(); // Refresh subscribers list
-                }
-                btn.disabled = false;
-            });
+                body: JSON.stringify({ action: 'toggleSubscription', contextType: 'project', contextId: projectId })
+            }).then(() => fetchListsData()).finally(() => btn.disabled = false);
         }
 
-        // --- TASK LOGIC (SAME AS BEFORE) ---
+        // Helper functions
+        function renderLists(lists) { /* Sama seperti sebelumnya, hanya memastikan tidak hilang */
+            const container = document.getElementById('listsContainer'); container.innerHTML = '';
+            if(lists.length === 0) { document.getElementById('emptyState').style.display='block'; return; }
+            document.getElementById('emptyState').style.display='none';
+            lists.forEach(list => {
+                let tasksHtml = '';
+                if(list.tasks){ list.tasks.forEach(t => {
+                    const done=['done','true'].includes(t.status);
+                    tasksHtml+=`<div class="todo-row p-2 border-bottom d-flex align-items-start hover-bg-light rounded" onclick="window.location.href='item-details.html?taskId=${t.id}&projectId=${projectId}'"><input type="checkbox" class="todo-check me-3" ${done?'checked':''} onclick="toggleTaskStatus(this,'${t.id}');event.stopPropagation()"><div class="w-100"><div class="${done?'text-decoration-line-through text-muted':'text-dark'}" id="title-${t.id}">${t.title}</div></div></div>`;
+                });}
+                if(!tasksHtml) tasksHtml='<div class="text-muted small ps-4 mb-2">No tasks.</div>';
+                
+                const html = `<div class="mb-5 bg-white p-4 rounded-4 border shadow-sm">
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-3"><a href="list-detail.html?listId=${list.id}&projectId=${projectId}" class="text-dark fw-bold h4 text-decoration-none hover-text-blue">${list.name}</a></div>
+                    <p class="text-muted small mb-3">${list.desc||''}</p>
+                    <div class="todo-list-items">${tasksHtml}</div>
+                    <div class="mt-3 ms-2"><button id="btn-add-${list.id}" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showTaskInput('${list.id}')"><i class="bi bi-plus"></i> Add a to-do</button>
+                    <div id="form-add-${list.id}" class="mt-2" style="display:none;"><input type="text" id="input-task-${list.id}" class="form-control mb-2" placeholder="Task name..."><div class="d-flex gap-2"><button class="btn btn-success btn-sm rounded-pill px-3" onclick="saveTask('${list.id}')">Add</button><button class="btn btn-light btn-sm border rounded-pill px-3" onclick="hideTaskInput('${list.id}')">Cancel</button></div></div></div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+        
         function showTaskInput(id) { document.getElementById(`form-add-${id}`).style.display='block'; document.getElementById(`btn-add-${id}`).style.display='none'; }
         function hideTaskInput(id) { document.getElementById(`form-add-${id}`).style.display='none'; document.getElementById(`btn-add-${id}`).style.display='inline-block'; }
         function toggleTaskStatus(chk, tid) {
-            const title = document.getElementById(`title-${tid}`);
-            if(chk.checked) { title.classList.add('text-decoration-line-through','text-muted'); title.classList.remove('text-dark'); }
-            else { title.classList.remove('text-decoration-line-through','text-muted'); title.classList.add('text-dark'); }
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action:'updateTaskStatus', taskId:tid, status:chk.checked?'done':'open' }) });
+            const el = document.getElementById(`title-${tid}`);
+            if(chk.checked) { el.classList.add('text-decoration-line-through','text-muted'); el.classList.remove('text-dark'); }
+            else { el.classList.remove('text-decoration-line-through','text-muted'); el.classList.add('text-dark'); }
+            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'updateTaskStatus', taskId:tid, status:chk.checked?'done':'open'})});
         }
-        function saveTask(listId) {
-            const title = document.getElementById(`input-task-${listId}`).value;
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'createTask', listId: listId, title: title }) })
-            .then(() => fetchListsData());
-        }
-        
-        function toggleNewListForm() {
-            const form = document.getElementById('newListForm');
-            form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+        function saveTask(lid) {
+            const title = document.getElementById(`input-task-${lid}`).value;
+            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'createTask', listId:lid, title:title}) }).then(()=>fetchListsData());
         }
         function saveNewList() {
-            const name = document.getElementById('inputListName').value;
-            const desc = document.getElementById('inputListDesc').innerText;
-            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'createList', projectId: projectId, listName: name, description: desc }) })
-            .then(() => {
-                document.getElementById('inputListName').value='';
-                document.getElementById('inputListDesc').innerText='';
-                toggleNewListForm();
-                fetchListsData();
+            const name = document.getElementById('inputListName').value; const desc = document.getElementById('inputListDesc').innerText;
+            fetch(API_URL, { method:'POST', body:JSON.stringify({action:'createList', projectId:projectId, listName:name, description:desc}) }).then(()=>{
+                document.getElementById('inputListName').value=''; document.getElementById('inputListDesc').innerText=''; toggleNewListForm(); fetchListsData();
             });
         }
+        function toggleNewListForm() { const f=document.getElementById('newListForm'); f.style.display=(f.style.display==='none')?'block':'none'; }
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
     </script>
 </body>
