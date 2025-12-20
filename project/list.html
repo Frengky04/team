@@ -68,6 +68,41 @@
         }
         .ph-nav-group:hover { background: #0B2B6A; }
         .ph-project-name { font-weight: 700; color: white; font-size: 1rem; }
+        
+        /* --- BREADCRUMB STYLES (Tambahkan ini) --- */
+        .ph-crumb-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.1); /* Background transparan halus */
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+        }
+
+        .ph-crumb-link {
+            text-decoration: none;
+            color: #d1d5db; /* Abu-abu terang */
+            font-weight: 500;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .ph-crumb-link:hover {
+            color: white; /* Putih saat hover */
+        }
+        
+        .ph-crumb-active {
+            color: white;
+            font-weight: 700;
+            border-bottom: 2px solid #FDE047; /* Garis bawah kuning */
+            padding-bottom: 2px;
+        }
+        
+        .ph-sep {
+            font-size: 0.8rem;
+            color: #6b7280; /* Abu-abu gelap untuk panah */
+        }
 
         /* 2. KARTU PUTIH (Main Content) */
         .main-list-card {
@@ -216,15 +251,25 @@
         <main class="main-content" style="width: 100%;">
             
 
-            <!-- A. KARTU BELAKANG (PROJECT CONTEXT - KECIL) -->
+            <!-- A. KARTU BELAKANG (BREADCRUMB NAV) -->
             <div class="project-context-card">
                 
                 <!-- Badge Sample Project -->
                 <div class="ph-badge" id="projectBadge">Loading...</div>
-                
-                <div class="ph-nav-group" aria-expanded="false">
-                    <i class="bi bi-house-fill text-secondary"></i>
-                    <span class="ph-project-name" id="projectNameHeader">Loading Project...</span>
+
+                <!-- Breadcrumb Navigation -->
+                <div class="ph-crumb-container">
+                    <!-- 1. Home Link -->
+                    <a href="../home.html" class="ph-crumb-link" title="Back to Dashboard">
+                        <i class="bi bi-house-fill"></i>
+                    </a>
+                    
+                    <!-- Separator (>) -->
+                    <i class="bi bi-chevron-right ph-sep"></i>
+
+                    <!-- 2. Project Name (Active) -->
+                    <!-- ID ini penting agar JavaScript fetchListsData() bisa mengisinya -->
+                    <span class="ph-crumb-active" id="projectNameHeader">Loading Project...</span>
                 </div>
 
                 <!-- Right Side Option -->
