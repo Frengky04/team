@@ -114,11 +114,25 @@
             <!-- BREADCRUMB HEADER -->
             <div class="project-context-card">
                 <div class="ph-badge" id="projectBadge">Loading...</div>
+                <!-- Breadcrumb Navigation -->
                 <div class="ph-crumb-container">
-                    <a href="../home.html" class="ph-crumb-link" title="Dashboard"><i class="bi bi-house-fill"></i></a>
+                    <!-- 1. Home Link -->
+                    <a href="../home.html" class="ph-crumb-link" title="Back to Dashboard">
+                        <i class="bi bi-house-fill"></i>
+                    </a>
+                    
+                    <!-- Separator -->
                     <i class="bi bi-chevron-right ph-sep"></i>
+
+                    <!-- 2. Project Name (SEKARANG JADI LINK) -->
                     <!-- Ubah dari SPAN ke A, dan class jadi ph-crumb-link -->
                     <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading Project...</a>
+
+                    <!-- Separator -->
+                    <i class="bi bi-chevron-right ph-sep"></i>
+
+                    <!-- 3. Halaman Aktif (To-dos) -->
+                    <span class="ph-crumb-active">To-dos</span>
                 </div>
                 <div class="position-absolute end-0 me-3">
                     <button class="btn btn-link text-white text-opacity-50"><i class="bi bi-three-dots"></i></button>
@@ -218,9 +232,15 @@
             fetchListsData();
         });
 
+        // --- FETCH DATA ---
         function fetchListsData() {
             const loading = document.getElementById('loadingState');
+            const container = document.getElementById('listsContainer');
+            const emptyState = document.getElementById('emptyState');
+            
             loading.style.display = 'block';
+            container.innerHTML = '';
+            if(emptyState) emptyState.style.display = 'none';
 
             fetch(`${API_URL}?action=getProjectData&id=${projectId}`)
             .then(res => res.json())
@@ -228,27 +248,30 @@
                 if(response.status === 'success') {
                     const data = response.data;
                     
-                    // Header
+                    // Update Header Logic (Hybrid Data Support)
                     const pName = (data.project && data.project.name) ? data.project.name : data.name;
-                    const pDept = (data.project && data.project.department) ? data.project.department : "Project";
-                    document.getElementById('projectNameHeader').innerText = pName;
-                    document.getElementById('projectBadge').innerText = pDept;
+                    const pDept = (data.project && data.project.department) ? data.project.department : (data.department || 'Project');
+
+                    const headerEl = document.getElementById('projectNameHeader');
+                    const badgeEl = document.getElementById('projectBadge');
+
+                    if (headerEl) {
+                        headerEl.innerText = pName || "Project";
+                        // --- TAMBAHKAN BARIS INI: Membuat Nama Project jadi link
+                        headerEl.href = `../project/project.html?id=${projectId}`;
+                    }
+                    if (badgeEl) badgeEl.innerText = pDept;
 
                     // Render Lists
-                    renderLists(data.lists || []);
-
-                    // Render Comments (Filter for Project ID)
-                    // Note: Komentar project biasanya punya contextId = projectId
-                    const projComments = data.comments ? data.comments.filter(c => c.projectId === projectId && (!c.listId || c.listId === "") && (!c.taskId || c.taskId === "")) : [];
-                    renderComments(projComments);
-
-                    // Render Subscribers (Filter for Project ID)
-                    const projSubs = data.subscribers ? data.subscribers.filter(s => s.contextId === projectId) : [];
-                    renderSubscribers(projSubs);
-
+                    const lists = data.lists || [];
+                    renderLists(lists);
                 } else {
-                    alert("Error: " + response.message);
+                    showError("Gagal memuat data: " + response.message);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                showError("Terjadi kesalahan sistem.");
             })
             .finally(() => {
                 loading.style.display = 'none';
