@@ -428,9 +428,14 @@ body {
 }
 .btn-dlg-yellow {
     background: linear-gradient(to top, #f1ac15 22%, #fcf221 100%);
+    box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+    -webkit-box-shadow: 0px 5px 16px -6px rgba(114, 4, 207, 1);
+    color: black; border: none; transition: 0.3s;
+}
+.btn-dlg-yellow:hover {
+    background: linear-gradient(to top,#fcf221 22%, #f1ac15 100%);
     box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
     -webkit-box-shadow: 0px 0px 4px 2px rgba(114, 4, 207, 0.75);
-    color: black; border: none; transition: 0.3s;
 }
 
 /* Baru. Button Template*/
