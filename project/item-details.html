@@ -104,14 +104,33 @@
 </head>
 <body>
 
-    <!-- 1. TOP BAR -->
+    <!-- 1. TOP BAR FIXED -->
     <nav class="top-bar">
+        <!-- Left: Mobile Toggle & Search -->
         <div class="d-flex align-items-center">
-            <button class="mobile-toggle me-3" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
-            <div class="logo-center"><img src="https://www.dialogika.co/assets/img/logo.webp" height="35"></div>
+            <button class="mobile-toggle me-3" onclick="toggleSidebar()">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="input-group d-none d-md-flex" style="width: 250px;">
+                <span class="input-group-text bg-light border-end-0 rounded-start-pill text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control bg-light border-start-0 rounded-end-pill" placeholder="Search...">
+            </div>
         </div>
+
+        <!-- CENTER: LOGO DIALOGIKA -->
+        <div class="logo-center">
+            <img src="https://www.dialogika.co/assets/img/logo.webp" alt="Dialogika Logo" height="35">
+        </div>
+
+        <!-- Right: Profile -->
         <div class="d-flex align-items-center gap-3">
-            <div class="profile-img-container"><img src="https://i.pravatar.cc/300?img=11" class="profile-img"></div>
+            <div class="text-end d-none d-lg-block lh-1">
+                <span id="user-name-display" class="d-block fw-bold small text-dark">Loading...</span>
+                <small id="user-role-display" class="text-muted" style="font-size:0.7rem">User</small>
+            </div>
+            <div class="profile-img-container">
+                <img id="user-photo-display" src="https://i.pravatar.cc/300" alt="Profile" class="profile-img">
+            </div>
         </div>
     </nav>
 
@@ -387,6 +406,51 @@
         }
 
         function toggleSidebar() { document.getElementById('sidebarNav').classList.toggle('show'); }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Ambil data dari localStorage
+            const data = localStorage.getItem('userData');
+            
+            if (!data) {
+                // Jika tidak ada data login, tendang balik ke login page
+                window.location.href = "index.html";
+                return;
+            }
+
+            const user = JSON.parse(data);
+
+            // 2. Fungsi untuk konversi link Google Drive ke Direct Image Link
+            function getDirectLink(url) {
+                if (!url) return "https://i.pravatar.cc/300";
+                if (url.includes('drive.google.com')) {
+                    let id = "";
+                    if (url.includes('id=')) {
+                        id = url.split('id=')[1].split('&')[0];
+                    } else {
+                        id = url.split('/d/')[1].split('/')[0];
+                    }
+                    return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+                }
+                return url;
+            }
+
+            // 3. Update Tampilan Navbar
+            document.getElementById('user-name-display').innerText = user.name;
+            document.getElementById('user-photo-display').src = getDirectLink(user.photo);
+            // Posisi bisa disesuaikan jika ada di spreadsheet
+            document.getElementById('user-role-display').innerText = "Dialogika Member";
+            
+            // Update juga pesan selamat datang jika perlu
+            const welcomeMsg = document.querySelector('h4.fw-bold');
+            if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${user.name.split(' ')[0]}!`;
+        });
+
+        // Fungsi Logout
+        function logout() {
+            localStorage.removeItem('userData');
+            window.location.href = "index.html";
+        }
     </script>
 </body>
 </html>
