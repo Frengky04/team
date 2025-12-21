@@ -223,6 +223,65 @@
             display: flex; align-items: center; gap: 6px;
             background: #f1f5f9; padding: 2px 8px; border-radius: 20px; font-size: 0.85rem;
         }
+        /* --- PROJECT TOOLS MODAL STYLE --- */
+        .modal-tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .modal-tools-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .tool-nav-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .tool-nav-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            border-color: #0B2B6A;
+        }
+
+        .tool-nav-card .tool-title {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .tool-nav-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .modal-content-custom {
+            border-radius: 24px;
+            border: none;
+            background-color: #f9fafb;
+        }
     </style>
 </head>
 <body>
@@ -277,7 +336,12 @@
                     <i class="bi bi-chevron-right ph-sep"></i>
                     <span class="ph-crumb-active">Lists</span>
                 </div>
-                <div class="position-absolute end-0 me-3"><button class="btn btn-link text-muted"><i class="bi bi-three-dots"></i></button></div>
+                <!-- Bagian Breadcrumb yang diupdate trigger modalnya -->
+                <div class="position-absolute end-0 me-3">
+                    <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#projectToolsModal">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="main-list-card">
@@ -355,6 +419,71 @@
                 </div>
             </div>
         </main>
+    </div>
+    
+    <!-- MODAL PROJECT TOOLS -->
+    <div class="modal fade" id="projectToolsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Project Tools</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-tools-grid">
+                        
+                        <!-- URGENT -->
+                        <a href="urgent.html" class="tool-nav-card" id="link-urgent">
+                            <span class="tool-title">Urgent</span>
+                            <div class="tool-nav-icon" style="background-color: #e7181a;">
+                                <i class="bi bi-megaphone-fill"></i>
+                            </div>
+                        </a>
+
+                        <!-- LIST (Current) -->
+                        <a href="#" class="tool-nav-card border-primary shadow-sm" data-bs-dismiss="modal">
+                            <span class="tool-title text-primary">List</span>
+                            <div class="tool-nav-icon" style="background-color: #006a4e;">
+                                <i class="bi bi-check2-square"></i>
+                            </div>
+                        </a>
+
+                        <!-- CARD -->
+                        <a href="card.html" class="tool-nav-card" id="link-card">
+                            <span class="tool-title">Card</span>
+                            <div class="tool-nav-icon" style="background-color: #f7b12c;">
+                                <i class="bi bi-layout-three-columns"></i>
+                            </div>
+                        </a>
+
+                        <!-- FILES -->
+                        <a href="files.html" class="tool-nav-card" id="link-files">
+                            <span class="tool-title">Files</span>
+                            <div class="tool-nav-icon" style="background-color: #1c84e3;">
+                                <i class="bi bi-folder-fill"></i>
+                            </div>
+                        </a>
+
+                        <!-- DISCUSS -->
+                        <a href="discuss.html" class="tool-nav-card" id="link-discuss">
+                            <span class="tool-title">Discuss</span>
+                            <div class="tool-nav-icon" style="background-color: #7204cf;">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </div>
+                        </a>
+
+                        <!-- SCHEDULE -->
+                        <a href="schedule.html" class="tool-nav-card" id="link-schedule">
+                            <span class="tool-title">Schedule</span>
+                            <div class="tool-nav-icon" style="background-color: #e7181a;">
+                                <i class="bi bi-calendar3"></i>
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -529,6 +658,15 @@
                 })
                 .catch(err => alert("Error toggling subscription"))
                 .finally(() => btn.disabled = false);
+            }
+            
+            // Tambahkan di dalam script yang sudah ada
+            function updateModalLinks(id) {
+                const tools = ['urgent', 'card', 'files', 'discuss', 'schedule'];
+                tools.forEach(tool => {
+                    const el = document.getElementById(`link-${tool}`);
+                    if(el) el.href = `${tool}.html?id=${id}`;
+                });
             }
 
            async function postComment() {
