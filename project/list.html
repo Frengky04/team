@@ -588,7 +588,15 @@
                     <div id="commentsWrapper" class="d-flex flex-column gap-3 mb-4"></div>
                     
                     <div class="d-flex gap-3">
-                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width:40px; height:40px;">RA</div>
+                        <!-- FOTO USER LOGIN (Dinamis) -->
+                        <img id="currentUserCommentPhoto" src="" 
+                             class="rounded-circle flex-shrink-0 border" 
+                             style="width:40px; height:40px; object-fit:cover; display:none;">
+                        <!-- Initial Fallback jika foto tidak ada -->
+                        <div id="currentUserCommentInitial" 
+                             class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" 
+                             style="width:40px; height:40px; display:none;"></div>
+                        
                         <div class="w-100">
                             <div class="rich-editor-box">
                                 <div class="rich-editor-toolbar">
@@ -605,7 +613,7 @@
                                 </div>
                             </div>
                             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
-                            <div class="mt-2 text-end"><button id="postBtn" class="btn btn-success rounded-pill px-4 fw-bold" onclick="postComment()">Post comment</button></div>
+                            <div class="mt-2 text-end"><button id="postBtn" class="btn btn-dlg-yellow rounded-pill px-4 fw-bold" onclick="postComment()">Post comment</button></div>
                         </div>
                     </div>
                 </div>
@@ -764,11 +772,66 @@
         let globalUsers = []; 
         let lastFetchedLists = []; 
         let selectedTagsByList = {}; // Menyimpan tag terpilih per List ID 
+        
+        // A. Inisialisasi User di Awal Script 
+        const userData = JSON.parse(localStorage.getItem('userData')); 
+        let CURRENT_USER_ID = userData ? userData.id : null; 
 
         document.addEventListener("DOMContentLoaded", () => { 
             if (!projectId) return alert("Missing Project ID"); 
+            setupUserUI();
             fetchData(); 
         }); 
+
+        function formatDriveUrl(url) {
+            if (!url) return "https://i.pravatar.cc/300";
+            if (url.includes('drive.google.com')) {
+                let id = "";
+                if (url.includes('id=')) {
+                    id = url.split('id=')[1].split('&')[0];
+                } else {
+                    id = url.split('/d/')[1].split('/')[0];
+                }
+                return `https://lh3.googleusercontent.com/u/0/d/${id}`;
+            }
+            return url;
+        }
+
+        function setupUserUI() { 
+             if (!userData) {
+                window.location.href = "../index.html"; 
+                return;
+             }
+         
+             const imgEl = document.getElementById('currentUserCommentPhoto'); 
+             const initialEl = document.getElementById('currentUserCommentInitial'); 
+             
+             // Update Navbar
+             const nameDisplay = document.getElementById('user-name-display');
+             const photoDisplay = document.getElementById('user-photo-display');
+             const roleDisplay = document.getElementById('user-role-display');
+             
+             if(nameDisplay) nameDisplay.innerText = userData.name;
+             if(photoDisplay) photoDisplay.src = formatDriveUrl(userData.photo);
+             if(roleDisplay) roleDisplay.innerText = "Dialogika Member";
+             
+             // Update Welcome Message
+             const welcomeMsg = document.querySelector('h4.fw-bold');
+             if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${userData.name.split(' ')[0]}!`;
+         
+             // Update Comment Avatar
+             if (imgEl && initialEl) {
+                 if (userData.photo && userData.photo !== "") { 
+                     imgEl.src = formatDriveUrl(userData.photo); 
+                     imgEl.style.display = 'block'; 
+                     initialEl.style.display = 'none'; 
+                 } else { 
+                     initialEl.innerText = userData.name ? userData.name.substring(0, 2).toUpperCase() : 'US'; 
+                     initialEl.style.display = 'flex'; 
+                     imgEl.style.display = 'none'; 
+                 } 
+             }
+         } 
  
         // --- TAG SYSTEM LOGIC (ROBUST) ---
         function handleTagSearch(input, lid) { 
@@ -1510,16 +1573,25 @@
            // --- FUNGSI COMMENTS ---
            function renderComments(comments) {
                const wrapper = document.getElementById('commentsWrapper');
-               wrapper.innerHTML = comments.map(c => `
-                   <div class="p-3 border rounded-4 bg-light">
-                       <div class="d-flex justify-content-between mb-1">
-                           <span class="fw-bold small">${c.userId || 'User'}</span>
-                           <span class="text-muted" style="font-size:0.7rem">${c.date}</span>
+               wrapper.innerHTML = comments.map(c => {
+                   // Cari data user dari list globalUsers berdasarkan userId di comment
+                   const sender = globalUsers.find(u => String(u.id) === String(c.userId)) || { name: 'Unknown User', photo: '' };
+                   const senderPhoto = sender.photo ? formatDriveUrl(sender.photo) : `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.name)}`;
+           
+                   return `
+                       <div class="d-flex gap-3 p-3 border rounded-4 bg-light shadow-sm">
+                           <img src="${senderPhoto}" class="rounded-circle border" style="width:35px; height:35px; object-fit:cover;">
+                           <div class="flex-grow-1">
+                               <div class="d-flex justify-content-between mb-1">
+                                   <span class="fw-bold small text-dark">${sender.name}</span>
+                                   <span class="text-muted" style="font-size:0.7rem">${c.date}</span>
+                               </div>
+                               <div class="small text-dark">${c.text}</div>
+                               ${c.attachment ? `<div class="mt-2"><a href="${c.attachment}" target="_blank" class="btn btn-sm btn-white border small py-0"><i class="bi bi-paperclip"></i> View File</a></div>` : ''}
+                           </div>
                        </div>
-                       <div class="small text-dark">${c.text}</div>
-                       ${c.attachment ? `<div class="mt-2"><a href="${c.attachment}" target="_blank" class="btn btn-sm btn-white border small"><i class="bi bi-paperclip"></i> View Attachment</a></div>` : ''}
-                   </div>
-               `).join('');
+                   `;
+               }).join('');
            }
         
             // 2. Fungsi Render Avatar Subscriber
@@ -1574,7 +1646,8 @@
                     method: 'POST',
                     body: JSON.stringify({
                         action: 'toggleSubscriber',
-                        projectId: projectId
+                        contextId: projectId,
+                        userId: CURRENT_USER_ID
                     })
                 })
                 .then(r => r.json())
@@ -1600,24 +1673,23 @@
                const text = document.getElementById('richCommentInput').innerHTML;
                const btn = document.getElementById('postBtn');
                if (!text || text === '<br>') return alert("Comment cannot be empty");
-
+           
                btn.disabled = true;
+               btn.innerText = "Posting...";
+           
                let attachmentUrl = "";
-
-               // Jika ada file, upload dulu
                if (selectedFile) {
-                   btn.innerText = "Uploading file...";
                    const fileRes = await uploadFile();
                    if (fileRes.status === 'success') attachmentUrl = fileRes.fileUrl;
                }
-
-               btn.innerText = "Posting...";
+           
                fetch(API_URL, {
                    method: 'POST',
                    body: JSON.stringify({
                        action: 'createComment',
                        projectId: projectId,
-                       contextId: projectId, // Project level discussion
+                       contextId: projectId,
+                       userId: CURRENT_USER_ID, // MENGIRIM ID USER YANG LOGIN
                        text: text,
                        attachmentUrl: attachmentUrl
                    })
@@ -1627,7 +1699,7 @@
                    if (res.status === 'success') {
                        document.getElementById('richCommentInput').innerHTML = '';
                        clearFile();
-                       fetchData();
+                       fetchData(); // Refresh list comment
                    }
                })
                .finally(() => {
@@ -1822,7 +1894,7 @@
                             </div>
 
                             <div class="rich-editor-box mt-3">
-                                <div id="task-desc-${list.id}" class="rich-editor-content" contenteditable="true" data-placeholder="Write description or type '/' for commands"></div>
+                                <div id="task-desc-${list.id}" class="rich-editor-content" contenteditable="true" data-placeholder="Task description or notes..."></div>
                             </div>
 
                             <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
@@ -2003,44 +2075,6 @@
         }
     </script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // 1. Ambil data dari localStorage
-            const data = localStorage.getItem('userData');
-            
-            if (!data) {
-                // Jika tidak ada data login, tendang balik ke login page
-                window.location.href = "index.html";
-                return;
-            }
-
-            const user = JSON.parse(data);
-
-            // 2. Fungsi untuk konversi link Google Drive ke Direct Image Link
-            function getDirectLink(url) {
-                if (!url) return "https://i.pravatar.cc/300";
-                if (url.includes('drive.google.com')) {
-                    let id = "";
-                    if (url.includes('id=')) {
-                        id = url.split('id=')[1].split('&')[0];
-                    } else {
-                        id = url.split('/d/')[1].split('/')[0];
-                    }
-                    return `https://lh3.googleusercontent.com/u/0/d/${id}`;
-                }
-                return url;
-            }
-
-            // 3. Update Tampilan Navbar
-            document.getElementById('user-name-display').innerText = user.name;
-            document.getElementById('user-photo-display').src = getDirectLink(user.photo);
-            // Posisi bisa disesuaikan jika ada di spreadsheet
-            document.getElementById('user-role-display').innerText = "Dialogika Member";
-            
-            // Update juga pesan selamat datang jika perlu
-            const welcomeMsg = document.querySelector('h4.fw-bold');
-            if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${user.name.split(' ')[0]}!`;
-        });
-
         // Fungsi Logout
         function logout() {
             localStorage.removeItem('userData');

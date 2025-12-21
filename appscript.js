@@ -380,12 +380,24 @@ function uploadFileToDrive(data) {
   } catch (e) { return responseJSON({ status: 'error', message: e.toString() }); }
 }
 
-function createComment(data) {
-  const ss = SpreadsheetApp.openById(COMMENT_SHEET_ID).getSheets()[0];
-  const cid = Utilities.getUuid();
-  ss.appendRow([cid, data.projectId, data.contextId || "", "", "USER-DEMO", data.text, new Date(), data.attachmentUrl||""]);
-  return responseJSON({ status: 'success' });
-}
+function createComment(data) { 
+   const ss = SpreadsheetApp.openById(COMMENT_SHEET_ID).getSheets()[0]; 
+   const cid = Utilities.getUuid(); 
+   
+   // Kolom: 1:comment_id, 2:project_id, 3:context_id, 4:task_id, 5:user_id, 6:text, 7:timestamp, 8:attachment 
+   ss.appendRow([ 
+     cid,              // comment_id 
+     data.projectId,   // project_id 
+     data.contextId || "", // context_id 
+     data.taskId || "",    // task_id 
+     data.userId,      // user_id (DARI FRONTEND) 
+     data.text,         // text 
+     new Date(),       // timestamp 
+     data.attachmentUrl || "" // attachment 
+   ]); 
+   
+   return responseJSON({ status: 'success' }); 
+ }
 
 function updateTaskStatus(data) {
   const ss = SpreadsheetApp.openById(TASK_SHEET_ID).getSheets()[0];
@@ -398,6 +410,32 @@ function updateTaskStatus(data) {
     }
   }
   return responseJSON({status:'error', message: 'Task not found'});
+}
+
+
+/**
+ * FUNGSI: TOGGLE SUBSCRIBER
+ */
+function toggleSubscriber(data) {
+  const ss = SpreadsheetApp.openById(SUBS_SHEET_ID).getSheets()[0];
+  const allData = ss.getDataRange().getValues();
+  let foundRowIndex = -1;
+  
+  for (let i = 1; i < allData.length; i++) {
+    if (String(allData[i][1]) === String(data.contextId) && String(allData[i][2]) === String(data.userId)) {
+      foundRowIndex = i + 1;
+      break;
+    }
+  }
+  
+  if (foundRowIndex !== -1) {
+    ss.deleteRow(foundRowIndex);
+    return responseJSON({ status: 'success', message: 'Unsubscribed' });
+  } else {
+    const sid = Utilities.getUuid();
+    ss.appendRow([sid, data.contextId, data.userId]);
+    return responseJSON({ status: 'success', message: 'Subscribed' });
+  }
 }
 
 function getAllProjectsData() {
