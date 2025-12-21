@@ -352,17 +352,56 @@
                         <p class="text-muted mb-0">Manage your tasks efficiently.</p>
                     </div>
                     <div style="flex: 1; text-align: right;">
-                        <button class="btn-new-list" onclick="toggleNewListForm()"><i class="bi bi-plus-lg me-1"></i> New List</button>
+                        <button class="btn-new-list btn-dlg-blue" onclick="toggleNewListForm()"><i class="bi bi-plus-lg me-1"></i> New List</button>
                     </div>
                 </div>
 
                 <!-- NEW LIST FORM -->
-                <div id="newListForm" class="new-list-form-wrapper" style="display:none; margin-bottom: 30px; padding: 20px; border: 1px dashed #ccc; border-radius: 12px;">
-                    <input type="text" id="inputListName" class="ghost-input fw-bold" style="font-size: 1.2rem; border-bottom: 1px solid #ddd;" placeholder="Name this list...">
-                    <div class="d-flex gap-2 mt-3">
-                        <button class="btn btn-success rounded-pill px-4" onclick="saveNewList()">Add this list</button>
+                <div id="newListForm" class="bg-white p-4 rounded-4 border shadow-sm" style="display:none; margin-bottom: 40px;">
+                    <div class="mb-3">
+                        <input type="text" id="inputListName" class="ghost-input fw-bold" style="font-size: 1.5rem; border-bottom: 1px solid #eee;" placeholder="Name this list...">
+                    </div>
+
+                    <div class="editor-container mt-4">
+                        <div class="editor-toolbar">
+                            <button class="editor-btn" onclick="execEdit('bold')" title="Bold"><i class="bi bi-type-bold"></i></button>
+                            <button class="editor-btn" onclick="execEdit('italic')" title="Italic"><i class="bi bi-type-italic"></i></button>
+                            <button class="editor-btn" onclick="execEdit('underline')" title="Underline"><i class="bi bi-type-underline"></i></button>
+                            <button class="editor-btn" onclick="execEdit('strikeThrough')" title="Strikeout"><i class="bi bi-type-strikethrough"></i></button>
+                            <div class="vr mx-1"></div>
+                            <button class="editor-btn" onclick="execEdit('formatBlock', 'blockquote')" title="Quote"><i class="bi bi-quote"></i></button>
+                            <button class="editor-btn" onclick="execEdit('insertHorizontalRule')" title="Separator"><i class="bi bi-hr"></i></button>
+                            <button class="editor-btn" onclick="addCustomLink()" title="Link"><i class="bi bi-link-45deg"></i></button>
+                            <div class="color-dropdown">
+                                <button class="editor-btn" onclick="toggleColorMenu()"><i class="bi bi-palette"></i></button>
+                                <div id="colorMenu" class="color-menu">
+                                    <div class="color-swatch" style="background:#000" onclick="execEdit('foreColor', '#000')"></div>
+                                    <div class="color-swatch" style="background:#e7181a" onclick="execEdit('foreColor', '#e7181a')"></div>
+                                    <div class="color-swatch" style="background:#006a4e" onclick="execEdit('foreColor', '#006a4e')"></div>
+                                    <div class="color-swatch" style="background:#0163ea" onclick="execEdit('foreColor', '#0163ea')"></div>
+                                    <div class="color-swatch" style="background:#7204cf" onclick="execEdit('foreColor', '#7204cf')"></div>
+                                </div>
+                            </div>
+                            <div class="vr mx-1"></div>
+                            <button class="editor-btn" onclick="execEdit('insertUnorderedList')" title="Bullet"><i class="bi bi-list-ul"></i></button>
+                            <button class="editor-btn" onclick="execEdit('insertOrderedList')" title="Numbering"><i class="bi bi-list-ol"></i></button>
+                            <button class="editor-btn" onclick="execEdit('formatBlock', 'pre')" title="Code"><i class="bi bi-code-slash"></i></button>
+                            <button class="editor-btn" onclick="document.getElementById('listFileInput').click()" title="Upload File"><i class="bi bi-paperclip"></i></button>
+                        </div>
+                        <div id="inputListDesc" class="editor-content" contenteditable="true" data-placeholder="Add extra details or attach a file..."></div>
+                        <input type="file" id="listFileInput" style="display:none" onchange="handleListFile(this)">
+                    </div>
+                    
+                    <div id="listFilePreview" class="mt-2 p-2 bg-light border rounded" style="display:none">
+                        <small class="text-muted"><i class="bi bi-file-earmark"></i> <span id="listFileName"></span></small>
+                        <button class="btn btn-sm text-danger" onclick="clearListFile()">Remove</button>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button class="btn btn-success rounded-pill px-4 fw-bold" id="btnSaveList" onclick="saveNewList()">Add this list</button>
                         <button class="btn btn-light border rounded-pill px-4" onclick="toggleNewListForm()">Cancel</button>
                     </div>
+                </div>v>
                 </div>
 
                 <div id="loadingState" class="text-center py-5"><div class="spinner-border text-primary"></div><p class="text-muted mt-2">Loading lists...</p></div>
@@ -534,28 +573,157 @@
                const form = document.getElementById('newListForm');
                form.style.display = form.style.display === 'none' ? 'block' : 'none';
            }
+        
+        let listFile = null;
 
-           function saveNewList() {
-               const name = document.getElementById('inputListName').value;
-               if (!name) return alert("List name cannot be empty");
+        // Fungsi Editor
+        function execEdit(cmd, val = null) {
+            document.execCommand(cmd, false, val);
+        }
 
-               fetch(API_URL, {
-                   method: 'POST',
-                   body: JSON.stringify({
-                       action: 'createList',
-                       projectId: projectId,
-                       name: name
-                   })
-               })
-               .then(r => r.json())
-               .then(res => {
-                   if(res.status === 'success') {
-                       document.getElementById('inputListName').value = '';
-                       toggleNewListForm();
-                       fetchData();
-                   }
-               });
-           }
+        function toggleColorMenu() {
+            const m = document.getElementById('colorMenu');
+            m.style.display = m.style.display === 'grid' ? 'none' : 'grid';
+        }
+
+        function addCustomLink() {
+            const url = prompt("Enter URL:");
+            if (url) execEdit('createLink', url);
+        }
+
+        // Handle File di Editor
+        function handleListFile(input) {
+            if (input.files && input.files[0]) {
+                listFile = input.files[0];
+                document.getElementById('listFileName').innerText = listFile.name;
+                document.getElementById('listFilePreview').style.display = 'block';
+            }
+        }
+
+        function clearListFile() {
+            listFile = null;
+            document.getElementById('listFileInput').value = '';
+            document.getElementById('listFilePreview').style.display = 'none';
+        }
+
+        // Render Lists (Tampilan seperti Gambar 2)
+        function renderLists(lists) {
+            const container = document.getElementById('listsContainer');
+            container.innerHTML = '';
+            if (lists.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+            document.getElementById('emptyState').style.display = 'none';
+
+            lists.forEach(list => {
+                // Logika Status Badge dengan separator >
+                let statusesHtml = '';
+                if (list.statuses && list.statuses.length > 0) {
+                    const sorted = list.statuses.sort((a,b) => a.position - b.position);
+                    statusesHtml = sorted.map((s, index) => {
+                        const badge = `<div class="status-item" style="background:${s.color}">${s.name}</div>`;
+                        const sep = (index < sorted.length - 1) ? `<i class="bi bi-chevron-right flow-sep"></i>` : '';
+                        return badge + sep;
+                    }).join('');
+                }
+
+                const html = `
+                <div class="list-card-container shadow-sm">
+                    <h2 class="list-card-title">${list.name}</h2>
+                    <div class="list-card-desc">${list.description || 'No description provided.'}</div>
+                    
+                    <div class="status-flow">
+                        ${statusesHtml}
+                        <button class="btn-add-status" onclick="promptNewStatus('${list.id}')">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="todo-list-items mb-3">
+                        ${(list.tasks || []).map(t => `
+                            <div class="d-flex align-items-center p-2 border-bottom small">
+                                <input type="checkbox" class="form-check-input me-2">
+                                <span>${t.title}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button class="btn-add-todo-pill" onclick="showTaskForm('${list.id}')">
+                        <i class="bi bi-plus"></i> Add a to-do
+                    </button>
+                    
+                    <!-- (Form Task Create Panel disembunyikan di sini, tetap gunakan logic sebelumnya) -->
+                    <div id="form-add-${list.id}" class="task-create-panel" style="display:none">
+                        <!-- ... existing task form code ... -->
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+
+        // Simpan List Baru
+        async function saveNewList() {
+            const name = document.getElementById('inputListName').value;
+            const desc = document.getElementById('inputListDesc').innerHTML;
+            const btn = document.getElementById('btnSaveList');
+            
+            if (!name) return alert("List name is required");
+
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            let attachmentUrl = "";
+            if (listFile) {
+                const fileRes = await uploadGenericFile(listFile);
+                if (fileRes.status === 'success') attachmentUrl = fileRes.fileUrl;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'createList',
+                    projectId: projectId,
+                    name: name,
+                    description: desc + (attachmentUrl ? `<br><a href="${attachmentUrl}">Attached File</a>` : "")
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    document.getElementById('inputListName').value = '';
+                    document.getElementById('inputListDesc').innerHTML = '';
+                    clearListFile();
+                    toggleNewListForm();
+                    fetchData();
+                }
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = "Add this list";
+            });
+        }
+
+        // Helper upload file generic
+        async function uploadGenericFile(fileObj) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64 = e.target.result.split(',')[1];
+                    fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'uploadFile',
+                            fileName: fileObj.name,
+                            mimeType: fileObj.type,
+                            fileData: base64
+                        })
+                    }).then(r => r.json()).then(resolve).catch(reject);
+                };
+                reader.readAsDataURL(fileObj);
+            });
+        }
 
            // --- FUNGSI NEW STATUS ---
            function promptNewStatus(listId) {
