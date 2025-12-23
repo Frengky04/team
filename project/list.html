@@ -794,26 +794,33 @@
             return url;
         }
 
- // --- 1. SETUP UI USER (Top Bar & Role) --- 
+ // 1. SETUP UI USER (Memperbaiki Role yang tidak muncul) 
  function setupUserUI() { 
      if (!userData) { 
-         window.location.href = "../index.html"; 
+         console.error("User data not found in localStorage"); 
+         // window.location.href = "../index.html"; // Redirect jika tidak login 
          return; 
      } 
  
      const nameDisplay = document.getElementById('user-name-display'); 
      const photoDisplay = document.getElementById('user-photo-display'); 
-     const roleDisplay = document.getElementById('user-role-display'); // Sekarang kita panggil ini 
+     const roleDisplay = document.getElementById('user-role-display'); 
  
-     // Gunakan pengecekan case-insensitive untuk data localStorage 
+     // Cek kemungkinan variasi nama key (Id vs id, Role vs role) 
      const name = userData.Name || userData.name || "User"; 
-     const role = userData.Role || userData.role || "Dialogika Member"; 
+     const role = userData.Role || userData.role || "Member"; // Menangani case-sensitive 
      const photo = userData.Photo || userData.photo || ""; 
  
      if (nameDisplay) nameDisplay.innerText = name; 
      if (photoDisplay) photoDisplay.src = formatDriveUrl(photo); 
-     if (roleDisplay) roleDisplay.innerText = role; // Menampilkan Role dari Spreadsheet 
- 
+     
+     // PERBAIKAN: Pastikan role terisi ke elemen <small id="user-role-display"> 
+     if (roleDisplay) { 
+         roleDisplay.innerText = role; 
+         console.log("Role loaded:", role); 
+     }
+
+     // --- Tambahan untuk menjaga UI yang ada ---
      const welcomeMsg = document.querySelector('h4.fw-bold'); 
      if(welcomeMsg) welcomeMsg.innerText = `Good Morning, ${name.split(' ')[0]}!`; 
  
@@ -1732,18 +1739,23 @@
                 });
             }
 
- // --- 3. POST COMMENT (Fix User ID Missing) --- 
+ // 2. POST COMMENT (Memperbaiki User ID yang tidak masuk ke spreadsheet) 
  async function postComment() { 
      const text = document.getElementById('richCommentInput').innerHTML; 
      const btn = document.getElementById('postBtn'); 
      
-     if (!text || text === '<br>' || text.trim() === "") return alert("Comment cannot be empty"); 
+     if (!text || text === '<br>' || text.trim() === "") { 
+         alert("Comment cannot be empty"); 
+         return; 
+     } 
  
-     // Ambil ID yang benar (Case Sensitive Id atau id) 
-     const activeUserId = userData.Id || userData.id; 
+     // PERBAIKAN: Ambil ID dengan sangat teliti (cek besar/kecil huruf) 
+     // Sesuai PDF, Id diambil dari kolom "Id" spreadsheet user 
+     const activeUserId = userData.Id || userData.id || userData.ID; 
  
      if (!activeUserId) { 
-         alert("Session expired. Please login again."); 
+         alert("User session error. Please re-login."); 
+         console.error("Active User ID is missing from userData", userData); 
          return; 
      } 
  
@@ -1756,6 +1768,9 @@
          if (fileRes.status === 'success') attachmentUrl = fileRes.fileUrl; 
      } 
  
+     // Log untuk memastikan data benar sebelum dikirim 
+     console.log("Sending comment with UserID:", activeUserId); 
+ 
      fetch(API_URL, { 
          method: 'POST', 
          body: JSON.stringify({ 
@@ -1763,7 +1778,7 @@
              projectId: projectId, 
              contextId: projectId,  
              contextType: 'project', 
-             userId: activeUserId, // MENGIRIM ID DARI SPREADSHEET USER 
+             userId: activeUserId, // Mengirimkan ID yang sudah dipastikan ada 
              text: text,            
              attachmentUrl: attachmentUrl 
          }) 
@@ -1773,9 +1788,12 @@
          if (res.status === 'success') { 
              document.getElementById('richCommentInput').innerHTML = ''; 
              clearFile(); 
-             fetchData(); 
+             fetchData(); // Refresh list komentar 
+         } else { 
+             alert("Error: " + res.message); 
          } 
      }) 
+     .catch(err => console.error("Fetch error:", err)) 
      .finally(() => { 
          btn.disabled = false; 
          btn.innerText = "Post comment"; 

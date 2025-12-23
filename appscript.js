@@ -24,7 +24,7 @@ function doGet(e) {
     return getProjectCompleteData(id);
   }
   return getAllProjectsData();
-}
+};
 
 /**
  * POST REQUEST HANDLER
@@ -81,11 +81,11 @@ function getProjectCompleteData(targetId) {
   let users = []; 
   for(let i=1; i<uData.length; i++) { 
     users.push({ 
-      id: String(uData[i][0]).trim(), // Ambil kolom 'Id' 
-      name: uData[i][1], 
-      email: uData[i][2], 
-      photo: formatDriveUrl(uData[i][4]), 
-      role: uData[i][5] 
+      id: String(uData[i][0]).trim(),    // Kolom 1: Id 
+      name: uData[i][1],                 // Kolom 2: Name 
+      email: uData[i][2],                // Kolom 3: Email 
+      photo: formatDriveUrl(uData[i][4]),// Kolom 5: Photo 
+      role: uData[i][5]                  // Kolom 6: Role (Index 5) - INI YANG DIBUTUHKAN 
     }); 
   } 
 
@@ -156,6 +156,18 @@ function getProjectCompleteData(targetId) {
   });
 
   // 7. GET TASKS
+  let taskTagsMap = {};
+  try {
+    const ttSheet = SpreadsheetApp.openById(TASK_TAG_SHEET_ID).getSheets()[0];
+    const ttData = ttSheet.getDataRange().getDisplayValues();
+    for(let i=1; i<ttData.length; i++) {
+       let tId = String(ttData[i][0]).trim();
+       let tgId = String(ttData[i][1]).trim();
+       if(!taskTagsMap[tId]) taskTagsMap[tId] = [];
+       taskTagsMap[tId].push(tgId);
+    }
+  } catch(e) {}
+
   const tSheet = SpreadsheetApp.openById(TASK_SHEET_ID).getSheets()[0];
   const tData = tSheet.getDataRange().getDisplayValues();
   for(let i=1; i<tData.length; i++) {
@@ -172,7 +184,8 @@ function getProjectCompleteData(targetId) {
         priority: tData[i][6],
         points: tData[i][16],
         assignedTo: tData[i][18], 
-        notifyTo: tData[i][19]    
+        notifyTo: tData[i][19],
+        tags: taskTagsMap[tid] || []
       });
     }
   }
@@ -399,24 +412,27 @@ function uploadFileToDrive(data) {
   } catch (e) { return responseJSON({ status: 'error', message: e.toString() }); }
 }
 
+/** 
+ * FUNGSI: MEMBUAT KOMENTAR (Pastikan data.userId masuk ke Kolom 4) 
+ */ 
 function createComment(data) { 
    const ss = SpreadsheetApp.openById(COMMENT_SHEET_ID).getSheets()[0]; 
    const cid = Utilities.getUuid(); 
    
-   // Urutan Kolom Sesuai Prompt Anda (7 Kolom): 
-   // 1:comment_id, 2:context_type, 3:context_id, 4:user_id, 5:comment_text, 6:created_at, 7:attachment_url 
+   // Sesuai PDF: 1:comment_id, 2:context_type, 3:context_id, 4:user_id, 5:comment_text, 6:created_at 
+   // Kita gunakan String() untuk memastikan ID tidak dianggap angka yang hilang formatnya 
    ss.appendRow([ 
-     cid,                       // comment_id 
-     data.contextType || "project", // context_type (misal: project atau task) 
-     data.contextId,            // context_id 
-     String(data.userId),       // user_id (PENTING: ID login Anda) 
-     data.text,                 // comment_text 
-     new Date(),                // created_at 
-     data.attachmentUrl || ""   // attachment_url 
+     cid,                            // Col 1: comment_id 
+     data.contextType || "project",  // Col 2: context_type 
+     data.contextId,                 // Col 3: context_id 
+     String(data.userId),            // Col 4: user_id (DIPERBAIKI) 
+     data.text,                      // Col 5: comment_text 
+     new Date(),                     // Col 6: created_at 
+     data.attachmentUrl || ""        // Col 7: attachment_url (opsional) 
    ]); 
    
    return responseJSON({ status: 'success' }); 
- }
+}
 
 function updateTaskStatus(data) {
   const ss = SpreadsheetApp.openById(TASK_SHEET_ID).getSheets()[0];
