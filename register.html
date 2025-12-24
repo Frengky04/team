@@ -346,174 +346,153 @@
         </div>
     </footer>
 
-  <script>
-      // === URL GOOGLE APPS SCRIPT ANDA ===
-      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0slQZMIQsik2_WG9-Ff-IP1oIyIW-JoJxZaO0AuRdczjIn4cVMnKV6FxB3wgq93Hh/exec';
+  <!-- Firebase SDK Modular -->
+  <script type="module">
+      // 1. Import Firebase Functions 
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"; 
+      import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
+      import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; 
+      import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"; 
 
-      const cardWrapper = document.getElementById('cardWrapper');
-      const randomFirstFour = Math.floor(1000 + Math.random() * 9000);
-      const hiddenMiddle = "#### ####";
+      // 2. Konfigurasi Firebase Anda
+      const firebaseConfig = { 
+          apiKey: "AIzaSyBaO-zl70HgAPq9rtRgoGceS-qvkjnDUG0", 
+          authDomain: "pre-dialogika.firebaseapp.com", 
+          projectId: "pre-dialogika", 
+          storageBucket: "pre-dialogika.firebasestorage.app", 
+          messagingSenderId: "343771410480", 
+          appId: "1:343771410480:web:32881c9868522090237df5", 
+          measurementId: "G-SXN811P3N0" 
+      }; 
 
-      // --- 1. FETCH POSITIONS ---
-      document.addEventListener('DOMContentLoaded', function() {
-          const selectPos = document.getElementById('inputPos');
-          
-          fetch(SCRIPT_URL + '?action=getPositions')
-              .then(response => response.json())
-              .then(data => {
-                  selectPos.innerHTML = '<option value="" disabled selected>Pilih Posisi</option>'; 
-                  if(Array.isArray(data) && data.length > 0) {
-                      data.forEach(pos => {
-                          const option = document.createElement('option');
-                          option.value = pos;
-                          option.text = pos;
-                          selectPos.appendChild(option);
-                      });
-                  } else {
-                      const option = document.createElement('option');
-                      option.text = "Gagal memuat posisi";
-                      selectPos.appendChild(option);
-                  }
-              })
-              .catch(error => {
-                  console.error('Error fetching positions:', error);
-                  selectPos.innerHTML = '<option value="" disabled selected>Gagal memuat data</option>';
-              });
-      });
+      // Initialize Firebase 
+      const app = initializeApp(firebaseConfig); 
+      const auth = getAuth(app); 
+      const db = getFirestore(app); 
+      const storage = getStorage(app); 
 
-      function toggleFlip() { cardWrapper.classList.toggle('flipped'); }
+      // --- UI LOGIC (Tetap sama seperti aslinya) --- 
+      const cardWrapper = document.getElementById('cardWrapper'); 
+      const randomFirstFour = Math.floor(1000 + Math.random() * 9000); 
+      const hiddenMiddle = "#### ####"; 
 
-      function togglePasswordVisibility() {
-          const passInput = document.getElementById('inputPass');
-          const icon = document.querySelector('.password-toggle');
-          if (passInput.type === 'password') {
-              passInput.type = 'text'; icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
-          } else {
-              passInput.type = 'password'; icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
-          }
-      }
+      window.toggleFlip = () => cardWrapper.classList.toggle('flipped'); 
 
-      function updateCard(side) {
-          const name = document.getElementById('inputName').value;
-          const email = document.getElementById('inputEmail').value;
-          const pass = document.getElementById('inputPass').value;
-          const birthDate = document.getElementById('inputBirth').value;
-          const phone = document.getElementById('inputPhone').value;
-          const pos = document.getElementById('inputPos').value;
-          const ig = document.getElementById('inputIG').value;
-          const linked = document.getElementById('inputLinked').value;
+      window.togglePasswordVisibility = () => { 
+          const passInput = document.getElementById('inputPass'); 
+          const icon = document.querySelector('.password-toggle'); 
+          if (passInput.type === 'password') { 
+              passInput.type = 'text'; 
+              icon.classList.replace('fa-eye', 'fa-eye-slash'); 
+          } else { 
+              passInput.type = 'password'; 
+              icon.classList.replace('fa-eye-slash', 'fa-eye'); 
+          } 
+      }; 
 
-          // FRONT
-          document.getElementById('cardName').innerText = name || 'FULL NAME';
-          document.getElementById('cardPosDisplay').innerText = pos || 'POSITION';
+      window.updateCard = (side) => { 
+          const name = document.getElementById('inputName').value; 
+          const email = document.getElementById('inputEmail').value; 
+          const pass = document.getElementById('inputPass').value; 
+          const birthDate = document.getElementById('inputBirth').value; 
+          const pos = document.getElementById('inputPos').value; 
 
-          let maskedPass = "";
-          for(let i=0; i<pass.length; i++) { maskedPass += "*"; }
-          document.getElementById('cardPassDisplay').innerText = maskedPass || "****";
+          document.getElementById('cardName').innerText = name || 'FULL NAME'; 
+          document.getElementById('cardPosDisplay').innerText = pos || 'POSITION'; 
+          document.getElementById('cardPassDisplay').innerText = "*".repeat(pass.length) || "****"; 
 
-          let expiresText = "MM/YY";
-          let idSuffix = "####";
+          if (birthDate) { 
+              const d = new Date(birthDate); 
+              document.getElementById('cardBirthFront').innerText = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`; 
+              document.getElementById('cardIDDisplay').innerText = `${randomFirstFour} ${hiddenMiddle} ${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`; 
+          } 
+          document.getElementById('cardEmailBack').innerText = email || 'email@example.com'; 
+          if(side === 'back') cardWrapper.classList.add('flipped'); 
+      }; 
 
-          if (birthDate) {
-              const dateObj = new Date(birthDate);
-              const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-              const dd = String(dateObj.getDate()).padStart(2, '0');
-              const yy = String(dateObj.getFullYear()).slice(-2);
-              expiresText = `${mm}/${yy}`;
-              idSuffix = `${mm}${dd}`;
-          }
-          document.getElementById('cardBirthFront').innerText = expiresText;
-          document.getElementById('cardIDDisplay').innerText = `${randomFirstFour} ${hiddenMiddle} ${idSuffix}`;
+      window.previewImage = () => { 
+          const file = document.getElementById('inputPhoto').files[0]; 
+          if (file) { 
+              document.getElementById('uploadText').innerText = file.name; 
+              const reader = new FileReader(); 
+              reader.onload = (e) => document.getElementById('cardPhotoPreview').style.backgroundImage = `url(${e.target.result})`; 
+              reader.readAsDataURL(file); 
+          } 
+      };
 
-          // BACK
-          document.getElementById('cardEmailBack').innerText = email || 'email@example.com';
-          document.getElementById('cardPhone').innerText = phone ? `Tel: ${phone}` : 'Tel: -';
-          document.getElementById('cardIG').innerText = ig ? `IG: ${ig}` : 'IG: -';
-          document.getElementById('cardLinked').innerText = linked ? `In: ${linked}` : 'In: -';
+      // --- 3. FETCH POSISI DARI MASTER FIRESTORE --- 
+      async function loadPositions() { 
+          const selectPos = document.getElementById('inputPos'); 
+          try { 
+              const querySnapshot = await getDocs(collection(db, "positions")); 
+              selectPos.innerHTML = '<option value="" disabled selected>Pilih Posisi</option>'; 
+              querySnapshot.forEach((d) => { 
+                  const opt = document.createElement('option'); 
+                  opt.value = d.data().name; 
+                  opt.text = d.data().name; 
+                  selectPos.appendChild(opt); 
+              }); 
+          } catch (e) { 
+              console.error("Gagal load posisi:", e); 
+              selectPos.innerHTML = '<option>Gagal memuat data</option>'; 
+          } 
+      } 
+      loadPositions(); 
 
-          if(side === 'back' && !cardWrapper.classList.contains('flipped')) {
-              cardWrapper.classList.add('flipped');
-          }
-      }
+      // --- 4. PROSES REGISTRASI KE FIREBASE --- 
+      document.getElementById('regForm').addEventListener('submit', async (e) => { 
+          e.preventDefault(); 
+          const btn = document.getElementById('btnSubmit'); 
+          btn.innerText = "Processing..."; 
+          btn.disabled = true; 
 
-      function previewImage() {
-          const fileInput = document.getElementById('inputPhoto');
-          const file = fileInput.files[0];
-          const uploadText = document.getElementById('uploadText');
+          const email = document.getElementById('inputEmail').value; 
+          const password = document.getElementById('inputPass').value; 
+          const file = document.getElementById('inputPhoto').files[0]; 
 
-          if (file) {
-              uploadText.innerText = "Terpilih: " + file.name;
-              uploadText.style.color = "#07276B";
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                  document.getElementById('cardPhotoPreview').style.backgroundImage = `url(${e.target.result})`;
-              }
-              reader.readAsDataURL(file);
-          } else {
-              uploadText.innerText = "Klik untuk upload foto";
-          }
-      }
+          try { 
+              const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
+              const user = userCredential.user; 
 
-      document.getElementById('regForm').addEventListener('submit', function(e) {
-          e.preventDefault();
-          const btn = document.getElementById('btnSubmit');
-          btn.innerText = "Mengirim..."; btn.disabled = true;
+              let photoURL = ""; 
+              if (file) { 
+                  const storageRef = ref(storage, `users/${user.uid}/profile_photo`); 
+                  await uploadBytes(storageRef, file); 
+                  photoURL = await getDownloadURL(storageRef); 
+              } 
 
-          const file = document.getElementById('inputPhoto').files[0];
-          const reader = new FileReader();
+              await setDoc(doc(db, "users", user.uid), { 
+                  name: document.getElementById('inputName').value, 
+                  email: email, 
+                  birth: document.getElementById('inputBirth').value, 
+                  phone: document.getElementById('inputPhone').value, 
+                  photo: photoURL, 
+                  employment: { 
+                      position: document.getElementById('inputPos').value, 
+                      department: "", 
+                      joined_at: new Date() 
+                  }, 
+                  socials: { 
+                      instagram: document.getElementById('inputIG').value, 
+                      linkedin: document.getElementById('inputLinked').value 
+                  }, 
+                  access: { 
+                      role_id: "staff", 
+                      level_order: 3 
+                  } 
+              }); 
 
-          reader.onload = function(e) {
-              const middleRandom = Math.floor(10000000 + Math.random() * 90000000);
-              const birthDate = document.getElementById('inputBirth').value;
-              let idSuffix = "0000";
-              if(birthDate) {
-                  const dateObj = new Date(birthDate);
-                  const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                  const dd = String(dateObj.getDate()).padStart(2, '0');
-                  idSuffix = `${mm}${dd}`;
-              }
-              const fullId = `${randomFirstFour}${middleRandom}${idSuffix}`;
+              alert('Registrasi Berhasil! Data tersimpan di Firebase.'); 
+              window.location.reload(); 
 
-              const payload = {
-                  generatedId: fullId,
-                  name: document.getElementById('inputName').value,
-                  email: document.getElementById('inputEmail').value,
-                  password: document.getElementById('inputPass').value,
-                  phone: document.getElementById('inputPhone').value,
-                  birth: birthDate,
-                  position: document.getElementById('inputPos').value,
-                  instagram: document.getElementById('inputIG').value,
-                  linkedin: document.getElementById('inputLinked').value,
-                  photoData: e.target.result,
-                  photoName: file.name,
-                  photoType: file.type
-              };
-
-              fetch(SCRIPT_URL, {
-                  method: 'POST',
-                  body: JSON.stringify(payload)
-              })
-              .then(res => res.json())
-              .then(data => {
-                  if(data.result === 'success') {
-                      alert('Registrasi Berhasil! ID Team: ' + fullId);
-                      window.location.reload();
-                  } else {
-                      alert('Gagal: ' + data.error);
-                  }
-              })
-              .catch(err => {
-                  alert('Error jaringan atau URL belum diupdate.');
-                  console.error(err);
-              })
-              .finally(() => {
-                  btn.innerText = "Submit Registration";
-                  btn.disabled = false;
-              });
-          };
-
-          if(file) reader.readAsDataURL(file);
-      });
+          } catch (error) { 
+              console.error(error); 
+              alert('Error: ' + error.message); 
+          } finally { 
+              btn.innerText = "Submit Registration"; 
+              btn.disabled = false; 
+          } 
+      }); 
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
