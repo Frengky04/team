@@ -622,9 +622,15 @@ function updateList(data) {
   const vals = ss.getDataRange().getValues(); 
   for (let i = 1; i < vals.length; i++) { 
     if (String(vals[i][0]) === String(data.listId)) { 
-      ss.getRange(i + 1, 3).setValue(data.name);         // list_name 
-      ss.getRange(i + 1, 4).setValue(data.description);  // description 
-      if (data.position !== undefined) ss.getRange(i + 1, 7).setValue(data.position); // position
+      if (data.name !== undefined) { 
+        ss.getRange(i + 1, 3).setValue(data.name); 
+      } 
+      if (data.description !== undefined) { 
+        ss.getRange(i + 1, 4).setValue(data.description); 
+      } 
+      if (data.position !== undefined) { 
+        ss.getRange(i + 1, 7).setValue(data.position); 
+      } 
       return responseJSON({ status: 'success' }); 
     } 
   } 
