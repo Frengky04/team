@@ -333,30 +333,102 @@
 
                         <div id="form-add-${list.id}" class="task-create-panel">
                             <input type="text" id="title-${list.id}" class="task-title-large" placeholder="Task Name">
-                            <div class="meta-grid-container">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-record-circle"></i>
-                                    <select id="status-${list.id}" class="ghost-input">
-                                        ${(list.statuses || [{ name: 'Initiate' }]).map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
-                                    </select>
+
+                            <div class="meta-grid-container mb-3">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Status</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-record-circle text-muted"></i>
+                                        <select id="status-${list.id}" class="ghost-input">
+                                            ${(list.statuses || [{ name: 'Initiate' }]).map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-flag"></i>
-                                    <select id="priority-${list.id}" class="ghost-input">
-                                        <option value="normal">Normal</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Priority</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-flag text-muted"></i>
+                                        <select id="priority-${list.id}" class="ghost-input">
+                                            <option value="normal">Normal</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-calendar"></i>
-                                    <input type="date" id="due-${list.id}" class="ghost-input">
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Assign to</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-person text-muted"></i>
+                                        <input type="text" id="assign-${list.id}" class="ghost-input" placeholder="User ID or email">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Notify to</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-bell text-muted"></i>
+                                        <input type="text" id="notify-${list.id}" class="ghost-input" placeholder="User ID or email">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Dates</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-calendar text-muted"></i>
+                                        <input type="date" id="start-${list.id}" class="ghost-input">
+                                        <span class="text-muted small">to</span>
+                                        <input type="date" id="due-${list.id}" class="ghost-input">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Task point</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-star text-muted"></i>
+                                        <input type="number" id="points-${list.id}" class="ghost-input" min="0" placeholder="Empty">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Track time</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-stopwatch text-muted"></i>
+                                        <span class="text-muted small" id="track-label-${list.id}">Empty</span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Start</button>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="text-muted small">Tags</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-tag text-muted"></i>
+                                        <input type="text" id="tags-${list.id}" class="ghost-input" placeholder="tag-a, tag-b">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="mt-3 border rounded-3 p-2" id="desc-${list.id}" contenteditable="true" style="min-height:60px"></div>
-                            <div class="mt-3 d-flex gap-2">
-                                <button class="btn btn-primary rounded-pill" onclick="saveTask('${list.id}')">Add to-do</button>
-                                <button class="btn btn-light rounded-pill" onclick="hideTaskForm('${list.id}')">Cancel</button>
+
+                            <div class="mt-3 border rounded-3 p-2" id="desc-${list.id}" contenteditable="true" style="min-height:80px" data-placeholder="Task description or notes..."></div>
+                            <div class="mt-3 d-flex gap-2 justify-content-end">
+                                <button class="btn btn-primary rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button>
+                                <button class="btn btn-light rounded-pill px-4" onclick="hideTaskForm('${list.id}')">Cancel</button>
                             </div>
                         </div>
                     </div>
@@ -421,14 +493,33 @@
 
             const existingForList = allTasks.filter(t => t.list_id === listId);
 
+            const statusEl = document.getElementById(`status-${listId}`);
+            const priorityEl = document.getElementById(`priority-${listId}`);
+            const startEl = document.getElementById(`start-${listId}`);
+            const dueEl = document.getElementById(`due-${listId}`);
+            const pointsEl = document.getElementById(`points-${listId}`);
+            const assignEl = document.getElementById(`assign-${listId}`);
+            const notifyEl = document.getElementById(`notify-${listId}`);
+            const tagsEl = document.getElementById(`tags-${listId}`);
+
+            const tagsValue = tagsEl ? tagsEl.value : "";
+            const tagList = tagsValue
+                ? tagsValue.split(",").map(t => t.trim()).filter(Boolean)
+                : [];
+
             await addDoc(collection(db, "tasks"), {
                 project_id: projectId,
                 list_id: listId,
                 title: title,
                 description: document.getElementById(`desc-${listId}`).innerHTML,
-                status: document.getElementById(`status-${listId}`).value,
-                priority: document.getElementById(`priority-${listId}`).value,
-                due_date: document.getElementById(`due-${listId}`).value,
+                status: statusEl ? statusEl.value : "Initiate",
+                priority: priorityEl ? priorityEl.value : "normal",
+                start_date: startEl ? startEl.value : "",
+                due_date: dueEl ? dueEl.value : "",
+                points: pointsEl && pointsEl.value ? Number(pointsEl.value) || 0 : 0,
+                assign_to: assignEl ? assignEl.value : "",
+                notify_to: notifyEl ? notifyEl.value : "",
+                tags: tagList,
                 position: existingForList.length,
                 created_at: serverTimestamp(),
                 created_by: currentUser.uid
@@ -436,6 +527,12 @@
 
             titleEl.value = "";
             document.getElementById(`desc-${listId}`).innerHTML = "";
+            if (startEl) startEl.value = "";
+            if (dueEl) dueEl.value = "";
+            if (pointsEl) pointsEl.value = "";
+            if (assignEl) assignEl.value = "";
+            if (notifyEl) notifyEl.value = "";
+            if (tagsEl) tagsEl.value = "";
             hideTaskForm(listId);
         };
 
@@ -560,4 +657,3 @@
     </script>
 </body>
 </html>
-
