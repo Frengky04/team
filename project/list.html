@@ -489,7 +489,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <h1 class="fw-bold mb-0">All Lists</h1>
                     <span class="badge text-bg-success" id="allListDoneBadge" style="display:none">All Task Done</span>
-                    <button class="btn btn-primary rounded-pill px-4" onclick="toggleNewListForm()">+ New List</button>
+                    <button class="btn btn-dlg-blue rounded-pill px-4" onclick="toggleNewListForm()">+ New List</button>
                 </div>
 
                 <div id="newListForm" class="border rounded-4 p-4 mb-4 shadow-sm" style="display:none">
@@ -537,11 +537,41 @@
                     </div>
                     <div class="input-group">
                         <input type="text" id="newStatusNameInput" class="form-control" placeholder="New status name...">
-                        <button class="btn btn-primary" onclick="addNewStatusToList()">Add</button>
+                        <button class="btn btn-dlg-blue" onclick="addNewStatusToList()">Add</button>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-dark w-100 rounded-pill" onclick="saveStatusChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editListModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4">
+                <div class="modal-header">
+                    <h5>Edit List</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editListId">
+                    <div class="mb-3">
+                        <label class="small fw-bold">Name</label>
+                        <input type="text" class="form-control" id="editListName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="small fw-bold">Description</label>
+                        <div id="editListDesc" class="border rounded-3 p-2" contenteditable="true" style="min-height:80px"></div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="small fw-bold">Position</label>
+                        <input type="number" class="form-control" id="editListPosition" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-dlg-blue" onclick="saveListEdit()">Save Changes</button>
                 </div>
             </div>
         </div>
@@ -578,6 +608,7 @@
         let allTasks = [];
         let projectMembers = [];
         let tagEditorState = { tagName: "", color: "", anchorRect: null };
+        let statusColorPickerInput = null;
         const storedUser = JSON.parse(localStorage.getItem('userData') || 'null');
 
         const TAG_COLORS = [
@@ -767,6 +798,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="#" onclick="openStatusManager('${list.id}'); return false;">Manage statuses</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="openEditListModal('${list.id}'); return false;">Edit list</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item text-danger" href="#" onclick="deleteList('${list.id}'); return false;">Delete list</a></li>
                                 </ul>
@@ -925,7 +957,6 @@
                                         <span class="meta-label-text">Task point</span>
                                     </div>
                                     <div class="meta-value">
-                                        <span class="text-muted small me-1">Empty</span>
                                         <input type="number" id="points-${list.id}" class="ghost-input" min="0" placeholder="">
                                     </div>
                                 </div>
@@ -936,7 +967,7 @@
                                         <span class="meta-label-text">Track time</span>
                                     </div>
                                     <div class="meta-value">
-                                        <span class="text-muted small" id="track-label-${list.id}">Empty</span>
+                                        <span class="text-muted small" id="track-label-${list.id}"></span>
                                         <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" disabled>Start</button>
                                     </div>
                                 </div>
@@ -979,7 +1010,7 @@
 
                             <div class="mt-3 border rounded-3 p-2" id="desc-${list.id}" contenteditable="true" style="min-height:80px" data-placeholder="Task description or notes..."></div>
                             <div class="mt-3 d-flex gap-2 justify-content-end">
-                                <button class="btn btn-primary rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button>
+                                <button class="btn btn-dlg-blue rounded-pill px-4" onclick="saveTask('${list.id}')">Add to-do</button>
                                 <button class="btn btn-light rounded-pill px-4" onclick="hideTaskForm('${list.id}')">Cancel</button>
                             </div>
                         </div>
@@ -992,6 +1023,15 @@
         }
 
         function renderTaskRow(t, subtasks) {
+            const list = projectLists.find(l => l.id === t.list_id);
+            let statusColor = '#0B2B6A';
+
+            if (list && Array.isArray(list.statuses)) {
+                const currentStatusName = String(t.status || '').toLowerCase();
+                const found = list.statuses.find(s => String(s.name || '').toLowerCase() === currentStatusName);
+                if (found && found.color) statusColor = found.color;
+            }
+
             let html = `
                 <div class="todo-row ${t.status === 'Complete' ? 'task-row-done' : ''}" id="task-${t.id}">
                     <i class="bi bi-list drag-handle-task"></i>
@@ -1000,7 +1040,7 @@
                         ${t.title}
                         <span class="new-tab-hint" onclick="window.location.href='item-details.html?id=${t.id}'">Open Task</span>
                     </div>
-                    <span class="badge bg-light text-dark border small">${t.status}</span>
+                    <span class="badge bg-light text-dark border small" style="background:${statusColor}; color:#ffffff;">${t.status}</span>
                 </div>
             `;
 
@@ -1036,6 +1076,75 @@
             document.getElementById('inputListDesc').innerHTML = "";
             toggleNewListForm();
         };
+
+        window.openEditListModal = (lid) => {
+            const list = projectLists.find(l => l.id === lid);
+            if (!list) return;
+            const index = projectLists.findIndex(l => l.id === lid);
+            const total = projectLists.length || 1;
+            const nameInput = document.getElementById('editListName');
+            const descInput = document.getElementById('editListDesc');
+            const posInput = document.getElementById('editListPosition');
+            const idInput = document.getElementById('editListId');
+            if (!nameInput || !descInput || !posInput || !idInput) return;
+            idInput.value = lid;
+            nameInput.value = list.name || "";
+            descInput.innerHTML = list.description || "";
+            posInput.min = 1;
+            posInput.max = total;
+            posInput.value = index >= 0 ? index + 1 : total;
+            new bootstrap.Modal(document.getElementById('editListModal')).show();
+        };
+
+        window.saveListEdit = async () => {
+            const idInput = document.getElementById('editListId');
+            const nameInput = document.getElementById('editListName');
+            const descInput = document.getElementById('editListDesc');
+            const posInput = document.getElementById('editListPosition');
+            if (!idInput || !nameInput || !descInput || !posInput) return;
+            const lid = idInput.value;
+            const name = nameInput.value.trim();
+            const desc = descInput.innerHTML;
+            if (!lid || !name) return;
+            const total = projectLists.length || 1;
+            let pos = parseInt(posInput.value, 10);
+            if (isNaN(pos) || pos < 1) pos = 1;
+            if (pos > total) pos = total;
+            const ordered = projectLists.slice();
+            const currentIndex = ordered.findIndex(l => l.id === lid);
+            if (currentIndex === -1) return;
+            const item = ordered.splice(currentIndex, 1)[0];
+            ordered.splice(pos - 1, 0, item);
+            const batch = writeBatch(db);
+            ordered.forEach((l, index) => {
+                const ref = doc(db, "projects", projectId, "lists", l.id);
+                const data = { position: index };
+                if (l.id === lid) {
+                    data.name = name;
+                    data.description = desc;
+                }
+                batch.update(ref, data);
+            });
+            await batch.commit();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editListModal'));
+            if (modal) modal.hide();
+        };
+
+        async function logTaskChange(taskId, action, changes) {
+            if (!taskId) return;
+            try {
+                const payload = {
+                    action: action,
+                    changes: changes || {},
+                    project_id: projectId,
+                    user_id: currentUser ? currentUser.uid : "",
+                    created_at: serverTimestamp()
+                };
+                await addDoc(collection(db, "tasks", taskId, "logs"), payload);
+            } catch (e) {
+                console.error("Failed to log task change", e);
+            }
+        }
 
         window.saveTask = async (listId) => {
             const titleEl = document.getElementById(`title-${listId}`);
@@ -1077,12 +1186,17 @@
                 created_by: currentUser ? currentUser.uid : ""
             };
 
+            let docRef;
             try {
-                await addDoc(collection(db, "tasks"), payload);
+                docRef = await addDoc(collection(db, "tasks"), payload);
             } catch (e) {
                 console.error("Failed to add task", e, payload);
                 alert("Gagal menyimpan task ke Firebase: " + e.message);
                 return;
+            }
+
+            if (docRef && docRef.id) {
+                await logTaskChange(docRef.id, "create", payload);
             }
 
             titleEl.value = "";
@@ -1544,9 +1658,36 @@
         }
 
         window.toggleDone = async (id, isChecked) => {
+            const newStatus = isChecked ? "Complete" : "Initiate";
             await updateDoc(doc(db, "tasks", id), {
-                status: isChecked ? "Complete" : "Initiate"
+                status: newStatus
             });
+            await logTaskChange(id, "update_status", { status: newStatus });
+        };
+
+        window.openStatusColorPicker = (dotEl) => {
+            if (!dotEl) return;
+            if (!statusColorPickerInput) {
+                statusColorPickerInput = document.createElement("input");
+                statusColorPickerInput.type = "color";
+                statusColorPickerInput.style.position = "fixed";
+                statusColorPickerInput.style.left = "-9999px";
+                document.body.appendChild(statusColorPickerInput);
+                statusColorPickerInput.addEventListener("input", () => {
+                    const target = statusColorPickerInput._targetDot;
+                    if (!target) return;
+                    const row = target.closest(".status-row");
+                    if (!row) return;
+                    const color = statusColorPickerInput.value;
+                    target.style.borderColor = color;
+                    row.dataset.color = color;
+                });
+            }
+            const row = dotEl.closest(".status-row");
+            if (!row) return;
+            statusColorPickerInput._targetDot = dotEl;
+            statusColorPickerInput.value = row.dataset.color || "#0B2B6A";
+            statusColorPickerInput.click();
         };
 
         window.openStatusManager = (lid) => {
@@ -1555,16 +1696,74 @@
 
             document.getElementById('activeListIdForStatus').value = lid;
             const container = document.getElementById('statusListContainer');
-            container.innerHTML = (list.statuses || []).map(s => `
-                <div class="d-flex align-items-center gap-2 bg-white border p-2 mb-2 rounded shadow-sm" data-name="${s.name}" data-color="${s.color || '#0B2B6A'}">
-                    <i class="bi bi-grip-vertical"></i>
-                    <div style="width:15px; height:15px; border-radius:50%; background:${s.color || '#0B2B6A'}"></div>
-                    <span class="fw-bold small flex-grow-1">${s.name}</span>
-                    <button class="btn btn-sm btn-link text-danger p-0" onclick="this.closest('.d-flex').remove()">Delete</button>
-                </div>
-            `).join('');
 
-            new Sortable(container, { animation: 150 });
+            const statuses = (list.statuses || []).slice().sort((a, b) => {
+                const pa = typeof a.position === "number" ? a.position : 0;
+                const pb = typeof b.position === "number" ? b.position : 0;
+                return pa - pb;
+            });
+
+            const groups = {
+                prepare: [],
+                process: [],
+                polish: []
+            };
+
+            statuses.forEach(s => {
+                const type = String(s.type || "").toLowerCase();
+                let key = "process";
+                if (type === "not_started" || type === "prepare") key = "prepare";
+                else if (type === "done" || type === "polish") key = "polish";
+                const color = s.color || "#0B2B6A";
+                groups[key].push({
+                    name: s.name,
+                    color: color
+                });
+            });
+
+            const buildRows = (items, sectionKey) => {
+                return items.map(s => `
+                    <div class="d-flex align-items-center gap-2 bg-white border p-2 mb-2 rounded-pill status-row" data-name="${s.name}" data-color="${s.color}">
+                        <div class="status-color-ring" style="width:18px; height:18px; border-radius:999px; border:2px solid ${s.color}; cursor:pointer;" onclick="openStatusColorPicker(this)"></div>
+                        <span class="fw-bold small flex-grow-1">${String(s.name || "").toUpperCase()}</span>
+                        <button class="btn btn-sm btn-link text-danger p-0" onclick="this.closest('.status-row').remove()">Delete</button>
+                        <i class="bi bi-grip-vertical ms-1"></i>
+                    </div>
+                `).join('');
+            };
+
+            const html = `
+                <div class="status-section mb-3" data-section="prepare">
+                    <div class="small text-muted mb-1">Prepare</div>
+                    <div class="status-section-body">
+                        ${buildRows(groups.prepare, "prepare")}
+                    </div>
+                </div>
+                <div class="status-section mb-3" data-section="process">
+                    <div class="small text-muted mb-1">Process</div>
+                    <div class="status-section-body">
+                        ${buildRows(groups.process, "process")}
+                    </div>
+                </div>
+                <div class="status-section mb-0" data-section="polish">
+                    <div class="small text-muted mb-1">Polish</div>
+                    <div class="status-section-body">
+                        ${buildRows(groups.polish, "polish")}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            const bodies = container.querySelectorAll(".status-section-body");
+            bodies.forEach(body => {
+                new Sortable(body, {
+                    group: "statuses",
+                    handle: ".bi-grip-vertical",
+                    animation: 150
+                });
+            });
+
             new bootstrap.Modal(document.getElementById('manageStatusModal')).show();
         };
 
@@ -1573,19 +1772,28 @@
             const name = nameInput.value.trim();
             if (!name) return;
 
-            const container = document.getElementById('statusListContainer');
+            const container = document.querySelector('#statusListContainer .status-section[data-section="process"] .status-section-body') || document.getElementById('statusListContainer');
             const color = "#0B2B6A";
             const div = document.createElement('div');
-            div.className = "d-flex align-items-center gap-2 bg-white border p-2 mb-2 rounded shadow-sm";
+            div.className = "d-flex align-items-center gap-2 bg-white border p-2 mb-2 rounded-pill status-row";
             div.dataset.name = name;
             div.dataset.color = color;
             div.innerHTML = `
-                <i class="bi bi-grip-vertical"></i>
-                <div style="width:15px; height:15px; border-radius:50%; background:${color}"></div>
-                <span class="fw-bold small flex-grow-1">${name}</span>
-                <button class="btn btn-sm btn-link text-danger p-0" onclick="this.closest('.d-flex').remove()">Delete</button>
+                <div class="status-color-ring" style="width:18px; height:18px; border-radius:999px; border:2px solid ${color}; cursor:pointer;" onclick="openStatusColorPicker(this)"></div>
+                <span class="fw-bold small flex-grow-1">${name.toUpperCase()}</span>
+                <button class="btn btn-sm btn-link text-danger p-0" onclick="this.closest('.status-row').remove()">Delete</button>
+                <i class="bi bi-grip-vertical ms-1"></i>
             `;
-            container.appendChild(div);
+            if (container) {
+                container.appendChild(div);
+                if (container.classList.contains("status-section-body")) {
+                    new Sortable(container, {
+                        group: "statuses",
+                        handle: ".bi-grip-vertical",
+                        animation: 150
+                    });
+                }
+            }
             nameInput.value = "";
         };
 
@@ -1593,12 +1801,21 @@
             const lid = document.getElementById('activeListIdForStatus').value;
             if (!lid) return;
 
-            const items = document.querySelectorAll('#statusListContainer > div');
-            const newStatuses = Array.from(items).map((el, index) => ({
-                name: el.dataset.name,
-                color: el.dataset.color,
-                position: index
-            }));
+            const rows = document.querySelectorAll('#statusListContainer .status-row');
+            const newStatuses = [];
+            rows.forEach((el, index) => {
+                const section = el.closest('.status-section');
+                const sectionKey = section ? section.dataset.section : 'process';
+                let type = 'process';
+                if (sectionKey === 'prepare') type = 'prepare';
+                else if (sectionKey === 'polish') type = 'polish';
+                newStatuses.push({
+                    name: el.dataset.name,
+                    color: el.dataset.color || '#0B2B6A',
+                    position: index,
+                    type: type
+                });
+            });
 
             await updateDoc(doc(db, "projects", projectId, "lists", lid), {
                 statuses: newStatuses
@@ -1611,12 +1828,41 @@
         window.deleteList = async (lid) => {
             if (!confirm("Delete this list and its tasks?")) return;
 
-            await deleteDoc(doc(db, "projects", projectId, "lists", lid));
+            const listRef = doc(db, "projects", projectId, "lists", lid);
+            const listSnap = await getDoc(listRef);
 
             const q = query(collection(db, "tasks"), where("list_id", "==", lid));
             const snap = await getDocs(q);
+
             const batch = writeBatch(db);
-            snap.forEach(d => batch.delete(d.ref));
+
+            if (listSnap && listSnap.exists()) {
+                const trashRef = doc(collection(db, "trash"));
+                batch.set(trashRef, {
+                    type: "list",
+                    project_id: projectId,
+                    entity_id: lid,
+                    data: listSnap.data(),
+                    deleted_at: serverTimestamp(),
+                    deleted_by: currentUser ? currentUser.uid : ""
+                });
+            }
+
+            snap.forEach(d => {
+                const trashRef = doc(collection(db, "trash"));
+                batch.set(trashRef, {
+                    type: "task",
+                    project_id: projectId,
+                    list_id: lid,
+                    entity_id: d.id,
+                    data: d.data(),
+                    deleted_at: serverTimestamp(),
+                    deleted_by: currentUser ? currentUser.uid : ""
+                });
+                batch.delete(d.ref);
+            });
+
+            batch.delete(listRef);
             await batch.commit();
         };
 
@@ -1657,6 +1903,7 @@
                     rows.forEach(async (row, index) => {
                         const taskId = row.id.replace('task-', '');
                         await updateDoc(doc(db, "tasks", taskId), { position: index });
+                        await logTaskChange(taskId, "update_position", { position: index });
                     });
                 }
             });
