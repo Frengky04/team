@@ -525,8 +525,12 @@
             <div class="main-list-card">
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div class="flex-grow-1 d-flex justify-content-center">
-                        <div class="text-center">
-                            <h1 class="fw-bold mb-1">All Lists</h1>
+                        <div class="text-center" style="max-width:420px;">
+                            <h1 class="fw-bold mb-2">All Lists</h1>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                <input type="text" id="globalTaskSearch" class="form-control border-start-0" placeholder="Search tasks..." oninput="onGlobalTaskSearchChange(this.value)">
+                            </div>
                             <span class="badge text-bg-success" id="allListDoneBadge" style="display:none">All Task Done</span>
                         </div>
                     </div>
@@ -671,6 +675,10 @@
             "#e5e7eb", "#d1d5db", "#f9a8d4", "#fda4af", "#fdba74", "#bef264", "#a7f3d0", "#67e8f9"
         ];
 
+        window.onGlobalTaskSearchChange = (value) => {
+            renderUI();
+        };
+
         onAuthStateChanged(auth, (user) => {
             if (user && projectId) {
                 currentUser = user;
@@ -797,6 +805,19 @@
             const loadingState = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
             const allDoneBadge = document.getElementById('allListDoneBadge');
+            const searchInput = document.getElementById('globalTaskSearch');
+            const searchQuery = searchInput ? searchInput.value.trim().toLowerCase() : "";
+            const hasSearchQuery = searchQuery.length > 0;
+
+            function matchesSearch(task) {
+                if (!hasSearchQuery) return true;
+                const title = String(task.title || "").toLowerCase();
+                const rawDesc = String(task.description || "").replace(/<[^>]+>/g, " ");
+                const desc = rawDesc.toLowerCase();
+                return title.includes(searchQuery) || desc.includes(searchQuery);
+            }
+
+            let anyTaskMatchedSearch = false;
 
             if (loadingState) loadingState.style.display = 'none';
             if (!container) return;
@@ -815,26 +836,41 @@
             }
             if (emptyState) emptyState.style.display = 'none';
 
-            const tagSet = new Set();
-            allTasks.forEach(t => {
-                if (Array.isArray(t.tags)) {
-                    t.tags.forEach(tag => {
-                        if (tag && typeof tag === "string") tagSet.add(tag);
-                    });
-                }
-            });
-            const allProjectTags = Array.from(tagSet).sort((a, b) => a.localeCompare(b));
-
             projectLists.forEach(list => {
-                const listTasks = allTasks.filter(t => t.list_id === list.id && !t.parent_task_id);
+                const listTasksBase = allTasks.filter(t => t.list_id === list.id && !t.parent_task_id);
                 const listAllTasks = allTasks.filter(t => t.list_id === list.id);
                 const hasTasks = listAllTasks.length > 0;
                 const allCompleteForList = hasTasks && listAllTasks.every(t => t.status === 'Complete');
 
-                const tasksHtml = listTasks.map(t => {
-                    const subtasks = allTasks.filter(st => st.parent_task_id === t.id);
-                    return renderTaskRow(t, subtasks);
-                }).join('');
+                let tasksHtml = "";
+
+                if (hasSearchQuery) {
+                    const visibleTasks = [];
+
+                    listTasksBase.forEach(parent => {
+                        const subtasks = allTasks.filter(st => st.parent_task_id === parent.id);
+                        const matchingSubtasks = subtasks.filter(matchesSearch);
+
+                        if (matchesSearch(parent) || matchingSubtasks.length > 0) {
+                            visibleTasks.push({ parent, subtasks: matchingSubtasks });
+                        }
+                    });
+
+                    if (visibleTasks.length > 0) {
+                        anyTaskMatchedSearch = true;
+                        tasksHtml = visibleTasks.map(item => renderTaskRow(item.parent, item.subtasks)).join('');
+                    }
+                } else {
+                    const listTasks = listTasksBase;
+                    tasksHtml = listTasks.map(t => {
+                        const subtasks = allTasks.filter(st => st.parent_task_id === t.id);
+                        return renderTaskRow(t, subtasks);
+                    }).join('');
+                }
+
+                if (hasSearchQuery && !tasksHtml) {
+                    return;
+                }
 
                 const rawDesc = (list.description || "").replace(/<[^>]+>/g, " ");
                 const words = rawDesc.trim().split(/\s+/).filter(Boolean);
@@ -1093,6 +1129,12 @@
                 container.insertAdjacentHTML('beforeend', html);
                 initTaskSortable(list.id);
             });
+
+            if (hasSearchQuery && !anyTaskMatchedSearch) {
+                if (!container.innerHTML.trim()) {
+                    container.innerHTML = '<div class="text-center text-muted py-4">No tasks match your search.</div>';
+                }
+            }
         }
 
         function renderTaskRow(t, subtasks) {
