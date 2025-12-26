@@ -71,6 +71,28 @@
         }
         .subtask-indent { margin-left: 40px; border-left: 2px solid #e2e8f0; }
 
+        .project-context-card {
+            max-width: 800px; width: 90%; background: white; color: #1f2937;
+            margin: 20px auto -20px auto; padding: 15px 25px 35px 25px;
+            border-radius: 16px 16px 0 0; position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+        }
+        .ph-badge {
+            background: #FDE047; color: #854D0E; font-size: 0.7rem; font-weight: 800;
+            padding: 4px 8px; border-radius: 4px; text-transform: uppercase;
+            position: absolute; left: 30px; top: 38%; transform: translateY(-50%);
+        }
+        .ph-crumb-container {
+            display: flex; align-items: center; gap: 12px;
+            background: #1f2937; padding: 8px 20px;
+            border-radius: 50px; font-size: 0.95rem; color: white;
+        }
+        .ph-crumb-link { text-decoration: none; color: #d1d5db; font-weight: 500; transition: 0.2s; }
+        .ph-crumb-link:hover { color: white; }
+        .ph-crumb-active { color: white; font-weight: 700; border-bottom: 2px solid #FDE047; padding-bottom: 2px; }
+        .ph-sep { font-size: 0.8rem; color: white; }
+
         .main-list-card {
             max-width: 1000px;
             margin: 0 auto;
@@ -513,12 +535,19 @@
 
     <div class="dashboard-container">
         <main class="main-content w-100" style="margin-left:0; padding-top:100px">
-            <div class="project-context-card mx-auto mb-4">
-                <div class="ph-badge" id="projectBadge">Project</div>
+            <div class="project-context-card">
+                <div class="ph-badge" id="projectBadge">Loading...</div>
                 <div class="ph-crumb-container">
                     <a href="../home.html" class="ph-crumb-link"><i class="bi bi-house-fill"></i></a>
-                    <i class="bi bi-chevron-right mx-2"></i>
-                    <span id="projectNameHeader">Loading Project...</span>
+                    <i class="bi bi-chevron-right ph-sep"></i>
+                    <a href="#" class="ph-crumb-link" id="projectNameHeader">Loading...</a>
+                    <i class="bi bi-chevron-right ph-sep"></i>
+                    <span class="ph-crumb-active">Lists</span>
+                </div>
+                <div class="position-absolute end-0 me-3">
+                    <button class="btn btn-link text-muted" data-bs-toggle="modal" data-bs-target="#projectToolsModal">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
                 </div>
             </div>
 
