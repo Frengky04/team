@@ -74,8 +74,31 @@
 
         /* Toggle Switch */
         .form-check-input:checked {
-            background-color: #108a00; /* Green */
+            background-color: #108a00;
             border-color: #108a00;
+        }
+
+        .project-card-actions i {
+            cursor: pointer;
+        }
+        .project-card-actions .project-trash-icon {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .project-card:hover .project-card-actions .project-trash-icon {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .project-card-actions-unpinned i {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+        .project-card:hover .project-card-actions-unpinned i {
+            opacity: 1;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -177,14 +200,11 @@
                 <small class="text-muted">Here is your daily update.</small>
             </div>
 
-            <!-- WHO IS ONLINE -->
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="fw-bold text-muted text-uppercase small">Who is Online</h6>
-                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">12 Active</span>
+                <span id="onlineActiveBadge" class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">0 Active</span>
             </div>
-            <div class="online-scroll-container mb-4" id="onlineUsersContainer">
-                <!-- JS Populated -->
-            </div>
+            <div class="online-scroll-container mb-4" id="onlineUsersContainer"></div>
 
             <!-- OPPORTUNITY -->
             <div class="opportunity-card">
@@ -395,13 +415,32 @@
         </div>
     </div>
     
+    <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header border-0 p-4 pb-0">
+                    <h5 class="fw-bold text-danger">Delete Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-2">Apakah anda ingin mendelete Project <span id="deleteProjectName" class="fw-bold"></span> ini?</p>
+                    <input type="hidden" id="deleteProjectId">
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmDeleteProject()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Firebase SDK Modular -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // 1. Konfigurasi Firebase (PASTIKAN SAMA DENGAN LOGIN/REGISTER)
         const firebaseConfig = {
@@ -422,6 +461,9 @@
         let currentUser = null;
         let departments = [];
         let selectedDepartment = null;
+        let projectTaskStats = {};
+        let cachedProjects = [];
+        let presenceIntervalId = null;
 
         // --- 2. PROTEKSI HALAMAN (Cek Login) ---
         onAuthStateChanged(auth, async (user) => {
@@ -440,6 +482,9 @@
 
                 await loadDepartments();
                 listenToProjects();
+                listenToProjectTaskStats();
+                startPresenceTracking();
+                listenToOnlineUsers();
             } else {
                 // Jika tidak login, lempar ke halaman login
                 window.location.href = "index.html";
@@ -538,11 +583,162 @@
             });
         }
 
+        // --- 3B. AMBIL STATISTIK TASK PER PROJECT (Real-time) ---
+        function listenToProjectTaskStats() {
+            try {
+                const q = query(collection(db, "tasks"));
+                onSnapshot(q, (snapshot) => {
+                    const stats = {};
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data() || {};
+                        const pid = data.project_id || data.projectId || "";
+                        if (!pid) return;
+                        if (!stats[pid]) {
+                            stats[pid] = { total: 0, complete: 0 };
+                        }
+                        stats[pid].total += 1;
+                        let statusRaw = "";
+                        if (typeof data.status === "string") {
+                            statusRaw = data.status;
+                        } else if (data.status && typeof data.status === "object") {
+                            statusRaw = data.status.name || data.status.label || "";
+                        }
+                        const normalized = String(statusRaw || "").trim().toLowerCase();
+                        const isDone = normalized === "complete" || normalized === "done";
+                        if (isDone) {
+                            stats[pid].complete += 1;
+                        }
+                    });
+                    projectTaskStats = stats;
+                    renderProjects(cachedProjects);
+                }, (error) => {
+                    console.error("Failed to listen project task stats", error);
+                });
+            } catch (e) {
+                console.error("Failed to start project task stats listener", e);
+            }
+        }
+
+        function startPresenceTracking() {
+            try {
+                updateOwnPresence();
+                if (presenceIntervalId) {
+                    clearInterval(presenceIntervalId);
+                }
+                presenceIntervalId = setInterval(updateOwnPresence, 60000);
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === "visible") {
+                        updateOwnPresence();
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to start presence tracking", e);
+            }
+        }
+
+        async function updateOwnPresence() {
+            if (!currentUser) return;
+            try {
+                let localData = null;
+                try {
+                    localData = JSON.parse(localStorage.getItem('userData') || 'null');
+                } catch (e) {}
+                const uid = currentUser.uid;
+                const name = (localData && localData.name) || currentUser.displayName || currentUser.email || "User";
+                const photo = (localData && localData.photo) || currentUser.photoURL || "";
+                const ref = doc(db, "user_presence", uid);
+                await setDoc(ref, {
+                    user_id: uid,
+                    name: name,
+                    photo: photo,
+                    last_active_at: serverTimestamp()
+                }, { merge: true });
+            } catch (e) {
+                console.error("Failed to update presence", e);
+            }
+        }
+
+        function listenToOnlineUsers() {
+            const container = document.getElementById('onlineUsersContainer');
+            const badge = document.getElementById('onlineActiveBadge');
+            if (!container || !badge) return;
+            try {
+                const colRef = collection(db, "user_presence");
+                onSnapshot(colRef, (snapshot) => {
+                    const now = new Date();
+                    const startOfDay = new Date();
+                    startOfDay.setHours(0, 0, 0, 0);
+                    const oneHourMs = 60 * 60 * 1000;
+                    const users = [];
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data() || {};
+                        const ts = data.last_active_at;
+                        let lastActive = null;
+                        if (ts && typeof ts.toDate === "function") {
+                            lastActive = ts.toDate();
+                        }
+                        if (!lastActive) return;
+                        if (lastActive < startOfDay) return;
+                        const diff = now.getTime() - lastActive.getTime();
+                        const isActive = diff <= oneHourMs;
+                        users.push({
+                            uid: docSnap.id,
+                            name: data.name || "",
+                            photo: data.photo || "",
+                            lastActive,
+                            isActive
+                        });
+                    });
+                    users.sort((a, b) => b.lastActive.getTime() - a.lastActive.getTime());
+                    const currentUid = currentUser ? currentUser.uid : null;
+                    let me = null;
+                    const others = [];
+                    users.forEach(u => {
+                        if (currentUid && u.uid === currentUid) {
+                            me = u;
+                        } else {
+                            others.push(u);
+                        }
+                    });
+                    const ordered = [];
+                    if (me) ordered.push(me);
+                    ordered.push(...others);
+                    const activeCount = users.filter(u => u.isActive).length;
+                    badge.innerText = activeCount + " Active";
+                    container.innerHTML = "";
+                    ordered.forEach(u => {
+                        const ringStyle = u.isActive ? "background:#0B2B6A;" : "background:transparent;";
+                        const src = u.photo && u.photo.trim()
+                            ? u.photo
+                            : ("https://i.pravatar.cc/150?u=" + encodeURIComponent(u.uid || u.name || ""));
+                        const statusDot = u.isActive ? '<div class="online-status-dot"></div>' : '';
+                        const title = u.name || "";
+                        const html = `
+                            <div class="avatar-wrapper" title="${title}">
+                                <div class="avatar-ring" style="${ringStyle}"></div>
+                                <div class="avatar-mask">
+                                    <img src="${src}" alt="${title}" class="avatar-img">
+                                </div>
+                                ${statusDot}
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', html);
+                    });
+                }, (error) => {
+                    console.error("Failed to listen online users", error);
+                });
+            } catch (e) {
+                console.error("Failed to start online users listener", e);
+            }
+        }
+
         // --- 4. RENDER PROJECT KE HTML ---
         function renderProjects(projects) {
             const pinnedContainer = document.getElementById('pinnedProjectsContainer');
             const otherContainer = document.getElementById('otherProjectsContainer');
             
+            cachedProjects = Array.isArray(projects) ? projects : [];
+
             pinnedContainer.innerHTML = '';
             otherContainer.innerHTML = '';
 
@@ -565,20 +761,45 @@
                 const isFirst = index === 0;
                 const colClass = isFirst ? 'col-lg-6 col-12' : 'col-md-6 col-lg-3';
                 const cardClass = isFirst ? 'project-card priority' : 'project-card';
-                
+                const stat = projectTaskStats[p.id] || { total: 0, complete: 0 };
+                const totalTasks = stat.total || 0;
+                const completedTasks = stat.complete || 0;
+                const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                let progressBarClass = "bg-secondary";
+                if (totalTasks > 0) {
+                    if (progressPercent < 50) progressBarClass = "bg-danger";
+                    else if (progressPercent < 80) progressBarClass = "bg-warning";
+                    else progressBarClass = "bg-success";
+                }
+                const rawDescPinned = typeof p.description === "string" ? p.description : "";
+                const plainDescPinned = rawDescPinned.replace(/<[^>]+>/g, " ").trim();
+                const maxDescPinnedLength = 140;
+                let shortDescPinned = plainDescPinned;
+                if (plainDescPinned.length > maxDescPinnedLength) {
+                    const cutIndex = plainDescPinned.lastIndexOf(" ", maxDescPinnedLength - 3);
+                    const endIndex = cutIndex > 0 ? cutIndex : maxDescPinnedLength - 3;
+                    shortDescPinned = plainDescPinned.substring(0, endIndex) + "...";
+                }
                 const html = `
                     <div class="${colClass}">
                         <a href="project/project.html?id=${p.id}" class="text-decoration-none">
                             <div class="${cardClass}">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <span class="badge ${isFirst ? 'bg-white bg-opacity-25 text-white' : 'bg-light text-dark border'}">${p.department || 'General'}</span>
-                                    <i class="bi bi-pin-angle-fill ${isFirst ? 'text-white' : 'text-primary'}"></i>
+                                    <div class="d-flex align-items-center gap-2 project-card-actions">
+                                        <i class="bi bi-pin-angle-fill ${isFirst ? 'text-white' : 'text-primary'} project-pin-icon" data-project-id="${p.id}" data-project-pinned="true"></i>
+                                        <i class="bi bi-trash3 ${isFirst ? 'text-white' : 'text-danger'} project-trash-icon" data-project-id="${p.id}" data-project-name="${p.name || ''}"></i>
+                                    </div>
                                 </div>
                                 <h5 class="fw-bold ${isFirst ? 'text-white' : 'text-dark'}">${p.name}</h5>
-                                <p class="${isFirst ? 'text-white-50' : 'text-muted'} small mb-0">${p.description.substring(0, 50)}...</p>
+                                <p class="${isFirst ? 'text-white-50' : 'text-muted'} small mb-0" style="min-height:2.6em;max-height:2.6em;overflow:hidden;">${shortDescPinned}</p>
                                 <div class="mt-4">
-                                    <div class="progress" style="height: 4px; background: rgba(0,0,0,0.1);">
-                                        <div class="progress-bar bg-success" style="width: 0%"></div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small ${isFirst ? 'text-white-50' : 'text-muted'}">Progress</span>
+                                        <span class="small ${isFirst ? 'text-white-50' : 'text-muted'}">${progressPercent}%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px; background: rgba(0,0,0,0.1);">
+                                        <div class="progress-bar ${progressBarClass} progress-bar-striped progress-bar-animated" style="width: ${progressPercent}%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -593,13 +814,43 @@
 
             // Render Others (Hidden)
             unpinnedList.forEach(p => {
+                const departmentName = p.department || "General";
+                const departmentColor = p.department_color || "#e5e7eb";
+                const stat = projectTaskStats[p.id] || { total: 0, complete: 0 };
+                const totalTasks = stat.total || 0;
+                const completedTasks = stat.complete || 0;
+                const isAllDone = totalTasks > 0 && completedTasks === totalTasks;
+                const progressText = `${completedTasks}/${totalTasks} Done`;
+                const rawDesc = typeof p.description === "string" ? p.description : "";
+                const plainDesc = rawDesc.replace(/<[^>]+>/g, " ").trim();
+                const maxDescLength = 120;
+                let shortDesc = plainDesc;
+                if (plainDesc.length > maxDescLength) {
+                    shortDesc = plainDesc.substring(0, maxDescLength - 3) + "...";
+                }
+                const iconClass = isAllDone ? "bi bi-check-circle-fill text-success" : "bi bi-check-circle";
                 const html = `
                     <div class="col-md-6 col-lg-3">
                         <a href="project/project.html?id=${p.id}" class="text-decoration-none">
                             <div class="project-card">
-                                <span class="badge bg-light text-dark border mb-2">${p.department || 'General'}</span>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge border pill px-3"
+                                          style="max-width:80px;background:${departmentColor};border-color:${departmentColor};color:#fff;">
+                                        ${departmentName}
+                                    </span>
+                                    <div class="d-flex align-items-center gap-2 project-card-actions project-card-actions-unpinned">
+                                        <i class="bi bi-pin-angle-fill text-primary project-pin-icon"
+                                           data-project-id="${p.id}" data-project-pinned="false"></i>
+                                        <i class="bi bi-trash3 text-danger project-trash-icon"
+                                           data-project-id="${p.id}" data-project-name="${p.name || ''}"></i>
+                                    </div>
+                                </div>
                                 <h6 class="fw-bold text-dark mb-1">${p.name}</h6>
-                                <small class="text-muted">No activities yet</small>
+                                <p class="text-muted small mb-2" style="min-height:2.6em;max-height:2.6em;overflow:hidden;">${shortDesc}</p>
+                                <div class="d-flex align-items-center small text-muted">
+                                    <i class="${iconClass} me-1"></i>
+                                    <span>${progressText}</span>
+                                </div>
                             </div>
                         </a>
                     </div>
@@ -607,6 +858,82 @@
                 otherContainer.insertAdjacentHTML('beforeend', html);
             });
         }
+
+        function openDeleteProjectModal(projectId, projectName) {
+            const nameEl = document.getElementById('deleteProjectName');
+            const idInput = document.getElementById('deleteProjectId');
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!nameEl || !idInput || !modalEl) return;
+            nameEl.innerText = projectName || "";
+            idInput.value = projectId || "";
+            if (typeof bootstrap === "undefined") return;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        window.confirmDeleteProject = async () => {
+            const idInput = document.getElementById('deleteProjectId');
+            const modalEl = document.getElementById('deleteProjectModal');
+            if (!idInput || !modalEl) return;
+            const projectId = idInput.value;
+            if (!projectId) return;
+            try {
+                const project = cachedProjects.find(p => p.id === projectId) || null;
+                if (project) {
+                    await addDoc(collection(db, "trash"), {
+                        type: "project",
+                        project_id: projectId,
+                        entity_id: projectId,
+                        data: project,
+                        deleted_at: serverTimestamp(),
+                        deleted_by: currentUser ? currentUser.uid : ""
+                    });
+                }
+                await deleteDoc(doc(db, "projects", projectId));
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            } catch (e) {
+                console.error("Failed to delete project", e);
+                alert("Gagal menghapus project: " + (e.message || e.toString()));
+            }
+        };
+
+        async function toggleProjectPin(projectId, shouldPin) {
+            if (!projectId) return;
+            try {
+                await updateDoc(doc(db, "projects", projectId), {
+                    is_pinned: shouldPin,
+                    pinned: shouldPin
+                });
+            } catch (e) {
+                console.error("Failed to toggle pin project", e);
+                alert("Gagal mengubah pin project: " + (e.message || e.toString()));
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const trashIcon = e.target.closest('.project-trash-icon');
+            if (trashIcon) {
+                const projectId = trashIcon.getAttribute('data-project-id') || "";
+                const projectName = trashIcon.getAttribute('data-project-name') || "";
+                if (projectId) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openDeleteProjectModal(projectId, projectName);
+                }
+                return;
+            }
+            const pinIcon = e.target.closest('.project-pin-icon');
+            if (pinIcon) {
+                const projectId = pinIcon.getAttribute('data-project-id') || "";
+                if (!projectId) return;
+                const pinnedAttr = pinIcon.getAttribute('data-project-pinned');
+                const currentlyPinned = pinnedAttr === "true";
+                e.preventDefault();
+                e.stopPropagation();
+                toggleProjectPin(projectId, !currentlyPinned);
+            }
+        });
 
         // --- 5. INPUT PROJECT BARU KE FIRESTORE ---
         window.saveProject = async () => {
