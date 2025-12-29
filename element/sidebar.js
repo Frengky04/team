@@ -229,7 +229,7 @@ export function renderSidebar(target) {
                                     <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
                                 </button>
                                 <div id="questDepartmentDropdown"
-                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm">
+                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
                                     <span class="text-gray-400 text-xs">Loading departments...</span>
                                 </div>
                             </div>
@@ -238,26 +238,260 @@ export function renderSidebar(target) {
                     <div class="flex items-center gap-3">
                         <div class="font-medium text-gray-500 w-24">Assign to</div>
                         <div class="flex-1">
-                            <button type="button"
-                                class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-500">
-                                <span class="flex items-center gap-2">
-                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200">
-                                        <span class="text-xs font-semibold text-gray-500">U</span>
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="document.getElementById('questAssignDropdown').classList.toggle('hidden')">
+                                    <span class="flex items-center gap-2">
+                                        <span id="questAssignAvatars" class="flex -space-x-1"></span>
+                                        <span id="questAssignButtonLabel" class="text-xs md:text-sm">Select user...</span>
                                     </span>
-                                    <span class="text-xs md:text-sm">Select user...</span>
-                                </span>
-                                <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                            </button>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="questAssignDropdown"
+                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm">
+                                    <div class="mb-3">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                                &#128269;
+                                            </span>
+                                            <input id="questAssignSearch" type="text"
+                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
+                                                placeholder="Search..." />
+                                        </div>
+                                    </div>
+                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
+                                        PEOPLE
+                                    </div>
+                                    <div id="questAssignList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
+                                        <div class="text-slate-500 text-xs">Loading users...</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="font-medium text-gray-500 w-24">Dates</div>
                         <div class="flex-1 flex flex-wrap items-center gap-2">
-                            <input type="text" placeholder="dd/mm/yyyy"
-                                class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-                            <span class="text-gray-400">-</span>
-                            <input type="text" placeholder="dd/mm/yyyy"
-                                class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                            <div class="relative">
+                                <input id="questDueDate" type="text" placeholder="dd/mm/yyyy"
+                                    class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                    onclick="toggleQuestDueDropdown()" />
+                                <div id="questDueDropdown"
+                                    class="absolute left-0 mt-2 w-[420px] md:w-[460px] rounded-2xl bg-white border border-gray-200 shadow-2xl p-4 text-xs md:text-sm text-gray-800 hidden z-30">
+                                    <div class="flex gap-4">
+                                        <div class="w-40 md:w-44 border-r border-gray-100 pr-4">
+                                            <div class="font-semibold text-sm mb-2">Due date</div>
+                                            <div class="flex flex-col gap-1">
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('today')">
+                                                    <span>Today</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('later')">
+                                                    <span>Later</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('tomorrow')">
+                                                    <span>Tomorrow</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('this-weekend')">
+                                                    <span>This weekend</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('next-week')">
+                                                    <span>Next week</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('next-weekend')">
+                                                    <span>Next weekend</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('two-weeks')">
+                                                    <span>2 weeks</span>
+                                                </button>
+                                                <button type="button" class="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-gray-50"
+                                                    onclick="questDueQuickSelect('four-weeks')">
+                                                    <span>4 weeks</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 pl-2">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <button type="button"
+                                                    class="text-[11px] text-gray-500 hover:text-gray-700"
+                                                    onclick="questDueGoToday()">
+                                                    Today
+                                                </button>
+                                                <div class="flex items-center gap-1">
+                                                    <button type="button"
+                                                        class="p-1 text-gray-400 hover:text-gray-600"
+                                                        onclick="questDueChangeMonth(-1)">
+                                                        &#10094;
+                                                    </button>
+                                                    <div id="questDueMonthLabel"
+                                                        class="text-[11px] font-semibold text-gray-700 min-w-[90px] text-center">
+                                                    </div>
+                                                    <button type="button"
+                                                        class="p-1 text-gray-400 hover:text-gray-600"
+                                                        onclick="questDueChangeMonth(1)">
+                                                        &#10095;
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 mb-1">
+                                                <div class="text-center">Su</div>
+                                                <div class="text-center">Mo</div>
+                                                <div class="text-center">Tu</div>
+                                                <div class="text-center">We</div>
+                                                <div class="text-center">Th</div>
+                                                <div class="text-center">Fr</div>
+                                                <div class="text-center">Sa</div>
+                                            </div>
+                                            <div id="questDueCalendarGrid"
+                                                class="grid grid-cols-7 gap-1 text-[11px] text-gray-500">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <button type="button"
+                                    class="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1.5 text-xs md:text-sm font-medium text-gray-700 bg-white"
+                                    onclick="toggleQuestRecurDropdown()">
+                                    <span class="w-3 h-3 rounded-full border border-gray-400 flex items-center justify-center text-[8px] text-gray-500">&#8635;</span>
+                                    <span>Recur</span>
+                                </button>
+                                <div id="questRecurDropdown"
+                                    class="absolute right-0 mt-2 w-[420px] md:w-[460px] rounded-2xl bg-white border border-gray-200 shadow-2xl p-4 text-xs md:text-sm text-gray-800 hidden z-30">
+                                    <div class="flex gap-4">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <div class="font-semibold text-sm">Recurring</div>
+                                                <button type="button" class="text-gray-400 text-lg leading-none"
+                                                    onclick="document.getElementById('questRecurDropdown').classList.add('hidden')">
+                                                    &times;
+                                                </button>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <label class="block text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Pattern</label>
+                                                    <select id="questRecurPattern"
+                                                        class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
+                                                        onchange="questRecurApplyPattern()">
+                                                        <option value="weekly">Weekly</option>
+                                                        <option value="daily">Daily</option>
+                                                        <option value="monthly">Monthly</option>
+                                                        <option value="yearly">Yearly</option>
+                                                    </select>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-gray-500">Every</span>
+                                                    <input id="questRecurIntervalInput" type="number" min="1" value="1"
+                                                        class="w-14 rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                                        oninput="questRecurUpdateInterval()" />
+                                                    <select id="questRecurUnitSelect"
+                                                        class="flex-1 rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
+                                                        onchange="questRecurUpdateUnit()">
+                                                        <option value="day">day</option>
+                                                        <option value="week" selected>week</option>
+                                                        <option value="month">month</option>
+                                                        <option value="year">year</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <div class="text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Repeat on</div>
+                                                    <div class="grid grid-cols-7 gap-1">
+                                                        <button type="button" data-day="0"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(0)">Su</button>
+                                                        <button type="button" data-day="1"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(1)">Mo</button>
+                                                        <button type="button" data-day="2"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(2)">Tu</button>
+                                                        <button type="button" data-day="3"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(3)">We</button>
+                                                        <button type="button" data-day="4"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(4)">Th</button>
+                                                        <button type="button" data-day="5"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(5)">Fr</button>
+                                                        <button type="button" data-day="6"
+                                                            class="quest-recur-day px-1.5 py-1 rounded-md text-[10px] font-medium"
+                                                            onclick="questRecurToggleWeekday(6)">Sa</button>
+                                                    </div>
+                                                </div>
+                                                <div id="questRecurMonthlyModeWrapper" class="mt-2 hidden">
+                                                    <div class="text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">Monthly pattern</div>
+                                                    <select id="questRecurMonthlyMode"
+                                                        class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs md:text-sm text-gray-800 bg-white"
+                                                        onchange="questRecurUpdateMonthlyMode()">
+                                                        <option value="same-day">Same day each month</option>
+                                                        <option value="first-day">First day of the month</option>
+                                                        <option value="last-day">Last day of the month</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between mt-4">
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button"
+                                                        class="rounded-full px-4 py-1.5 text-xs md:text-sm font-semibold text-gray-600 bg-white border border-gray-200"
+                                                        onclick="questRecurCancel()">
+                                                        Cancel
+                                                    </button>
+                                                    <button type="button"
+                                                        class="rounded-full px-4 py-1.5 text-xs md:text-sm font-semibold text-white"
+                                                        style="background: radial-gradient(circle at 0% 0%, #a855f7 0%, #1d4ed8 60%, #0f172a 100%);"
+                                                        onclick="questRecurSave()">
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-48 md:w-56 border-l border-gray-100 pl-4">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <button type="button"
+                                                    class="text-[11px] text-gray-500 hover:text-gray-700"
+                                                    onclick="questRecurGoToday()">
+                                                    Today
+                                                </button>
+                                                <div class="flex items-center gap-1">
+                                                    <button type="button"
+                                                        class="p-1 text-gray-400 hover:text-gray-600"
+                                                        onclick="questRecurChangeMonth(-1)">
+                                                        &#10094;
+                                                    </button>
+                                                    <div id="questRecurMonthLabel"
+                                                        class="text-[11px] font-semibold text-gray-700 min-w-[90px] text-center">
+                                                    </div>
+                                                    <button type="button"
+                                                        class="p-1 text-gray-400 hover:text-gray-600"
+                                                        onclick="questRecurChangeMonth(1)">
+                                                        &#10095;
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-7 gap-1 text-[10px] text-gray-400 mb-1">
+                                                <div class="text-center">Su</div>
+                                                <div class="text-center">Mo</div>
+                                                <div class="text-center">Tu</div>
+                                                <div class="text-center">We</div>
+                                                <div class="text-center">Th</div>
+                                                <div class="text-center">Fr</div>
+                                                <div class="text-center">Sa</div>
+                                            </div>
+                                            <div id="questRecurCalendarGrid"
+                                                class="grid grid-cols-7 gap-1 text-[11px] text-gray-500">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -270,33 +504,55 @@ export function renderSidebar(target) {
                 </div>
                 <div class="space-y-4 text-sm">
                     <div class="flex items-center gap-3">
-                        <div class="font-medium text-gray-500 w-24">Priority</div>
+                        <div class="font-medium text-gray-500 w-24">Positions</div>
                         <div class="flex-1">
-                            <button type="button"
-                                class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700">
-                                <span class="flex items-center gap-2">
-                                    <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-blue-500 text-white text-[10px] font-bold">
-                                        !
-                                    </span>
-                                    <span class="text-xs md:text-sm">Normal</span>
-                                </span>
-                                <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                            </button>
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="document.getElementById('questPositionDropdown').classList.toggle('hidden')">
+                                    <span id="questPositionButtonLabel" class="text-xs md:text-sm">Select positions...</span>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="questPositionDropdown"
+                                    class="absolute top-full left-0 right-0 mt-2 rounded-xl border border-gray-200 bg-white shadow-lg p-3 hidden max-h-60 overflow-y-auto text-xs md:text-sm z-20">
+                                    <span class="text-gray-400 text-xs">Loading positions...</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="font-medium text-gray-500 w-24">Notify to</div>
                         <div class="flex-1">
-                            <button type="button"
-                                class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-500">
-                                <span class="flex items-center gap-2">
-                                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-200">
-                                        <span class="text-xs font-semibold text-gray-500">U</span>
+                            <div class="relative">
+                                <button type="button"
+                                    class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-left text-gray-700"
+                                    onclick="document.getElementById('questNotifyDropdown').classList.toggle('hidden')">
+                                    <span class="flex items-center gap-2">
+                                        <span id="questNotifyAvatars" class="flex -space-x-1"></span>
+                                        <span id="questNotifyButtonLabel" class="text-xs md:text-sm">Select user...</span>
                                     </span>
-                                    <span class="text-xs md:text-sm">Select user...</span>
-                                </span>
-                                <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
-                            </button>
+                                    <span class="text-gray-400 text-xs md:text-sm">&#9662;</span>
+                                </button>
+                                <div id="questNotifyDropdown"
+                                    class="absolute top-full left-0 mt-2 w-72 md:w-80 rounded-2xl bg-slate-900 text-white shadow-2xl p-3 hidden text-xs md:text-sm">
+                                    <div class="mb-3">
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                                                &#128269;
+                                            </span>
+                                            <input id="questNotifySearch" type="text"
+                                                class="w-full rounded-full bg-slate-800 text-xs md:text-sm text-white placeholder-slate-500 pl-8 pr-3 py-1.5 outline-none border border-slate-700 focus:border-sky-500 focus:ring-0"
+                                                placeholder="Search..." />
+                                        </div>
+                                    </div>
+                                    <div class="text-[10px] tracking-[0.18em] text-slate-400 font-semibold mb-2">
+                                        PEOPLE
+                                    </div>
+                                    <div id="questNotifyList" class="max-h-56 overflow-y-auto flex flex-col gap-1">
+                                        <div class="text-slate-500 text-xs">Loading users...</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -528,6 +784,518 @@ export function renderSidebar(target) {
                 el.classList.add('hidden');
             }
         }
+        function questDueParseDate(val) {
+            var today = new Date();
+            var s = String(val || '').trim();
+            if (!s) return today;
+            var parts = s.split('/');
+            if (parts.length !== 3) return today;
+            var d = parseInt(parts[0], 10);
+            var m = parseInt(parts[1], 10) - 1;
+            var y = parseInt(parts[2], 10);
+            if (isNaN(d) || isNaN(m) || isNaN(y)) return today;
+            var date = new Date(y, m, d);
+            if (isNaN(date.getTime())) return today;
+            if (date.getDate() !== d || date.getMonth() !== m || date.getFullYear() !== y) return today;
+            return date;
+        }
+        function questDueFormatDate(date) {
+            var d = date.getDate();
+            var m = date.getMonth() + 1;
+            var y = date.getFullYear();
+            var dd = d < 10 ? '0' + d : String(d);
+            var mm = m < 10 ? '0' + m : String(m);
+            return dd + '/' + mm + '/' + y;
+        }
+        function questDueEnsureState() {
+            var input = document.getElementById('questDueDate');
+            var base = questDueParseDate(input ? input.value : '');
+            if (!questDueState) {
+                questDueState = {
+                    month: base.getMonth(),
+                    year: base.getFullYear(),
+                    selectedDate: base
+                };
+            }
+        }
+        function toggleQuestDueDropdown() {
+            var panel = document.getElementById('questDueDropdown');
+            if (!panel) return;
+            if (panel.classList.contains('hidden')) {
+                questDueState = null;
+                questDueEnsureState();
+                panel.classList.remove('hidden');
+                renderQuestDueCalendar();
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+        function questDueQuickSelect(type) {
+            questDueEnsureState();
+            if (!questDueState) return;
+            var today = new Date();
+            var selected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            if (type === 'tomorrow') {
+                selected.setDate(selected.getDate() + 1);
+            } else if (type === 'this-weekend') {
+                var day = selected.getDay();
+                var offset = 6 - day;
+                if (offset <= 0) offset += 7;
+                selected.setDate(selected.getDate() + offset);
+            } else if (type === 'next-week') {
+                selected.setDate(selected.getDate() + 7);
+            } else if (type === 'next-weekend') {
+                var d2 = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate());
+                var day2 = d2.getDay();
+                var offset2 = 6 - day2;
+                if (offset2 <= 0) offset2 += 7;
+                d2.setDate(d2.getDate() + offset2 + 7);
+                selected = d2;
+            } else if (type === 'two-weeks') {
+                selected.setDate(selected.getDate() + 14);
+            } else if (type === 'four-weeks') {
+                selected.setDate(selected.getDate() + 28);
+            }
+            questDueState.selectedDate = selected;
+            questDueState.month = selected.getMonth();
+            questDueState.year = selected.getFullYear();
+            var input = document.getElementById('questDueDate');
+            if (input) {
+                input.value = questDueFormatDate(selected);
+            }
+            renderQuestDueCalendar();
+        }
+        function questDueGoToday() {
+            questDueEnsureState();
+            if (!questDueState) return;
+            var today = new Date();
+            questDueState.month = today.getMonth();
+            questDueState.year = today.getFullYear();
+            renderQuestDueCalendar();
+        }
+        function questDueChangeMonth(delta) {
+            questDueEnsureState();
+            if (!questDueState) return;
+            var m = questDueState.month + delta;
+            var y = questDueState.year;
+            if (m < 0) {
+                m = 11;
+                y -= 1;
+            } else if (m > 11) {
+                m = 0;
+                y += 1;
+            }
+            questDueState.month = m;
+            questDueState.year = y;
+            renderQuestDueCalendar();
+        }
+        function questDueSelectDate(y, m, d) {
+            var date = new Date(y, m, d);
+            questDueEnsureState();
+            if (!questDueState) return;
+            questDueState.selectedDate = date;
+            questDueState.month = m;
+            questDueState.year = y;
+            var input = document.getElementById('questDueDate');
+            if (input) {
+                input.value = questDueFormatDate(date);
+            }
+            renderQuestDueCalendar();
+            var panel = document.getElementById('questDueDropdown');
+            if (panel) {
+                panel.classList.add('hidden');
+            }
+        }
+        function renderQuestDueCalendar() {
+            var labelEl = document.getElementById('questDueMonthLabel');
+            var grid = document.getElementById('questDueCalendarGrid');
+            if (!labelEl || !grid) return;
+            questDueEnsureState();
+            if (!questDueState) return;
+            var month = questDueState.month;
+            var year = questDueState.year;
+            var selected = questDueState.selectedDate;
+            var today = new Date();
+            var monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            labelEl.textContent = monthNames[month] + ' ' + year;
+            grid.innerHTML = '';
+            var first = new Date(year, month, 1);
+            var startWeekday = first.getDay();
+            var daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (var i = 0; i < startWeekday; i++) {
+                var emptyCell = document.createElement('div');
+                grid.appendChild(emptyCell);
+            }
+            for (var d = 1; d <= daysInMonth; d++) {
+                var cellDate = new Date(year, month, d);
+                var cell = document.createElement('button');
+                cell.type = 'button';
+                cell.textContent = String(d);
+                var classes = ['w-7', 'h-7', 'flex', 'items-center', 'justify-center', 'rounded-full', 'text-[11px]'];
+                var isToday = cellDate.getFullYear() === today.getFullYear() &&
+                    cellDate.getMonth() === today.getMonth() &&
+                    cellDate.getDate() === today.getDate();
+                var isSelected = selected &&
+                    cellDate.getFullYear() === selected.getFullYear() &&
+                    cellDate.getMonth() === selected.getMonth() &&
+                    cellDate.getDate() === selected.getDate();
+                if (isSelected) {
+                    classes.push('bg-red-500', 'text-white');
+                } else if (isToday) {
+                    classes.push('border', 'border-red-300', 'text-red-500');
+                } else {
+                    classes.push('text-gray-500', 'hover:bg-gray-100');
+                }
+                cell.className = classes.join(' ');
+                (function (yy, mm, dd) {
+                    cell.addEventListener('click', function () {
+                        questDueSelectDate(yy, mm, dd);
+                    });
+                })(year, month, d);
+                grid.appendChild(cell);
+            }
+        }
+        var questRecurState = null;
+        var questRecurPrevState = null;
+        var questDueState = null;
+        function toggleQuestRecurDropdown() {
+            var panel = document.getElementById('questRecurDropdown');
+            if (!panel) return;
+            if (panel.classList.contains('hidden')) {
+                openQuestRecur();
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+        function getQuestRecurBaseDate() {
+            var input = document.getElementById('questDueDate');
+            var today = new Date();
+            if (!input) return today;
+            var val = String(input.value || '').trim();
+            if (!val) return today;
+            var parts = val.split('/');
+            if (parts.length !== 3) return today;
+            var d = parseInt(parts[0], 10);
+            var m = parseInt(parts[1], 10) - 1;
+            var y = parseInt(parts[2], 10);
+            if (isNaN(d) || isNaN(m) || isNaN(y)) return today;
+            var date = new Date(y, m, d);
+            if (isNaN(date.getTime())) return today;
+            if (date.getDate() !== d || date.getMonth() !== m || date.getFullYear() !== y) return today;
+            return date;
+        }
+        function questRecurSyncControls() {
+            if (!questRecurState) return;
+            var intervalInput = document.getElementById('questRecurIntervalInput');
+            var unitSelect = document.getElementById('questRecurUnitSelect');
+            var patternSelect = document.getElementById('questRecurPattern');
+            var monthlyWrapper = document.getElementById('questRecurMonthlyModeWrapper');
+            var monthlySelect = document.getElementById('questRecurMonthlyMode');
+            if (intervalInput) {
+                intervalInput.value = String(questRecurState.interval || 1);
+            }
+            if (unitSelect) {
+                unitSelect.value = questRecurState.unit || 'week';
+            }
+            if (patternSelect) {
+                var patternValue = 'weekly';
+                if (questRecurState.unit === 'day') patternValue = 'daily';
+                else if (questRecurState.unit === 'week') patternValue = 'weekly';
+                else if (questRecurState.unit === 'month') patternValue = 'monthly';
+                else if (questRecurState.unit === 'year') patternValue = 'yearly';
+                patternSelect.value = patternValue;
+            }
+            if (monthlyWrapper) {
+                if (questRecurState.unit === 'month') {
+                    monthlyWrapper.classList.remove('hidden');
+                    if (monthlySelect) {
+                        if (!questRecurState.monthlyMode) {
+                            questRecurState.monthlyMode = monthlySelect.value || 'same-day';
+                        } else {
+                            monthlySelect.value = questRecurState.monthlyMode;
+                        }
+                    }
+                } else {
+                    monthlyWrapper.classList.add('hidden');
+                }
+            }
+        }
+        function openQuestRecur() {
+            var panel = document.getElementById('questRecurDropdown');
+            if (!panel) return;
+            var base = getQuestRecurBaseDate();
+            var intervalInput = document.getElementById('questRecurIntervalInput');
+            var unitSelect = document.getElementById('questRecurUnitSelect');
+            var interval = 1;
+            if (intervalInput) {
+                var iv = parseInt(intervalInput.value, 10);
+                if (!isNaN(iv) && iv > 0) {
+                    interval = iv;
+                }
+            }
+            var unit = 'week';
+            if (unitSelect && unitSelect.value) {
+                unit = unitSelect.value;
+            }
+            questRecurState = {
+                baseDate: base,
+                month: base.getMonth(),
+                year: base.getFullYear(),
+                interval: interval,
+                unit: unit,
+                weekdays: [base.getDay()],
+                monthlyMode: 'same-day'
+            };
+            questRecurPrevState = {
+                baseDate: new Date(questRecurState.baseDate.getTime()),
+                month: questRecurState.month,
+                year: questRecurState.year,
+                interval: questRecurState.interval,
+                unit: questRecurState.unit,
+                weekdays: questRecurState.weekdays.slice(),
+                monthlyMode: questRecurState.monthlyMode
+            };
+            panel.classList.remove('hidden');
+            questRecurSyncControls();
+            renderQuestRecurWeekdays();
+            renderQuestRecurCalendar();
+        }
+        function questRecurApplyPattern() {
+            var select = document.getElementById('questRecurPattern');
+            if (!select) return;
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            var val = select.value || 'weekly';
+            if (val === 'daily') {
+                questRecurState.unit = 'day';
+            } else if (val === 'weekly') {
+                questRecurState.unit = 'week';
+            } else if (val === 'monthly') {
+                questRecurState.unit = 'month';
+                if (!questRecurState.monthlyMode) {
+                    questRecurState.monthlyMode = 'same-day';
+                }
+            } else if (val === 'yearly') {
+                questRecurState.unit = 'year';
+            }
+            questRecurSyncControls();
+            renderQuestRecurWeekdays();
+            renderQuestRecurCalendar();
+        }
+        function questRecurCancel() {
+            var panel = document.getElementById('questRecurDropdown');
+            if (!panel) return;
+            if (questRecurPrevState) {
+                questRecurState = {
+                    baseDate: new Date(questRecurPrevState.baseDate.getTime()),
+                    month: questRecurPrevState.month,
+                    year: questRecurPrevState.year,
+                    interval: questRecurPrevState.interval,
+                    unit: questRecurPrevState.unit,
+                    weekdays: questRecurPrevState.weekdays.slice(),
+                    monthlyMode: questRecurPrevState.monthlyMode
+                };
+                questRecurSyncControls();
+                renderQuestRecurWeekdays();
+                renderQuestRecurCalendar();
+            }
+            panel.classList.add('hidden');
+        }
+        function questRecurSave() {
+            var panel = document.getElementById('questRecurDropdown');
+            if (!panel) return;
+            panel.classList.add('hidden');
+        }
+        function questRecurUpdateInterval() {
+            var input = document.getElementById('questRecurIntervalInput');
+            if (!input) return;
+            var v = parseInt(input.value, 10);
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            if (isNaN(v) || v <= 0) {
+                questRecurState.interval = 1;
+                input.value = '1';
+            } else {
+                questRecurState.interval = v;
+            }
+            renderQuestRecurCalendar();
+        }
+        function questRecurUpdateUnit() {
+            var select = document.getElementById('questRecurUnitSelect');
+            if (!select) return;
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            questRecurState.unit = select.value || 'week';
+            questRecurSyncControls();
+            renderQuestRecurCalendar();
+        }
+        function questRecurUpdateMonthlyMode() {
+            var select = document.getElementById('questRecurMonthlyMode');
+            if (!select) return;
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            questRecurState.monthlyMode = select.value || 'same-day';
+            renderQuestRecurCalendar();
+        }
+        function questRecurToggleWeekday(day) {
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            var idx = questRecurState.weekdays.indexOf(day);
+            if (idx === -1) {
+                questRecurState.weekdays.push(day);
+            } else if (questRecurState.weekdays.length > 1) {
+                questRecurState.weekdays.splice(idx, 1);
+            }
+            renderQuestRecurWeekdays();
+            renderQuestRecurCalendar();
+        }
+        function renderQuestRecurWeekdays() {
+            var buttons = document.querySelectorAll('#questRecurDropdown .quest-recur-day');
+            if (!buttons || !buttons.length) return;
+            buttons.forEach(function (btn) {
+                var dayAttr = btn.getAttribute('data-day');
+                var day = parseInt(dayAttr, 10);
+                var active = questRecurState && questRecurState.weekdays.indexOf(day) !== -1;
+                btn.classList.remove('bg-blue-600', 'text-white', 'bg-gray-100', 'text-gray-700');
+                if (active) {
+                    btn.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    btn.classList.add('bg-gray-100', 'text-gray-700');
+                }
+            });
+        }
+        function questRecurGoToday() {
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            var today = new Date();
+            questRecurState.month = today.getMonth();
+            questRecurState.year = today.getFullYear();
+            renderQuestRecurCalendar();
+        }
+        function questRecurChangeMonth(delta) {
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            var m = questRecurState.month + delta;
+            var y = questRecurState.year;
+            if (m < 0) {
+                m = 11;
+                y -= 1;
+            } else if (m > 11) {
+                m = 0;
+                y += 1;
+            }
+            questRecurState.month = m;
+            questRecurState.year = y;
+            renderQuestRecurCalendar();
+        }
+        function questRecurIsOccurrence(date) {
+            if (!questRecurState || !questRecurState.baseDate) return false;
+            var base = new Date(questRecurState.baseDate.getFullYear(), questRecurState.baseDate.getMonth(), questRecurState.baseDate.getDate());
+            var current = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            var diffMs = current.getTime() - base.getTime();
+            if (diffMs < 0) return false;
+            var oneDay = 24 * 60 * 60 * 1000;
+            var diffDays = Math.floor(diffMs / oneDay);
+            if (questRecurState.unit === 'day') {
+                if (diffDays === 0) return true;
+                return diffDays % questRecurState.interval === 0;
+            }
+            if (questRecurState.unit === 'week') {
+                var weekday = current.getDay();
+                if (questRecurState.weekdays.indexOf(weekday) === -1) return false;
+                var diffWeeks = Math.floor(diffDays / 7);
+                return diffWeeks % questRecurState.interval === 0;
+            }
+            if (questRecurState.unit === 'month') {
+                var monthsDiff = (current.getFullYear() - base.getFullYear()) * 12 + (current.getMonth() - base.getMonth());
+                if (monthsDiff < 0) return false;
+                if (monthsDiff % questRecurState.interval !== 0) return false;
+                var mode = questRecurState.monthlyMode || 'same-day';
+                if (mode === 'first-day') {
+                    return current.getDate() === 1;
+                }
+                if (mode === 'last-day') {
+                    var lastDay = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+                    return current.getDate() === lastDay;
+                }
+                return current.getDate() === base.getDate();
+            }
+            if (questRecurState.unit === 'year') {
+                var yearDiff = current.getFullYear() - base.getFullYear();
+                if (yearDiff < 0) return false;
+                if (yearDiff % questRecurState.interval !== 0) return false;
+                return current.getMonth() === base.getMonth() && current.getDate() === base.getDate();
+            }
+            return false;
+        }
+        function renderQuestRecurCalendar() {
+            var labelEl = document.getElementById('questRecurMonthLabel');
+            var grid = document.getElementById('questRecurCalendarGrid');
+            if (!labelEl || !grid) return;
+            if (!questRecurState) {
+                openQuestRecur();
+            }
+            if (!questRecurState) return;
+            var month = questRecurState.month;
+            var year = questRecurState.year;
+            var base = questRecurState.baseDate || new Date();
+            var today = new Date();
+            var monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            labelEl.textContent = monthNames[month] + ' ' + year;
+            grid.innerHTML = '';
+            var first = new Date(year, month, 1);
+            var startWeekday = first.getDay();
+            var daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (var i = 0; i < startWeekday; i++) {
+                var emptyCell = document.createElement('div');
+                grid.appendChild(emptyCell);
+            }
+            for (var d = 1; d <= daysInMonth; d++) {
+                var cellDate = new Date(year, month, d);
+                var cell = document.createElement('button');
+                cell.type = 'button';
+                cell.textContent = String(d);
+                var classes = ['w-7', 'h-7', 'flex', 'items-center', 'justify-center', 'rounded-full', 'text-[11px]'];
+                var isToday = cellDate.getFullYear() === today.getFullYear() &&
+                    cellDate.getMonth() === today.getMonth() &&
+                    cellDate.getDate() === today.getDate();
+                var isBase = cellDate.getFullYear() === base.getFullYear() &&
+                    cellDate.getMonth() === base.getMonth() &&
+                    cellDate.getDate() === base.getDate();
+                var isOccur = questRecurIsOccurrence(cellDate);
+                if (isBase) {
+                    classes.push('bg-red-500', 'text-white');
+                } else if (isOccur) {
+                    classes.push('bg-blue-100', 'text-blue-700');
+                } else if (isToday) {
+                    classes.push('border', 'border-red-300', 'text-red-500');
+                } else {
+                    classes.push('text-gray-500');
+                }
+                cell.className = classes.join(' ');
+                grid.appendChild(cell);
+            }
+        }
         function updateQuestDepartmentLabel() {
             var dropdown = document.getElementById('questDepartmentDropdown');
             var labelEl = document.getElementById('questDepartmentButtonLabel');
@@ -554,6 +1322,106 @@ export function renderSidebar(target) {
             } else {
                 labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
             }
+        }
+        function updateQuestPositionLabel() {
+            var dropdown = document.getElementById('questPositionDropdown');
+            var labelEl = document.getElementById('questPositionButtonLabel');
+            if (!dropdown || !labelEl) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                labelEl.textContent = 'Select positions...';
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.quest-position-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.quest-position-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (!names.length) {
+                labelEl.textContent = 'Select positions...';
+            } else if (names.length === 1) {
+                labelEl.textContent = names[0];
+            } else if (names.length === 2) {
+                labelEl.textContent = names[0] + ', ' + names[1];
+            } else {
+                labelEl.textContent = names[0] + ' and ' + (names.length - 1) + ' more';
+            }
+        }
+        function updateQuestUserLabel(dropdownId, labelId, placeholderText, avatarsId) {
+            var dropdown = document.getElementById(dropdownId);
+            var labelEl = document.getElementById(labelId);
+            var avatarsEl = avatarsId ? document.getElementById(avatarsId) : null;
+            if (!dropdown) return;
+            var selected = Array.prototype.slice.call(
+                dropdown.querySelectorAll('input[type="checkbox"]:checked')
+            );
+            if (!selected.length) {
+                if (labelEl) {
+                    labelEl.textContent = placeholderText;
+                }
+                if (avatarsEl) {
+                    avatarsEl.innerHTML = '';
+                }
+                return;
+            }
+            var names = selected.map(function (cb) {
+                var row = cb.closest('.quest-user-option');
+                if (!row) return '';
+                var nameEl = row.querySelector('.quest-user-name');
+                return nameEl ? nameEl.textContent.trim() : '';
+            }).filter(function (v) { return v; });
+            if (avatarsEl) {
+                avatarsEl.innerHTML = '';
+                var maxAvatars = 4;
+                selected.forEach(function (cb, index) {
+                    if (index >= maxAvatars) return;
+                    var row = cb.closest('.quest-user-option');
+                    var imgEl = row ? row.querySelector('img') : null;
+                    var name = names[index] || '';
+                    var uid = cb.getAttribute('data-user-id') || '';
+                    var initials = getQuestUserInitials({ name: name, uid: uid });
+                    var avatarNode;
+                    if (imgEl && imgEl.getAttribute('src')) {
+                        avatarNode = document.createElement('img');
+                        avatarNode.src = imgEl.getAttribute('src');
+                        avatarNode.alt = name || '';
+                        avatarNode.className = 'w-6 h-6 rounded-full object-cover border border-gray-200';
+                    } else {
+                        avatarNode = document.createElement('span');
+                        avatarNode.className = 'w-6 h-6 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                        avatarNode.textContent = initials;
+                    }
+                    avatarsEl.appendChild(avatarNode);
+                });
+                if (selected.length > maxAvatars) {
+                    var more = document.createElement('span');
+                    more.className = 'w-6 h-6 rounded-full bg-slate-800 text-slate-100 text-[10px] font-semibold flex items-center justify-center';
+                    more.textContent = '+' + (selected.length - maxAvatars);
+                    avatarsEl.appendChild(more);
+                }
+            }
+            if (labelEl) {
+                labelEl.textContent = '';
+            }
+        }
+        function getQuestUserInitials(user) {
+            var source = user.name || user.email || user.uid || '';
+            if (!source) return 'U';
+            var parts = source.trim().split(/\s+/);
+            var initials = parts.map(function (p) { return p[0]; }).join('');
+            return initials.substring(0, 2).toUpperCase();
+        }
+        function filterQuestUsers(users, query) {
+            var q = String(query || '').trim().toLowerCase();
+            if (!q) return users.slice();
+            return users.filter(function (u) {
+                var name = String(u.name || '').toLowerCase();
+                var email = String(u.email || '').toLowerCase();
+                return name.indexOf(q) !== -1 || email.indexOf(q) !== -1;
+            });
         }
         async function loadQuestDepartments() {
             var dropdown = document.getElementById('questDepartmentDropdown');
@@ -598,7 +1466,191 @@ export function renderSidebar(target) {
                 dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load departments.</span>';
             }
         }
+        async function loadQuestPositions() {
+            var dropdown = document.getElementById('questPositionDropdown');
+            if (!dropdown) return;
+            dropdown.innerHTML = '<span class="text-gray-400 text-xs">Loading positions...</span>';
+            try {
+                var parentWin = window.parent;
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    dropdown.innerHTML = '<span class="text-red-500 text-xs">Positions not available.</span>';
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "positions"));
+                dropdown.innerHTML = '';
+                snap.forEach(function (docSnap) {
+                    var d = docSnap.data() || {};
+                    var name = d.name || "Untitled";
+                    var row = document.createElement('div');
+                    row.className = 'quest-position-option flex items-center gap-2 p-2 hover:bg-gray-100 rounded-lg cursor-pointer';
+                    row.innerHTML =
+                        '<span class="quest-position-name flex-1 text-xs md:text-sm text-gray-700">' + name + '</span>' +
+                        '<input type="checkbox" class="ml-2 accent-blue-600" data-position-id="' + docSnap.id + '">';
+                    dropdown.appendChild(row);
+                    var checkbox = row.querySelector('input[type="checkbox"]');
+                    checkbox.addEventListener('change', updateQuestPositionLabel);
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                            return;
+                        }
+                        checkbox.checked = !checkbox.checked;
+                        updateQuestPositionLabel();
+                    });
+                });
+                if (!dropdown.innerHTML.trim()) {
+                    dropdown.innerHTML = '<span class="text-gray-400 text-xs">No positions available.</span>';
+                } else {
+                    updateQuestPositionLabel();
+                }
+            } catch (e) {
+                console.error('Failed to load positions for quest', e);
+                dropdown.innerHTML = '<span class="text-red-500 text-xs">Failed to load positions.</span>';
+            }
+        }
+        async function loadQuestUsers() {
+            var parentWin = window.parent;
+            var assignList = document.getElementById('questAssignList');
+            var notifyList = document.getElementById('questNotifyList');
+            if (!assignList && !notifyList) return;
+            if (assignList) {
+                assignList.innerHTML = '<div class="text-slate-500 text-xs">Loading users...</div>';
+            }
+            if (notifyList) {
+                notifyList.innerHTML = '<div class="text-slate-500 text-xs">Loading users...</div>';
+            }
+            try {
+                if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) {
+                    if (assignList) {
+                        assignList.innerHTML = '<div class="text-red-500 text-xs">Users not available.</div>';
+                    }
+                    if (notifyList) {
+                        notifyList.innerHTML = '<div class="text-red-500 text-xs">Users not available.</div>';
+                    }
+                    return;
+                }
+                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, "users"));
+                var users = [];
+                snap.forEach(function (docSnap) {
+                    var u = docSnap.data() || {};
+                    users.push({
+                        uid: docSnap.id,
+                        name: u.name || u.email || "Unknown",
+                        email: u.email || "",
+                        photo: u.photo || ""
+                    });
+                });
+                users.sort(function (a, b) {
+                    return a.name.localeCompare(b.name);
+                });
+                if (assignList) {
+                    var baseUsers = users.slice();
+                    function renderAssign(list) {
+                        assignList.innerHTML = '';
+                        list.forEach(function (user) {
+                            var row = document.createElement('div');
+                            row.className = 'quest-user-option flex items-center gap-3 px-2 py-2 hover:bg-slate-800 rounded-xl cursor-pointer';
+                            var initials = getQuestUserInitials(user);
+                            var avatar;
+                            if (user.photo) {
+                                avatar = '<img src="' + user.photo + '" alt="' + user.name + '" class="w-8 h-8 rounded-full object-cover border border-slate-700">';
+                            } else {
+                                avatar = '<span class="w-8 h-8 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center">' + initials + '</span>';
+                            }
+                            row.innerHTML =
+                                '<div class="flex items-center gap-3 flex-1">' +
+                                    avatar +
+                                    '<span class="quest-user-name text-xs md:text-sm text-white">' + user.name + '</span>' +
+                                '</div>' +
+                                '<input type="checkbox" class="ml-2 accent-sky-500" data-user-id="' + user.uid + '">';
+                            assignList.appendChild(row);
+                            var checkbox = row.querySelector('input[type="checkbox"]');
+                            checkbox.addEventListener('change', function () {
+                                updateQuestUserLabel('questAssignDropdown', 'questAssignButtonLabel', 'Select user...', 'questAssignAvatars');
+                            });
+                            row.addEventListener('click', function (e) {
+                                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                                    return;
+                                }
+                                checkbox.checked = !checkbox.checked;
+                                updateQuestUserLabel('questAssignDropdown', 'questAssignButtonLabel', 'Select user...', 'questAssignAvatars');
+                            });
+                        });
+                        if (!assignList.innerHTML.trim()) {
+                            assignList.innerHTML = '<div class="text-slate-500 text-xs">No users found.</div>';
+                        } else {
+                            updateQuestUserLabel('questAssignDropdown', 'questAssignButtonLabel', 'Select user...', 'questAssignAvatars');
+                        }
+                    }
+                    renderAssign(baseUsers);
+                    var assignSearch = document.getElementById('questAssignSearch');
+                    if (assignSearch) {
+                        assignSearch.addEventListener('input', function () {
+                            var filtered = filterQuestUsers(baseUsers, assignSearch.value);
+                            renderAssign(filtered);
+                        });
+                    }
+                }
+                if (notifyList) {
+                    var baseUsersNotify = users.slice();
+                    function renderNotify(listN) {
+                        notifyList.innerHTML = '';
+                        listN.forEach(function (user) {
+                            var row2 = document.createElement('div');
+                            row2.className = 'quest-user-option flex items-center gap-3 px-2 py-2 hover:bg-slate-800 rounded-xl cursor-pointer';
+                            var initials2 = getQuestUserInitials(user);
+                            var avatar2;
+                            if (user.photo) {
+                                avatar2 = '<img src="' + user.photo + '" alt="' + user.name + '" class="w-8 h-8 rounded-full object-cover border border-slate-700">';
+                            } else {
+                                avatar2 = '<span class="w-8 h-8 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center">' + initials2 + '</span>';
+                            }
+                            row2.innerHTML =
+                                '<div class="flex items-center gap-3 flex-1">' +
+                                    avatar2 +
+                                    '<span class="quest-user-name text-xs md:text-sm text-white">' + user.name + '</span>' +
+                                '</div>' +
+                                '<input type="checkbox" class="ml-2 accent-sky-500" data-user-id="' + user.uid + '">';
+                            notifyList.appendChild(row2);
+                            var cb2 = row2.querySelector('input[type="checkbox"]');
+                            cb2.addEventListener('change', function () {
+                                updateQuestUserLabel('questNotifyDropdown', 'questNotifyButtonLabel', 'Select user...', 'questNotifyAvatars');
+                            });
+                            row2.addEventListener('click', function (e) {
+                                if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') {
+                                    return;
+                                }
+                                cb2.checked = !cb2.checked;
+                                updateQuestUserLabel('questNotifyDropdown', 'questNotifyButtonLabel', 'Select user...', 'questNotifyAvatars');
+                            });
+                        });
+                        if (!notifyList.innerHTML.trim()) {
+                            notifyList.innerHTML = '<div class="text-slate-500 text-xs">No users found.</div>';
+                        } else {
+                            updateQuestUserLabel('questNotifyDropdown', 'questNotifyButtonLabel', 'Select user...', 'questNotifyAvatars');
+                        }
+                    }
+                    renderNotify(baseUsersNotify);
+                    var notifySearch = document.getElementById('questNotifySearch');
+                    if (notifySearch) {
+                        notifySearch.addEventListener('input', function () {
+                            var filteredN = filterQuestUsers(baseUsersNotify, notifySearch.value);
+                            renderNotify(filteredN);
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load users for quest', e);
+                if (assignList) {
+                    assignList.innerHTML = '<div class="text-red-500 text-xs">Failed to load users.</div>';
+                }
+                if (notifyList) {
+                    notifyList.innerHTML = '<div class="text-red-500 text-xs">Failed to load users.</div>';
+                }
+            }
+        }
         loadQuestDepartments();
+        loadQuestPositions();
+        loadQuestUsers();
     </script>
 </body>
 </html>`;
