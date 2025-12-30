@@ -136,6 +136,7 @@ export function renderSidebar(target) {
     <title>Quest Board - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         body { font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
@@ -291,6 +292,43 @@ export function renderSidebar(target) {
         }
         .tag-remove:hover {
             color: #111827;
+        }
+        .rich-editor {
+            position: relative;
+            background: #ffffff;
+        }
+        .rich-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 8px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .rich-btn {
+            border: none;
+            background: transparent;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: #4b5563;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .rich-btn:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+        .rich-editor-body {
+            min-height: 120px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .rich-editor-body:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
         }
     </style>
 </head>
@@ -770,16 +808,17 @@ export function renderSidebar(target) {
                 </div>
             </div>
             <div class="border border-gray-200 rounded-2xl overflow-hidden mb-6">
-                <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 text-xs text-gray-500">
-                    <button type="button" class="px-2 py-1 font-semibold">B</button>
-                    <button type="button" class="px-2 py-1 italic">I</button>
-                    <button type="button" class="px-2 py-1 underline">U</button>
-                    <button type="button" class="px-2 py-1">•</button>
-                    <button type="button" class="px-2 py-1">1.</button>
-                </div>
-                <div contenteditable="true"
-                    class="min-h-[120px] px-4 py-3 text-sm text-gray-700 outline-none"
-                    data-placeholder="Task description or notes...">
+                <div class="rich-editor">
+                    <div class="rich-toolbar">
+                        <button type="button" class="rich-btn" onclick="questApplyFormat('questDescEditor','bold')"><i class="bi bi-type-bold"></i></button>
+                        <button type="button" class="rich-btn" onclick="questApplyFormat('questDescEditor','italic')"><i class="bi bi-type-italic"></i></button>
+                        <button type="button" class="rich-btn" onclick="questApplyFormat('questDescEditor','underline')"><i class="bi bi-type-underline"></i></button>
+                        <button type="button" class="rich-btn" onclick="questApplyFormat('questDescEditor','insertUnorderedList')"><i class="bi bi-list-ul"></i></button>
+                        <button type="button" class="rich-btn" onclick="questApplyFormat('questDescEditor','insertOrderedList')"><i class="bi bi-list-ol"></i></button>
+                        <button type="button" class="rich-btn ms-auto" onclick="questTriggerDescFileInput()"><i class="bi bi-paperclip"></i></button>
+                    </div>
+                    <div id="questDescEditor" class="rich-editor-body min-h-[120px] px-4 py-3 text-sm text-gray-700 outline-none" contenteditable="true" data-placeholder="Task description or notes..."></div>
+                    <input type="file" id="quest-desc-file-input" multiple style="display:none" onchange="questHandleDescFiles(this)">
                 </div>
             </div>
             <div class="flex flex-col md:flex-row items-stretch md:items-center justify-end gap-3">
@@ -1809,6 +1848,48 @@ export function renderSidebar(target) {
                 var email = String(u.email || '').toLowerCase();
                 return name.indexOf(q) !== -1 || email.indexOf(q) !== -1;
             });
+        }
+        function questApplyFormat(editorId, command) {
+            var editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(command, false, null);
+        }
+        function questTriggerDescFileInput() {
+            var input = document.getElementById('quest-desc-file-input');
+            if (input) input.click();
+        }
+        async function questUploadDescriptionFiles(editorId, files) {
+            if (!files || files.length === 0) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.storage || !parentWin.ref || !parentWin.uploadBytes || !parentWin.getDownloadURL) {
+                return;
+            }
+            var editor = document.getElementById(editorId);
+            if (!editor) return;
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                try {
+                    var path = 'quest_descriptions/' + Date.now() + '_' + file.name;
+                    var sRef = parentWin.ref(parentWin.storage, path);
+                    await parentWin.uploadBytes(sRef, file);
+                    var url = await parentWin.getDownloadURL(sRef);
+                    var isImage = file.type && file.type.indexOf('image/') === 0;
+                    var html = isImage
+                        ? '<div><img src=\"' + url + '\" alt=\"' + file.name + '\" style=\"max-width:100%; border-radius:8px;\"></div>'
+                        : '<div><a href=\"' + url + '\" target=\"_blank\" rel=\"noopener\">' + file.name + '</a></div>';
+                    editor.focus();
+                    document.execCommand('insertHTML', false, html);
+                } catch (e) {
+                    console.error('Failed to upload quest description file', e);
+                }
+            }
+        }
+        async function questHandleDescFiles(inputEl) {
+            if (!inputEl) return;
+            var files = inputEl.files;
+            await questUploadDescriptionFiles('questDescEditor', files);
+            inputEl.value = '';
         }
         function getQuestTags() {
             var hidden = document.getElementById('quest-tags');
