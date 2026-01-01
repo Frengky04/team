@@ -1027,9 +1027,14 @@ export function renderSidebar(target) {
             <div id="questAlertTitle" class="text-sm font-semibold text-gray-900 mb-2"></div>
             <div id="questAlertMessage" class="text-xs text-gray-600 mb-4"></div>
             <div class="flex justify-end gap-2">
-                <button type="button"
+                <button type="button" id="questAlertCancelButton"
+                    class="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 hidden"
+                    onclick="questAlertCancel()">
+                    Cancel
+                </button>
+                <button type="button" id="questAlertOkButton"
                     class="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200"
-                    onclick="document.getElementById('questUniversalAlert').classList.add('hidden')">
+                    onclick="questAlertOk()">
                     OK
                 </button>
             </div>
@@ -1042,18 +1047,83 @@ export function renderSidebar(target) {
         var sideQuestCurrentPriority = 'normal';
         var questActionMode = null;
         var questTasksById = {};
+        var questAlertOkHandler = null;
+        var questAlertCancelHandler = null;
 
         function showQuestAlert(title, message) {
             var modal = document.getElementById('questUniversalAlert');
             var titleEl = document.getElementById('questAlertTitle');
             var messageEl = document.getElementById('questAlertMessage');
-            if (!modal || !titleEl || !messageEl) {
+            var okBtn = document.getElementById('questAlertOkButton');
+            var cancelBtn = document.getElementById('questAlertCancelButton');
+            if (!modal || !titleEl || !messageEl || !okBtn || !cancelBtn) {
                 alert((title ? title + ': ' : '') + message);
                 return;
             }
+            questAlertOkHandler = null;
+            questAlertCancelHandler = null;
+            cancelBtn.classList.add('hidden');
+            okBtn.textContent = 'OK';
             titleEl.textContent = title;
             messageEl.textContent = message;
             modal.classList.remove('hidden');
+        }
+
+        function showQuestConfirm(title, message, onOk, onCancel) {
+            var modal = document.getElementById('questUniversalAlert');
+            var titleEl = document.getElementById('questAlertTitle');
+            var messageEl = document.getElementById('questAlertMessage');
+            var okBtn = document.getElementById('questAlertOkButton');
+            var cancelBtn = document.getElementById('questAlertCancelButton');
+            if (!modal || !titleEl || !messageEl || !okBtn || !cancelBtn) {
+                var text = message;
+                if (title) {
+                    text = title + ': ' + message;
+                }
+                if (window.confirm(text)) {
+                    if (typeof onOk === 'function') {
+                        onOk();
+                    }
+                } else {
+                    if (typeof onCancel === 'function') {
+                        onCancel();
+                    }
+                }
+                return;
+            }
+            questAlertOkHandler = typeof onOk === 'function' ? onOk : null;
+            questAlertCancelHandler = typeof onCancel === 'function' ? onCancel : null;
+            cancelBtn.classList.remove('hidden');
+            okBtn.textContent = 'OK';
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            modal.classList.remove('hidden');
+        }
+
+        function questAlertOk() {
+            var modal = document.getElementById('questUniversalAlert');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            if (questAlertOkHandler) {
+                var handler = questAlertOkHandler;
+                questAlertOkHandler = null;
+                questAlertCancelHandler = null;
+                handler();
+            }
+        }
+
+        function questAlertCancel() {
+            var modal = document.getElementById('questUniversalAlert');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+            if (questAlertCancelHandler) {
+                var handler = questAlertCancelHandler;
+                questAlertOkHandler = null;
+                questAlertCancelHandler = null;
+                handler();
+            }
         }
 
         function switchTab(priority, element) {
@@ -2735,30 +2805,33 @@ export function renderSidebar(target) {
                 alert('Gagal mengubah status quest: ' + (e && e.message ? e.message : String(e)));
             }
         }
-        async function questDeleteTask(taskId) {
+        function questDeleteTask(taskId) {
             if (!taskId) return;
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.deleteDoc) {
-                alert('Tidak dapat menghapus quest: koneksi database tidak tersedia.');
+                showQuestAlert('Perhatian', 'Tidak dapat menghapus quest: koneksi database tidak tersedia.');
                 return;
             }
-            var ok = window.confirm('Yakin ingin menghapus quest ini?');
-            if (!ok) return;
-            try {
-                await parentWin.deleteDoc(parentWin.doc(parentWin.db, 'tasks', taskId));
-                if (questTasksById && questTasksById[taskId]) {
-                    delete questTasksById[taskId];
-                }
-                loadQuestTasks();
-            } catch (e) {
-                console.error('Gagal menghapus quest', e);
-                alert('Gagal menghapus quest: ' + (e && e.message ? e.message : String(e)));
-            }
+            showQuestConfirm('Konfirmasi', 'Yakin ingin menghapus quest ini?', function () {
+                parentWin.deleteDoc(parentWin.doc(parentWin.db, 'tasks', taskId)).then(function () {
+                    if (questTasksById && questTasksById[taskId]) {
+                        delete questTasksById[taskId];
+                    }
+                    loadQuestTasks();
+                }).catch(function (e) {
+                    console.error('Gagal menghapus quest', e);
+                    var message = 'Gagal menghapus quest.';
+                    if (e && e.message) {
+                        message += ' ' + e.message;
+                    }
+                    showQuestAlert('Perhatian', message);
+                });
+            });
         }
         function questOpenTask(taskId) {
             if (!taskId) return;
             var targetWin = window.parent && window.parent !== window ? window.parent : window;
-            var url = 'quest/quest-task.html?taskId=' + encodeURIComponent(taskId);
+            var url = 'quest/quest-edit.html?taskId=' + encodeURIComponent(taskId);
             try {
                 targetWin.open(url, '_blank');
             } catch (e) {
@@ -3076,28 +3149,7 @@ export function renderSidebar(target) {
 
             if (frame) {
                 frame.removeAttribute('src');
-                frame.srcdoc = '<!DOCTYPE html><html><body style="font-family: system-ui, sans-serif; padding: 16px;">Loading Quest Board...</body></html>';
-                var questUrl = window.location.origin + '/quest/quest.html';
-                console.log('Fetching Quest Board HTML from:', questUrl);
-                try {
-                    fetch(questUrl, { cache: 'no-cache' })
-                        .then(function (res) {
-                            if (!res.ok) {
-                                throw new Error('HTTP ' + res.status + ' ' + res.statusText);
-                            }
-                            return res.text();
-                        })
-                        .then(function (text) {
-                            frame.srcdoc = text;
-                        })
-                        .catch(function (err) {
-                            console.error('Failed to load quest/quest.html into iframe', err);
-                            frame.srcdoc = '<!DOCTYPE html><html><body style="font-family: system-ui, sans-serif; padding: 16px; color: #b91c1c;">Gagal memuat Quest Board (quest/quest.html tidak ditemukan atau diblokir).</body></html>';
-                        });
-                } catch (e) {
-                    console.error('Unexpected error while loading quest/quest.html', e);
-                    frame.srcdoc = '<!DOCTYPE html><html><body style="font-family: system-ui, sans-serif; padding: 16px; color: #b91c1c;">Gagal memuat Quest Board karena error tak terduga.</body></html>';
-                }
+                frame.srcdoc = html;
             }
             if (modalEl && typeof bootstrap !== "undefined" && bootstrap.Modal) {
                 const overlay = document.getElementById('questBoardOverlay');
@@ -3113,8 +3165,12 @@ export function renderSidebar(target) {
                 const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 modal.show();
             } else {
-                var fallbackUrl = window.location.origin + '/quest/quest.html';
-                window.open(fallbackUrl, '_blank');
+                var newWin = window.open('', '_blank');
+                if (newWin && newWin.document) {
+                    newWin.document.open();
+                    newWin.document.write(html);
+                    newWin.document.close();
+                }
             }
         });
     }
