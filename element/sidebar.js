@@ -2946,11 +2946,6 @@ export function renderSidebar(target) {
                     var html = '';
                     html += '<div class="flex items-start justify-between gap-2">';
                     html += '<h3 class="font-semibold text-gray-900 text-sm md:text-base leading-snug">' + esc(title) + '</h3>';
-                    if (dueText) {
-                        html += '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-semibold">';
-                        html += esc(dueText);
-                        html += '</span>';
-                    }
                     html += '</div>';
                     if (descText) {
                         html += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' + esc(descText) + '</p>';
@@ -4189,39 +4184,39 @@ export function renderSidebar(target) {
             <div class="flex-grow border-t border-gray-200"></div>
         </div>
         <ul class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" role="tablist">
-            <li class="nav-card active bg-[#FEE2E2] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('urgent', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="alert-circle" class="w-6 h-6 text-red-500"></i>
+            <li class="nav-card active bg-[#FEE2E2] p-5 rounded-[2rem] flex flex-col gap-3 transition-all duration-200 transform shadow-lg -translate-y-1" onclick="switchTab('urgent', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background: var(--dlg-red)">
+                    <i data-lucide="alert-circle" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <div class="text-3xl font-bold">12</div>
+                    <div class="text-3xl font-bold" id="sideQuestUrgentCount">00</div>
                     <div class="text-xs font-bold text-red-700/60 uppercase tracking-widest">Urgent</div>
                 </div>
             </li>
-            <li class="nav-card bg-[#E0F2FE] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('high', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="trending-up" class="w-6 h-6 text-blue-500"></i>
+            <li class="nav-card bg-[#E0F2FE] p-5 rounded-[2rem] flex flex-col gap-3 transition-all duration-200 transform" onclick="switchTab('high', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background: var(--dlg-blue)">
+                    <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <div class="text-3xl font-bold">08</div>
+                    <div class="text-3xl font-bold" id="sideQuestHighCount">00</div>
                     <div class="text-xs font-bold text-blue-700/60 uppercase tracking-widest">High</div>
                 </div>
             </li>
-            <li class="nav-card bg-[#FEF3C7] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('normal', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="box" class="w-6 h-6 text-amber-500"></i>
+            <li class="nav-card bg-[#FEF3C7] p-5 rounded-[2rem] flex flex-col gap-3 transition-all duration-200 transform" onclick="switchTab('normal', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background: var(--dlg-yellow)">
+                    <i data-lucide="box" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <div class="text-3xl font-bold">24</div>
+                    <div class="text-3xl font-bold" id="sideQuestNormalCount">00</div>
                     <div class="text-xs font-bold text-amber-700/60 uppercase tracking-widest">Normal</div>
                 </div>
             </li>
-            <li class="nav-card bg-[#F3E8FF] p-5 rounded-[2rem] flex flex-col gap-3" onclick="switchTab('low', this)">
-                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow-sm">
-                    <i data-lucide="arrow-down-circle" class="w-6 h-6 text-purple-500"></i>
+            <li class="nav-card bg-[#F3E8FF] p-5 rounded-[2rem] flex flex-col gap-3 transition-all duration-200 transform" onclick="switchTab('low', this)">
+                <div class="icon-box w-10 h-10 rounded-xl flex items-center justify-center shadow" style="background: var(--dlg-purple)">
+                    <i data-lucide="arrow-down-circle" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <div class="text-3xl font-bold">05</div>
+                    <div class="text-3xl font-bold" id="sideQuestLowCount">00</div>
                     <div class="text-xs font-bold text-purple-700/60 uppercase tracking-widest">Low</div>
                 </div>
             </li>
@@ -4244,9 +4239,13 @@ export function renderSidebar(target) {
         var questCurrentPriority = 'urgent';
         var sideQuestCurrentPriority = 'normal';
         function switchTab(priority, element) {
-            document.querySelectorAll('.nav-card').forEach(function (card) { card.classList.remove('active'); });
+            document.querySelectorAll('.nav-card').forEach(function (card) {
+                card.classList.remove('active');
+                card.classList.remove('shadow-lg', '-translate-y-1');
+            });
             if (element) {
                 element.classList.add('active');
+                element.classList.add('shadow-lg', '-translate-y-1');
             }
             questCurrentPriority = priority;
             document.querySelectorAll('.tab-pane').forEach(function (pane) { pane.classList.add('hidden'); });
@@ -4695,6 +4694,20 @@ export function renderSidebar(target) {
                         };
                     }).filter(function (x) { return x && x.name; });
                 }
+                var urgentCount = 0;
+                var highCount = 0;
+                var normalCount = 0;
+                var lowCount = 0;
+                var urgentCountEl = document.getElementById('sideQuestUrgentCount');
+                var highCountEl = document.getElementById('sideQuestHighCount');
+                var normalCountEl = document.getElementById('sideQuestNormalCount');
+                var lowCountEl = document.getElementById('sideQuestLowCount');
+                function setSideQuestCount(el, value) {
+                    if (!el) return;
+                    var v = value || 0;
+                    if (v < 0) v = 0;
+                    el.textContent = v < 10 ? '0' + v : String(v);
+                }
                 if (urgentList) urgentList.innerHTML = '';
                 if (highList) highList.innerHTML = '';
                 if (normalList) normalList.innerHTML = '';
@@ -4711,12 +4724,16 @@ export function renderSidebar(target) {
                     var targetList = null;
                     if (priority === 'urgent') {
                         targetList = urgentList;
+                        if (targetList) urgentCount++;
                     } else if (priority === 'high') {
                         targetList = highList;
+                        if (targetList) highCount++;
                     } else if (priority === 'low') {
                         targetList = lowList;
+                        if (targetList) lowCount++;
                     } else {
                         targetList = normalList;
+                        if (targetList) normalCount++;
                     }
                     if (!targetList) return;
                     var descHtml = data.description || '';
@@ -4745,13 +4762,35 @@ export function renderSidebar(target) {
                     var dueText = data.due_date || data.dueDate || '';
                     var el = document.createElement('div');
                     el.className = 'p-4 rounded-2xl bg-gray-50 flex flex-col gap-2';
-                    var label = '#' + String(docSnap.id || '').substring(0, 6).toUpperCase();
+                    var headerRight = dueText ? String(dueText) : '';
+                    var pointsValue = 0;
+                    if (typeof data.points === 'number') {
+                        pointsValue = data.points;
+                    } else if (data.points) {
+                        var parsedPoints = parseFloat(String(data.points));
+                        if (!isNaN(parsedPoints)) {
+                            pointsValue = parsedPoints;
+                        }
+                    }
                     var htmlCard = '';
                     htmlCard += '<div class="flex items-start justify-between gap-2">';
                     htmlCard += '<div class="flex flex-col gap-1">';
                     htmlCard += '<h3 class="font-semibold text-gray-900 text-sm md:text-base leading-snug">' + esc(title) + '</h3>';
                     htmlCard += '</div>';
-                    htmlCard += '<span class="inline-flex items-center px-3 py-1 rounded-full bg-white shadow-sm text-[10px] md:text-xs font-bold text-gray-400">' + esc(label) + '</span>';
+                    if (headerRight || pointsValue > 0) {
+                        htmlCard += '<div class="flex flex-col items-end gap-1">';
+                        if (headerRight) {
+                            htmlCard += '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-semibold">';
+                            htmlCard += esc(headerRight);
+                            htmlCard += '</span>';
+                        }
+                        if (pointsValue > 0) {
+                            htmlCard += '<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] md:text-xs font-semibold">';
+                            htmlCard += esc(String(pointsValue) + ' XP');
+                            htmlCard += '</span>';
+                        }
+                        htmlCard += '</div>';
+                    }
                     htmlCard += '</div>';
                     if (descText) {
                         htmlCard += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' + esc(descText) + '</p>';
@@ -4783,37 +4822,36 @@ export function renderSidebar(target) {
                         }
                         htmlCard += '</div>';
                     }
-                    if (assignList.length > 0 || dueText) {
+                    if (assignList.length > 0) {
                         htmlCard += '<div class="flex items-center justify-between gap-2 mt-2">';
-                        if (assignList.length > 0) {
-                            htmlCard += '<div class="flex -space-x-1">';
-                            var maxAvatars = 4;
-                            assignList.forEach(function (uid, index) {
-                                if (index >= maxAvatars) return;
-                                var user = questUsersById && questUsersById[uid] ? questUsersById[uid] : { uid: uid };
-                                var initials = getQuestUserInitials(user);
-                                var titleText = user && user.name ? user.name : initials;
-                                if (user.photo) {
-                                    htmlCard += '<img src="' + esc(user.photo) + '" alt="' + esc(titleText) + '" title="' + esc(titleText) + '" class="w-7 h-7 rounded-full object-cover border border-gray-200 bg-white">';
-                                } else {
-                                    htmlCard += '<span class="w-7 h-7 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center border border-gray-200" title="' + esc(titleText) + '">';
-                                    htmlCard += esc(initials);
-                                    htmlCard += '</span>';
-                                }
-                            });
-                            if (assignList.length > maxAvatars) {
-                                var remaining = assignList.length - maxAvatars;
-                                htmlCard += '<span class="w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-[10px] font-semibold flex items-center justify-center border border-gray-200">+' + esc(String(remaining)) + '</span>';
+                        htmlCard += '<div class="flex -space-x-1">';
+                        var maxAvatars = 4;
+                        assignList.forEach(function (uid, index) {
+                            if (index >= maxAvatars) return;
+                            var user = questUsersById && questUsersById[uid] ? questUsersById[uid] : { uid: uid };
+                            var src = user.name || user.email || user.uid || '';
+                            var initials;
+                            if (!src) {
+                                initials = 'U';
+                            } else {
+                                var parts = String(src).trim().split(/\s+/);
+                                initials = parts.map(function (p) { return p[0]; }).join('');
+                                initials = initials.substring(0, 2).toUpperCase();
                             }
-                            htmlCard += '</div>';
-                        } else {
-                            htmlCard += '<div></div>';
+                            var titleText = user && user.name ? user.name : initials;
+                            if (user.photo) {
+                                htmlCard += '<img src="' + esc(user.photo) + '" alt="' + esc(titleText) + '" title="' + esc(titleText) + '" class="w-7 h-7 rounded-full object-cover border border-gray-200 bg-white">';
+                            } else {
+                                htmlCard += '<span class="w-7 h-7 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center border border-gray-200" title="' + esc(titleText) + '">';
+                                htmlCard += esc(initials);
+                                htmlCard += '</span>';
+                            }
+                        });
+                        if (assignList.length > maxAvatars) {
+                            var remaining = assignList.length - maxAvatars;
+                            htmlCard += '<span class="w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-[10px] font-semibold flex items-center justify-center border border-gray-200">+' + esc(String(remaining)) + '</span>';
                         }
-                        if (dueText) {
-                            htmlCard += '<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-red-500 text-white text-[10px] md:text-xs font-semibold">';
-                            htmlCard += esc(dueText);
-                            htmlCard += '</span>';
-                        }
+                        htmlCard += '</div>';
                         htmlCard += '</div>';
                     }
                     el.innerHTML = htmlCard;
@@ -4830,6 +4868,10 @@ export function renderSidebar(target) {
                 ensureList(highList, 'No high side quests yet.');
                 ensureList(normalList, 'No normal side quests yet.');
                 ensureList(lowList, 'No low side quests yet.');
+                setSideQuestCount(urgentCountEl, urgentCount);
+                setSideQuestCount(highCountEl, highCount);
+                setSideQuestCount(normalCountEl, normalCount);
+                setSideQuestCount(lowCountEl, lowCount);
             } catch (e) {
                 console.error('Failed to load side quests', e);
                 if (urgentList) urgentList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
