@@ -359,7 +359,7 @@ export function renderSidebar(target) {
                 </div>
                 <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
                     onclick="toggleQuestForm()">
-                    + create
+                    + Create
                 </button>
                 <button class="btn-dlg-red rounded-full px-5 py-2 text-sm font-semibold shadow-md"
                     onclick="if (window.parent && window.parent.closeQuestBoardModal) { window.parent.closeQuestBoardModal(); }">
