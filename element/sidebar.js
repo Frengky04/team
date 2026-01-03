@@ -1174,7 +1174,9 @@ export function renderSidebar(target) {
             }
         }
 
-        lucide.createIcons();
+        if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+        }
         var questAlertOkHandler = null;
         var questAlertCancelHandler = null;
 
@@ -4419,7 +4421,9 @@ export function renderSidebar(target) {
         </div>
     </div>
     <script>
-        lucide.createIcons();
+        if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+        }
         var questCurrentPriority = 'urgent';
         var sideQuestCurrentPriority = 'normal';
         var questTasksById = {};
@@ -5289,29 +5293,73 @@ export function renderSidebar(target) {
                     htmlCard += '  <div class="rich-editor mb-3">';
                     htmlCard += '    <div class="rich-toolbar">';
                     htmlCard += '      <div class="rich-toolbar-left">';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Bold" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'bold\')"><i class="bi bi-type-bold"></i></button>';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Italic" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'italic\')"><i class="bi bi-type-italic"></i></button>';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Underline" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'underline\')"><i class="bi bi-type-underline"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Bold" data-editor-id="reportEditor-' + taskId + '" data-command="bold"><i class="bi bi-type-bold"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Italic" data-editor-id="reportEditor-' + taskId + '" data-command="italic"><i class="bi bi-type-italic"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Underline" data-editor-id="reportEditor-' + taskId + '" data-command="underline"><i class="bi bi-type-underline"></i></button>';
                     htmlCard += '        <div class="w-px h-4 bg-gray-300 mx-1"></div>';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Bullet List" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'insertUnorderedList\')"><i class="bi bi-list-ul"></i></button>';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Numbered List" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'insertOrderedList\')"><i class="bi bi-list-ol"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Bullet List" data-editor-id="reportEditor-' + taskId + '" data-command="insertUnorderedList"><i class="bi bi-list-ul"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Numbered List" data-editor-id="reportEditor-' + taskId + '" data-command="insertOrderedList"><i class="bi bi-list-ol"></i></button>';
                     htmlCard += '        <div class="w-px h-4 bg-gray-300 mx-1"></div>';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Add Link" onclick="addLinkToEditor(\'reportEditor-' + taskId + '\')"><i class="bi bi-link-45deg"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Add Link" data-editor-id="reportEditor-' + taskId + '" data-command="link"><i class="bi bi-link-45deg"></i></button>';
                     htmlCard += '      </div>';
                     htmlCard += '      <div class="rich-toolbar-right">';
-                    htmlCard += '        <button type="button" class="rich-btn" title="Add Files" onclick="document.getElementById(\'reportFileInput-' + taskId + '\').click()"><i class="bi bi-paperclip"></i></button>';
-                    htmlCard += '        <input type="file" id="reportFileInput-' + taskId + '" class="hidden" multiple onchange="handleSideQuestFiles(this)" />';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Add Files" data-task-id="' + taskId + '" data-action="add-file"><i class="bi bi-paperclip"></i></button>';
                     htmlCard += '      </div>';
                     htmlCard += '    </div>';
                     htmlCard += '    <div id="reportEditor-' + taskId + '" class="rich-editor-body outline-none" contenteditable="true" data-placeholder="Insert your report here..."></div>';
+                    htmlCard += '    <input type="file" id="reportFileInput-' + taskId + '" class="hidden" multiple data-task-id="' + taskId + '" />';
+                    htmlCard += '    <div id="reportFiles-' + taskId + '" class="mt-2"></div>';
                     htmlCard += '  </div>';
                     htmlCard += '  <div class="flex justify-end gap-2">';
-                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full" onclick="toggleReportAccordion(\'' + taskId + '\')">Cancel</button>';
-                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-white btn-dlg-blue rounded-full" onclick="submitSideQuestReport(\'' + taskId + '\')">Submit Report</button>';
+                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full cancel-report-btn" data-task-id="' + taskId + '">Cancel</button>';
+                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-white btn-dlg-blue rounded-full submit-report-btn" data-task-id="' + taskId + '">Submit Report</button>';
                     htmlCard += '  </div>';
                     htmlCard += '</div>';
 
                     el.innerHTML = htmlCard;
+                    (function () {
+                        var editorId = 'reportEditor-' + taskId;
+                        var toolbarButtons = el.querySelectorAll('[data-editor-id="' + editorId + '"][data-command]');
+                        Array.prototype.slice.call(toolbarButtons).forEach(function (tb) {
+                            var cmd = tb.getAttribute('data-command');
+                            tb.addEventListener('click', function (e) {
+                                if (e && e.preventDefault) e.preventDefault();
+                                if (!cmd) return;
+                                if (cmd === 'link') {
+                                    addLinkToEditor(editorId);
+                                } else {
+                                    applyFormat(editorId, cmd);
+                                }
+                            });
+                        });
+                        var fileBtn = el.querySelector('[data-action="add-file"][data-task-id="' + taskId + '"]');
+                        if (fileBtn) {
+                            fileBtn.addEventListener('click', function () {
+                                var fileInput = document.getElementById('reportFileInput-' + taskId);
+                                if (fileInput) {
+                                    fileInput.click();
+                                }
+                            });
+                        }
+                        var fileInput = el.querySelector('#reportFileInput-' + taskId);
+                        if (fileInput) {
+                            fileInput.addEventListener('change', function () {
+                                handleSideQuestFiles(this);
+                            });
+                        }
+                        var cancelBtn = el.querySelector('.cancel-report-btn[data-task-id="' + taskId + '"]');
+                        if (cancelBtn) {
+                            cancelBtn.addEventListener('click', function () {
+                                toggleReportAccordion(taskId);
+                            });
+                        }
+                        var submitBtn = el.querySelector('.submit-report-btn[data-task-id="' + taskId + '"]');
+                        if (submitBtn) {
+                            submitBtn.addEventListener('click', function () {
+                                submitSideQuestReport(taskId);
+                            });
+                        }
+                    })();
                     el.setAttribute('data-task-id', String(docSnap.id || ''));
                     var btn = el.querySelector('.quest-card-check-btn');
                     var deleteBtn = el.querySelector('.quest-card-delete-btn');
@@ -5347,6 +5395,24 @@ export function renderSidebar(target) {
                             }
                         });
                     }
+
+                    // Bind rich text toolbar actions for this task's report editor
+                    (function () {
+                        var editorId = 'reportEditor-' + taskId;
+                        var toolbarButtons = el.querySelectorAll('[data-editor-id="' + editorId + '"][data-command]');
+                        Array.prototype.slice.call(toolbarButtons).forEach(function (tb) {
+                            var cmd = tb.getAttribute('data-command');
+                            tb.addEventListener('click', function (e) {
+                                if (e && e.preventDefault) e.preventDefault();
+                                if (!cmd) return;
+                                if (cmd === 'link') {
+                                    addLinkToEditor(editorId);
+                                } else {
+                                    applyFormat(editorId, cmd);
+                                }
+                            });
+                        });
+                    })();
                     if (deleteBtn && taskId) {
                         deleteBtn.addEventListener('click', function (evt) {
                             if (evt && evt.stopPropagation) {
