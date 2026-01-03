@@ -1151,11 +1151,19 @@ export function renderSidebar(target) {
                     taskId: taskId,
                     content: reportContent,
                     files: attachedFiles,
-                    submittedAt: new Date(),
+                    submittedAt: new Date().toISOString(),
                     submittedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : 'unknown'
                 };
-
-                await parentWin.addDoc(parentWin.collection(parentWin.db, 'quest_reports'), reportData);
+                var reportPayload = reportData;
+                if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
+                    try {
+                        reportPayload = parentWin.JSON.parse(parentWin.JSON.stringify(reportData));
+                    } catch (err) {
+                        reportPayload = reportData;
+                    }
+                }
+                
+                await parentWin.addDoc(parentWin.collection(parentWin.db, 'quest_reports'), reportPayload);
 
                 // Update task status to complete if not already
                 if (questTasksById[taskId] && (questTasksById[taskId].status || questTasksById[taskId].Status) !== 'Complete') {
@@ -4576,12 +4584,21 @@ export function renderSidebar(target) {
                 }
                 
                 // Save report to sub-collection 'reports'
-                await parentWin.addDoc(parentWin.collection(parentWin.db, 'tasks', taskId, 'reports'), {
+                var reportData = {
                     content: reportContent,
                     files: attachedFiles,
                     createdAt: new Date().toISOString(),
                     submittedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : 'unknown'
-                });
+                };
+                var reportPayload = reportData;
+                if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
+                    try {
+                        reportPayload = parentWin.JSON.parse(parentWin.JSON.stringify(reportData));
+                    } catch (err) {
+                        reportPayload = reportData;
+                    }
+                }
+                await parentWin.addDoc(parentWin.collection(parentWin.db, 'tasks', taskId, 'reports'), reportPayload);
                 
                 // Mark task as complete
                 await questToggleComplete(taskId);
