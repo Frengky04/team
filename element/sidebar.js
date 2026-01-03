@@ -1043,87 +1043,138 @@ export function renderSidebar(target) {
         var questTasksById = {};
         var questUsersById = {};
         var questActionMode = null;
+        var questCurrentPriority = 'urgent';
+        var sideQuestCurrentPriority = 'normal';
 
-        async function questToggleComplete(taskId) {
-            if (!taskId) return;
-            var parentWin = window.parent;
-            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.updateDoc) {
-                alert('Tidak dapat mengubah status quest: koneksi database tidak tersedia.');
-                return;
-            }
-            var currentStatus = null;
-            if (questTasksById && questTasksById[taskId]) {
-                currentStatus = questTasksById[taskId].status || questTasksById[taskId].Status;
-            }
-            var isComplete = String(currentStatus || '').toLowerCase() === 'complete';
-            var nextStatus = isComplete ? 'Initiate' : 'Complete';
-            try {
-                var patch = { status: nextStatus };
-                var payload = patch;
-                if (parentWin.JSON && parentWin.JSON.stringify && parentWin.JSON.parse) {
-                    try {
-                        payload = parentWin.JSON.parse(parentWin.JSON.stringify(patch));
-                    } catch (err) {
-                        payload = patch;
-                    }
-                }
-                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), payload);
-                if (questTasksById && questTasksById[taskId]) {
-                    questTasksById[taskId].status = nextStatus;
-                }
-                if (typeof loadSideQuestTasks === 'function') {
-                    loadSideQuestTasks();
-                }
-            } catch (e) {
-                console.error('Gagal mengubah status quest', e);
-                alert('Gagal mengubah status quest: ' + (e && e.message ? e.message : String(e)));
-            }
-        }
+        function applyFormat(editorId, command) {
+            var editor = document.getElementById(editorId);
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(command, false, null);
 
-        function questEditTask(taskId) {
-            if (!taskId) return;
-            questOpenTask(taskId);
-        }
-
-        function questDeleteTask(taskId) {
-            if (!taskId) return;
-            var parentWin = window.parent;
-            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.deleteDoc) {
-                alert('Tidak dapat menghapus quest: koneksi database tidak tersedia.');
-                return;
-            }
-            if (confirm('Yakin ingin menghapus quest ini?')) {
-                parentWin.deleteDoc(parentWin.doc(parentWin.db, 'tasks', taskId)).then(function () {
-                    if (questTasksById && questTasksById[taskId]) {
-                        delete questTasksById[taskId];
+            // Update button states
+            var toolbar = editor.previousElementSibling;
+            if (toolbar && toolbar.classList.contains('rich-toolbar')) {
+                var btns = toolbar.querySelectorAll('.rich-btn');
+                btns.forEach(function (btn) {
+                    var cmd = btn.getAttribute('onclick');
+                    if (cmd && (cmd.indexOf('applyFormat') !== -1 || cmd.indexOf('questApplyFormat') !== -1)) {
+                        var parts = cmd.split("'");
+                        var part = parts[3];
+                        if (part && document.queryCommandState(part)) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
                     }
-                    if (typeof loadSideQuestTasks === 'function') {
-                        loadSideQuestTasks();
-                    }
-                }).catch(function (e) {
-                    console.error('Gagal menghapus quest', e);
-                    alert('Gagal menghapus quest.');
                 });
             }
         }
 
-        function questOpenTask(taskId) {
-            if (!taskId) return;
-            var targetWin = window.parent && window.parent !== window ? window.parent : window;
-            var url = 'quest/quest-edit.html?taskId=' + encodeURIComponent(taskId);
+        function handleSideQuestFiles(input) {
+            if (input.files && input.files.length > 0) {
+                var container = input.closest('.rich-editor');
+                var fileList = container.querySelector('.rich-file-list');
+                if (!fileList) {
+                    fileList = document.createElement('div');
+                    fileList.className = 'rich-file-list px-4 py-2 border-t border-gray-100 flex flex-wrap gap-2';
+                    container.appendChild(fileList);
+                }
+
+                Array.from(input.files).forEach(function (file) {
+                    var item = document.createElement('div');
+                    item.className = 'flex items-center gap-2 bg-gray-50 px-2 py-1 rounded text-xs text-gray-600 border border-gray-200';
+                    item.innerHTML = '<i class="bi bi-file-earmark"></i> <span>' + file.name + '</span><button type="button" class="text-gray-400 hover:text-red-500" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>';
+                    fileList.appendChild(item);
+                });
+            }
+        }
+
+        function toggleReportAccordion(taskId) {
+            var accordion = document.getElementById('report-accordion-' + taskId);
+            var card = document.querySelector('[data-task-id="' + taskId + '"]');
+            var btn = card.querySelector('.quest-card-check-btn');
+            var icon = btn.querySelector('i');
+
+            if (accordion.classList.contains('hidden')) {
+                accordion.classList.remove('hidden');
+                btn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                if (icon) {
+                    icon.classList.remove('text-gray-400');
+                    icon.classList.add('text-white');
+                }
+            } else {
+                accordion.classList.add('hidden');
+                btn.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+                if (icon) {
+                    icon.classList.add('text-gray-400');
+                    icon.classList.remove('text-white');
+                }
+            }
+        }
+
+        async function submitSideQuestReport(taskId) {
+            var editor = document.getElementById('reportEditor-' + taskId);
+            var reportContent = editor.innerHTML;
+            if (!reportContent || reportContent.trim() === '' || editor.textContent.trim() === '') {
+                alert('Please enter your report before submitting.');
+                return;
+            }
+
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.doc) {
+                alert('Database connection not available.');
+                return;
+            }
+
             try {
-                targetWin.open(url, '_blank');
+                var fileInput = document.getElementById('reportFileInput-' + taskId);
+                var files = fileInput.files;
+                var attachedFiles = [];
+
+                if (files && files.length > 0 && parentWin.storage && parentWin.ref && parentWin.uploadBytes && parentWin.getDownloadURL) {
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        var path = 'reports/' + taskId + '/' + Date.now() + '_' + file.name;
+                        var sRef = parentWin.ref(parentWin.storage, path);
+                        await parentWin.uploadBytes(sRef, file);
+                        var url = await parentWin.getDownloadURL(sRef);
+                        attachedFiles.push({
+                            name: file.name,
+                            url: url,
+                            type: file.type
+                        });
+                    }
+                }
+
+                var reportData = {
+                    taskId: taskId,
+                    content: reportContent,
+                    files: attachedFiles,
+                    submittedAt: new Date(),
+                    submittedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : 'unknown'
+                };
+
+                await parentWin.addDoc(parentWin.collection(parentWin.db, 'quest_reports'), reportData);
+
+                // Update task status to complete if not already
+                if (questTasksById[taskId] && (questTasksById[taskId].status || questTasksById[taskId].Status) !== 'Complete') {
+                    await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), { status: 'Complete' });
+                    questTasksById[taskId].status = 'Complete';
+                }
+
+                alert('Report submitted successfully!');
+                toggleReportAccordion(taskId);
+                if (typeof loadSideQuestTasks === 'function') {
+                    loadSideQuestTasks();
+                }
             } catch (e) {
-                window.open(url, '_blank');
+                console.error('Failed to submit report', e);
+                alert('Failed to submit report: ' + e.message);
             }
         }
 
         lucide.createIcons();
-        var questCurrentPriority = 'urgent';
-        var sideQuestCurrentPriority = 'normal';
-        var questActionMode = null;
-        var questTasksById = {};
-        var questUsersById = {};
         var questAlertOkHandler = null;
         var questAlertCancelHandler = null;
 
@@ -1214,12 +1265,23 @@ export function renderSidebar(target) {
         }
 
         function switchTab(priority, element) {
-            document.querySelectorAll('.nav-card').forEach(card => card.classList.remove('active'));
-            element.classList.add('active');
+            document.querySelectorAll('.nav-card').forEach(function (card) {
+                card.classList.remove('active');
+                card.classList.remove('shadow-lg', '-translate-y-1');
+            });
+            if (element) {
+                element.classList.add('active');
+                element.classList.add('shadow-lg', '-translate-y-1');
+            }
             questCurrentPriority = priority;
-
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
-            document.getElementById(priority + '-content').classList.remove('hidden');
+            document.querySelectorAll('.tab-pane').forEach(function (pane) { pane.classList.add('hidden'); });
+            var pane = document.getElementById(priority + '-content');
+            if (pane) {
+                pane.classList.remove('hidden');
+            }
+        }
+        if (typeof window !== 'undefined') {
+            window.switchTab = switchTab;
         }
         function toggleQuestForm() {
             var el = document.getElementById('questCreateForm');
@@ -3010,7 +3072,6 @@ export function renderSidebar(target) {
             var parentWin = window.parent;
             if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
             try {
-                questTasksById = {};
                 if (overdueList) overdueList.innerHTML = '';
                 if (todayList) todayList.innerHTML = '';
                 if (upcomingList) upcomingList.innerHTML = '';
@@ -3071,217 +3132,6 @@ export function renderSidebar(target) {
                 if (upcomingList) {
                     upcomingList.innerHTML = '<p class="text-red-500 text-xs">Failed to load quests.</p>';
                 }
-            }
-        }
-        var questUsersById = {};
-        function getQuestUserInitials(user) {
-            var source = user.name || user.email || user.uid || '';
-            if (!source) return 'U';
-            var parts = String(source).trim().split(/\s+/);
-            var initials = parts.map(function (p) { return p[0]; }).join('');
-            return initials.substring(0, 2).toUpperCase();
-        }
-        function getQuestUserInitials(user) {
-            var source = user.name || user.email || user.uid || '';
-            if (!source) return 'U';
-            var parts = String(source).trim().split(/\s+/);
-            var initials = parts.map(function (p) { return p[0]; }).join('');
-            return initials.substring(0, 2).toUpperCase();
-        }
-        function getQuestUserInitials(user) {
-            var source = user.name || user.email || user.uid || '';
-            if (!source) return 'U';
-            var parts = String(source).trim().split(/\s+/);
-            var initials = parts.map(function (p) { return p[0]; }).join('');
-            return initials.substring(0, 2).toUpperCase();
-        }
-        function getQuestUserInitials(user) {
-            var source = user.name || user.email || user.uid || '';
-            if (!source) return 'U';
-            var parts = String(source).trim().split(/\s+/);
-            var initials = parts.map(function (p) { return p[0]; }).join('');
-            return initials.substring(0, 2).toUpperCase();
-        }
-        async function loadSideQuestTasks() {
-            var urgentList = document.getElementById('sideQuestUrgentList');
-            var highList = document.getElementById('sideQuestHighList');
-            var normalList = document.getElementById('sideQuestNormalList');
-            var lowList = document.getElementById('sideQuestLowList');
-            if (!urgentList && !highList && !normalList && !lowList) return;
-            var parentWin = window.parent;
-            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.getDocs) return;
-            try {
-                function esc(str) {
-                    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                }
-                function buildSideQuestCard(data, docId) {
-                    var title = data && data.title ? String(data.title) : 'Untitled Side Quest';
-                    var descHtml = data && data.description ? String(data.description) : '';
-                    var tmp = document.createElement('div');
-                    tmp.innerHTML = descHtml;
-                    var descText = (tmp.textContent || tmp.innerText || '').trim();
-                    if (!descText) {
-                        descText = '';
-                    }
-                    var maxLen = 140;
-                    if (descText.length > maxLen) {
-                        var truncated = descText.substring(0, maxLen);
-                        truncated = truncated.replace(/\s+\S*$/, '');
-                        descText = truncated + '...';
-                    }
-                    var dueText = data && (data.due_date || data.dueDate) ? String(data.due_date || data.dueDate) : '';
-                    var assignList = [];
-                    if (data && data.assign_to) {
-                        if (Array.isArray(data.assign_to)) {
-                            assignList = data.assign_to.slice();
-                        } else {
-                            assignList = [data.assign_to];
-                        }
-                    }
-                    var status = data && data.status ? String(data.status).toLowerCase() : '';
-                    var wrapper = document.createElement('div');
-                    wrapper.className = 'relative p-4 rounded-2xl bg-gray-50 flex flex-col gap-2 quest-card';
-                    var html = '';
-                    html += '<div class="flex items-start justify-between gap-2">';
-                    html += '<div class="flex items-start gap-2">';
-                    html += '<button type="button" class="w-6 h-6 border-2 border-gray-300 rounded-full mt-0.5 flex-shrink-0 flex items-center justify-center bg-white quest-card-check-btn">';
-                    html += '<i data-lucide="check" class="w-3 h-3 text-gray-400"></i>';
-                    html += '</button>';
-                    html += '<div class="flex flex-col gap-1">';
-                    html += '<h3 class="font-semibold text-gray-900 text-sm md:text-base leading-snug">' + esc(title) + '</h3>';
-                    html += '</div>';
-                    html += '</div>';
-                    html += '<div class="quest-card-actions hidden">';
-                    html += '<button type="button" class="quest-card-delete-btn">';
-                    html += '<i data-lucide="trash" class="w-4 h-4 text-red-500"></i>';
-                    html += '</button>';
-                    html += '</div>';
-                    html += '</div>';
-                    if (descText) {
-                        html += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' + esc(descText) + '</p>';
-                    }
-                    if (assignList.length > 0) {
-                        html += '<div class="flex items-center justify-between gap-2 mt-1">';
-                        html += '<div class="flex -space-x-1">';
-                        var maxAvatars = 4;
-                        assignList.forEach(function (uid, index) {
-                            if (index >= maxAvatars) return;
-                            var user = questUsersById && questUsersById[uid] ? questUsersById[uid] : { uid: uid };
-                            var initials = getQuestUserInitials(user);
-                            var titleText = user && user.name ? user.name : initials;
-                            if (user.photo) {
-                                html += '<img src="' + esc(user.photo) + '" alt="' + esc(titleText) + '" title="' + esc(titleText) + '" class="w-7 h-7 rounded-full object-cover border border-gray-200 bg-white">';
-                            } else {
-                                html += '<span class="w-7 h-7 rounded-full bg-slate-700 text-slate-100 text-[10px] font-semibold flex items-center justify-center border border-gray-200" title="' + esc(titleText) + '">';
-                                html += esc(initials);
-                                html += '</span>';
-                            }
-                        });
-                        if (assignList.length > maxAvatars) {
-                            var remaining = assignList.length - maxAvatars;
-                            html += '<span class="w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-[10px] font-semibold flex items-center justify-center border border-gray-200">+' + esc(String(remaining)) + '</span>';
-                        }
-                        html += '</div>';
-                        html += '</div>';
-                    }
-                    wrapper.innerHTML = html;
-                    if (docId) {
-                        wrapper.setAttribute('data-task-id', String(docId));
-                    }
-                    
-                    var btn = wrapper.querySelector('.quest-card-check-btn');
-                    if (status === 'complete' && btn) {
-                        btn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-                        var icon = btn.querySelector('i');
-                        if (icon) {
-                            icon.classList.remove('text-gray-400');
-                            icon.classList.add('text-white');
-                        }
-                    }
-
-                    if (btn && docId) {
-                        btn.addEventListener('click', function (evt) {
-                            if (evt && evt.stopPropagation) {
-                                evt.stopPropagation();
-                            }
-                            if (questActionMode === 'edit') {
-                                questEditTask(docId);
-                            } else if (questActionMode === 'delete') {
-                                questDeleteTask(docId);
-                            } else {
-                                btn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
-                                var icon = btn.querySelector('i');
-                                if (icon) {
-                                    icon.classList.remove('text-gray-400');
-                                    icon.classList.add('text-white');
-                                }
-                                questToggleComplete(docId);
-                            }
-                        });
-                    }
-                    return wrapper;
-                }
-                if (urgentList) urgentList.innerHTML = '';
-                if (highList) highList.innerHTML = '';
-                if (normalList) normalList.innerHTML = '';
-                if (lowList) lowList.innerHTML = '';
-                var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
-                snap.forEach(function (docSnap) {
-                    var data = docSnap.data() || {};
-                    if (data.project_id || data.projectId) return;
-                    var type = String(data.type || '').toLowerCase();
-                    var status = String(data.status || '').toLowerCase();
-                    var isSideQuest = false;
-                    if (type === 'side-quest') {
-                        isSideQuest = true;
-                    } else if (status === 'sidequest') {
-                        isSideQuest = true;
-                    } else if (data.task_status) {
-                        isSideQuest = true;
-                    }
-                    if (!isSideQuest) return;
-
-                    // Filter out completed tasks so they disappear from the list
-                    if (status === 'complete') return;
-
-                    var id = docSnap.id;
-                    if (id) {
-                        questTasksById[id] = data;
-                    }
-
-                    var title = data.title || '';
-                    if (!title) return;
-                    var priority = String(data.priority || 'normal').toLowerCase();
-                    var targetList = null;
-                    if (priority === 'urgent') {
-                        targetList = urgentList;
-                    } else if (priority === 'high') {
-                        targetList = highList;
-                    } else if (priority === 'low') {
-                        targetList = lowList;
-                    } else {
-                        targetList = normalList;
-                    }
-                    if (!targetList) return;
-                    var card = buildSideQuestCard(data, docSnap.id);
-                    targetList.appendChild(card);
-                });
-                function ensureList(listEl, message) {
-                    if (!listEl) return;
-                    if (!listEl.innerHTML.trim()) {
-                        listEl.innerHTML = '<p class="text-gray-400 italic text-sm">' + esc(message) + '</p>';
-                    }
-                }
-                ensureList(urgentList, 'No urgent side quests yet.');
-                ensureList(highList, 'No high side quests yet.');
-                ensureList(normalList, 'No normal side quests yet.');
-                ensureList(lowList, 'No low side quests yet.');
-            } catch (e) {
-                console.error('Failed to load side quests', e);
-                if (urgentList) urgentList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
-                if (highList) highList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
-                if (normalList) normalList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
-                if (lowList) lowList.innerHTML = '<p class="text-red-500 text-xs">Failed to load side quests.</p>';
             }
         }
         async function loadQuestDepartments() {
@@ -4108,7 +3958,11 @@ export function renderSidebar(target) {
         loadQuestPositions();
         loadQuestUsers();
         loadQuestTasks();
-        loadSideQuestTasks();
+        if (typeof loadSideQuestTasks === 'function') {
+            loadSideQuestTasks();
+        } else if (window.parent && typeof window.parent.loadSideQuestTasks === 'function') {
+            window.parent.loadSideQuestTasks();
+        }
     </script>
 </body>
 </html>`;
@@ -4660,6 +4514,81 @@ export function renderSidebar(target) {
             }
         }
 
+        function toggleReportAccordion(taskId) {
+            var accordion = document.getElementById('report-accordion-' + taskId);
+            var card = document.querySelector('[data-task-id="' + taskId + '"]');
+            var btn = card.querySelector('.quest-card-check-btn');
+            var icon = btn.querySelector('i');
+            
+            if (accordion.classList.contains('hidden')) {
+                accordion.classList.remove('hidden');
+                btn.classList.add('bg-emerald-500', 'border-emerald-500', 'text-white');
+                if (icon) {
+                    icon.classList.remove('text-gray-400');
+                    icon.classList.add('text-white');
+                }
+            } else {
+                accordion.classList.add('hidden');
+                btn.classList.remove('bg-emerald-500', 'border-emerald-500', 'text-white');
+                if (icon) {
+                    icon.classList.add('text-gray-400');
+                    icon.classList.remove('text-white');
+                }
+            }
+        }
+
+        async function submitSideQuestReport(taskId) {
+            var editor = document.getElementById('reportEditor-' + taskId);
+            var reportContent = editor.innerHTML;
+            if (!reportContent || reportContent.trim() === '' || editor.textContent.trim() === '') {
+                alert('Please enter your report before submitting.');
+                return;
+            }
+            
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.collection || !parentWin.addDoc || !parentWin.doc) {
+                alert('Database connection not available.');
+                return;
+            }
+            
+            try {
+                var fileInput = document.getElementById('reportFileInput-' + taskId);
+                var files = fileInput.files;
+                var attachedFiles = [];
+                
+                if (files && files.length > 0 && parentWin.storage && parentWin.ref && parentWin.uploadBytes && parentWin.getDownloadURL) {
+                    for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        var path = 'reports/' + taskId + '/' + Date.now() + '_' + file.name;
+                        var sRef = parentWin.ref(parentWin.storage, path);
+                        await parentWin.uploadBytes(sRef, file);
+                        var url = await parentWin.getDownloadURL(sRef);
+                        attachedFiles.push({
+                            name: file.name,
+                            url: url,
+                            type: file.type
+                        });
+                    }
+                }
+                
+                // Save report to sub-collection 'reports'
+                await parentWin.addDoc(parentWin.collection(parentWin.db, 'tasks', taskId, 'reports'), {
+                    content: reportContent,
+                    files: attachedFiles,
+                    createdAt: new Date().toISOString(),
+                    submittedBy: parentWin.auth && parentWin.auth.currentUser ? parentWin.auth.currentUser.uid : 'unknown'
+                });
+                
+                // Mark task as complete
+                await questToggleComplete(taskId);
+                
+                alert('Report submitted successfully!');
+            } catch (e) {
+                console.error('Failed to submit report', e);
+                alert('Failed to submit report: ' + e.message);
+            }
+        }
+
         function questEditTask(taskId) {
             if (!taskId) return;
             questOpenTask(taskId);
@@ -5183,20 +5112,25 @@ export function renderSidebar(target) {
                 snap.forEach(function (docSnap) {
                     var data = docSnap.data() || {};
                     if (data.project_id || data.projectId) return;
-                    var type = String(data.type || '').toLowerCase();
-                    var status = String(data.status || '').toLowerCase();
+
+                    var rawType = String(data.type || '');
+                    var rawStatus = String(data.status || '');
+                    var type = rawType.toLowerCase();
+                    var status = rawStatus.toLowerCase();
+                    var normType = type.replace(/[\s_]/g, '');
+                    var normStatus = status.replace(/[\s_]/g, '');
+
                     var isSideQuest = false;
-                    if (type === 'side-quest') {
+                    if (normType === 'sidequest' || type === 'side-quest') {
                         isSideQuest = true;
-                    } else if (status === 'sidequest') {
+                    } else if (normStatus === 'sidequest') {
                         isSideQuest = true;
                     } else if (data.task_status) {
                         isSideQuest = true;
                     }
                     if (!isSideQuest) return;
 
-                    // Filter out completed tasks so they disappear from the list
-                    if (status === 'complete') return;
+                    if (normStatus === 'complete') return;
 
                     var taskId = String(docSnap.id || '');
                     // Pastikan task masuk ke questTasksById supaya questToggleComplete tahu statusnya
@@ -5349,6 +5283,34 @@ export function renderSidebar(target) {
                         htmlCard += '</div>';
                         htmlCard += '</div>';
                     }
+
+                    // Report Accordion
+                    htmlCard += '<div id="report-accordion-' + taskId + '" class="hidden mt-3 border-t border-gray-100 pt-3">';
+                    htmlCard += '  <div class="rich-editor mb-3">';
+                    htmlCard += '    <div class="rich-toolbar">';
+                    htmlCard += '      <div class="rich-toolbar-left">';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Bold" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'bold\')"><i class="bi bi-type-bold"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Italic" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'italic\')"><i class="bi bi-type-italic"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Underline" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'underline\')"><i class="bi bi-type-underline"></i></button>';
+                    htmlCard += '        <div class="w-px h-4 bg-gray-300 mx-1"></div>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Bullet List" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'insertUnorderedList\')"><i class="bi bi-list-ul"></i></button>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Numbered List" onclick="applyFormat(\'reportEditor-' + taskId + '\',\'insertOrderedList\')"><i class="bi bi-list-ol"></i></button>';
+                    htmlCard += '        <div class="w-px h-4 bg-gray-300 mx-1"></div>';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Add Link" onclick="addLinkToEditor(\'reportEditor-' + taskId + '\')"><i class="bi bi-link-45deg"></i></button>';
+                    htmlCard += '      </div>';
+                    htmlCard += '      <div class="rich-toolbar-right">';
+                    htmlCard += '        <button type="button" class="rich-btn" title="Add Files" onclick="document.getElementById(\'reportFileInput-' + taskId + '\').click()"><i class="bi bi-paperclip"></i></button>';
+                    htmlCard += '        <input type="file" id="reportFileInput-' + taskId + '" class="hidden" multiple onchange="handleSideQuestFiles(this)" />';
+                    htmlCard += '      </div>';
+                    htmlCard += '    </div>';
+                    htmlCard += '    <div id="reportEditor-' + taskId + '" class="rich-editor-body outline-none" contenteditable="true" data-placeholder="Insert your report here..."></div>';
+                    htmlCard += '  </div>';
+                    htmlCard += '  <div class="flex justify-end gap-2">';
+                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full" onclick="toggleReportAccordion(\'' + taskId + '\')">Cancel</button>';
+                    htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-white btn-dlg-blue rounded-full" onclick="submitSideQuestReport(\'' + taskId + '\')">Submit Report</button>';
+                    htmlCard += '  </div>';
+                    htmlCard += '</div>';
+
                     el.innerHTML = htmlCard;
                     el.setAttribute('data-task-id', String(docSnap.id || ''));
                     var btn = el.querySelector('.quest-card-check-btn');
@@ -5381,7 +5343,7 @@ export function renderSidebar(target) {
                                     icon.classList.remove('text-gray-400');
                                     icon.classList.add('text-white');
                                 }
-                                questToggleComplete(taskId);
+                                toggleReportAccordion(taskId);
                             }
                         });
                     }
@@ -5743,7 +5705,11 @@ export function renderSidebar(target) {
         loadSideQuestUsersForForm();
         loadSideQuestDepartments();
         loadSideQuestPositions();
-        loadSideQuestTasks();
+        if (typeof loadSideQuestTasks === 'function') {
+            loadSideQuestTasks();
+        } else if (window.parent && typeof window.parent.loadSideQuestTasks === 'function') {
+            window.parent.loadSideQuestTasks();
+        }
     </script>
 </body>
 </html>`;
