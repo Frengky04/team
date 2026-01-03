@@ -883,14 +883,33 @@ export function renderSidebar(target) {
             <div class="flex-grow border-t border-gray-200"></div>
         </div>
 
-        <div class="flex justify-center mb-8">
-            <div class="relative inline-block">
-                <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
-                    onclick="toggleSideQuestDropdown(event)">
-                    + Create
-                </button>
-                <div id="sideQuestCreateDropdown"
-                    class="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 text-sm hidden z-40">
+        <div class="flex justify-end mb-8">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <button type="button"
+                        class="w-9 h-9 flex items-center justify-center rounded-full border border-gray-200 bg-white shadow-sm"
+                        onclick="toggleSideQuestHeaderMenu(event)">
+                        <i data-lucide="more-vertical" class="w-4 h-4 text-gray-600"></i>
+                    </button>
+                    <div id="sideQuestHeaderMenu"
+                        class="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm text-gray-700 hidden z-40">
+                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100"
+                            onclick="sideQuestHeaderEdit()">
+                            Edit
+                        </button>
+                        <button type="button" class="w-full text-left px-3 py-1.5 hover:bg-gray-100 text-red-600"
+                            onclick="sideQuestHeaderDelete()">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="relative inline-block">
+                    <button class="btn-dlg-yellow rounded-full px-6 py-2.5 text-sm font-semibold shadow-md"
+                        onclick="toggleSideQuestDropdown(event)">
+                        + Create
+                    </button>
+                    <div id="sideQuestCreateDropdown"
+                        class="absolute left-1/2 -translate-x-1/2 mt-3 w-80 bg-white border border-gray-200 rounded-2xl shadow-xl p-4 text-sm hidden z-40">
                     <div class="mb-3">
                         <div class="text-xs font-semibold text-gray-500 mb-1">Priority</div>
                         <div class="flex flex-wrap gap-2">
@@ -920,22 +939,23 @@ export function renderSidebar(target) {
                             </button>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <input id="sideQuestNameInput" type="text" placeholder="Quest Name"
-                            class="w-full text-2xl md:text-3xl font-semibold text-gray-900 border-none focus:ring-0 focus:outline-none placeholder-gray-400" />
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button"
-                            class="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100"
-                            onclick="toggleSideQuestDropdown(event)">
-                            Cancel
-                        </button>
-                        <button type="button"
-                            class="rounded-full px-4 py-1.5 text-xs font-semibold text-white"
-                            style="background: radial-gradient(circle at 0% 0%, #a855f7 0%, #1d4ed8 60%, #0f172a 100%); box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
-                            onclick="saveSideQuest()">
-                            Add
-                        </button>
+                        <div class="mb-3">
+                            <input id="sideQuestNameInput" type="text" placeholder="Quest Name"
+                                class="w-full text-2xl md:text-3xl font-semibold text-gray-900 border-none focus:ring-0 focus:outline-none placeholder-gray-400" />
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button"
+                                class="rounded-full px-4 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100"
+                                onclick="toggleSideQuestDropdown(event)">
+                                Cancel
+                            </button>
+                            <button type="button"
+                                class="rounded-full px-4 py-1.5 text-xs font-semibold text-white"
+                                style="background: radial-gradient(circle at 0% 0%, #a855f7 0%, #1d4ed8 60%, #0f172a 100%); box-shadow: 0 10px 25px rgba(59,130,246,0.35);"
+                                onclick="saveSideQuest()">
+                                Add
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1026,7 +1046,9 @@ export function renderSidebar(target) {
         var questCurrentPriority = 'urgent';
         var sideQuestCurrentPriority = 'normal';
         var questActionMode = null;
+        var sideQuestActionMode = null;
         var questTasksById = {};
+        var sideQuestTasksById = {};
 
 
         function switchTab(priority, element) {
@@ -1150,6 +1172,42 @@ export function renderSidebar(target) {
                 console.error('Gagal menyimpan side quest', err);
                 alert('Gagal menyimpan side quest: ' + (err && err.message ? err.message : String(err)));
             }
+        }
+        function toggleSideQuestHeaderMenu(event) {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (!menu) return;
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
+            }
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+            } else {
+                menu.classList.add('hidden');
+            }
+        }
+        function sideQuestHeaderEdit() {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+            if (sideQuestActionMode === 'edit') {
+                sideQuestActionMode = null;
+            } else {
+                sideQuestActionMode = 'edit';
+            }
+            updateSideQuestActionButtons();
+        }
+        function sideQuestHeaderDelete() {
+            var menu = document.getElementById('sideQuestHeaderMenu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+            if (sideQuestActionMode === 'delete') {
+                sideQuestActionMode = null;
+            } else {
+                sideQuestActionMode = 'delete';
+            }
+            updateSideQuestActionButtons();
         }
         function questDueParseDate(val) {
             var today = new Date();
@@ -2325,6 +2383,22 @@ export function renderSidebar(target) {
                 }
             }
         }
+        function updateSideQuestActionButtons() {
+            var actionContainers = document.querySelectorAll('.side-quest-actions');
+            var editButtons = document.querySelectorAll('.side-quest-edit-btn');
+            var deleteButtons = document.querySelectorAll('.side-quest-delete-btn');
+            if (sideQuestActionMode === 'edit') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                editButtons.forEach(function (el) { el.classList.remove('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.add('hidden'); });
+            } else if (sideQuestActionMode === 'delete') {
+                actionContainers.forEach(function (el) { el.classList.remove('hidden'); });
+                editButtons.forEach(function (el) { el.classList.add('hidden'); });
+                deleteButtons.forEach(function (el) { el.classList.remove('hidden'); });
+            } else {
+                actionContainers.forEach(function (el) { el.classList.add('hidden'); });
+            }
+        }
         async function loadSideQuestTasks() {
             var urgentList = document.getElementById('sideQuestUrgentList');
             var highList = document.getElementById('sideQuestHighList');
@@ -2341,6 +2415,7 @@ export function renderSidebar(target) {
                 if (highList) highList.innerHTML = '';
                 if (normalList) normalList.innerHTML = '';
                 if (lowList) lowList.innerHTML = '';
+                sideQuestTasksById = {};
                 var snap = await parentWin.getDocs(parentWin.collection(parentWin.db, 'tasks'));
                 snap.forEach(function (docSnap) {
                     var data = docSnap.data() || {};
@@ -2362,12 +2437,22 @@ export function renderSidebar(target) {
                         targetList = normalList;
                     }
                     if (!targetList) return;
+                    var id = String(docSnap.id || '');
+                    if (!id) return;
+                    sideQuestTasksById[id] = data;
                     var el = document.createElement('div');
-                    el.className = 'p-4 rounded-2xl bg-gray-50 flex items-center justify-between';
-                    var label = '#' + String(docSnap.id || '').substring(0, 6).toUpperCase();
+                    el.className = 'p-4 rounded-2xl bg-gray-50 side-quest-item';
+                    el.setAttribute('data-task-id', id);
+                    var label = '#' + id.substring(0, 6).toUpperCase();
                     var html = '';
+                    html += '<div class="flex items-center justify-between gap-3">';
                     html += '<span class="font-bold text-gray-700">' + esc(title) + '</span>';
                     html += '<span class="text-xs bg-white px-3 py-1 rounded-full shadow-sm font-bold text-gray-400">' + esc(label) + '</span>';
+                    html += '</div>';
+                    html += '<div class="flex gap-2 mt-3 side-quest-actions hidden">';
+                    html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-blue-500 text-blue-600 side-quest-edit-btn">Edit</button>';
+                    html += '<button type="button" class="px-3 py-1 text-xs font-semibold rounded-full border border-red-500 text-red-600 side-quest-delete-btn">Delete</button>';
+                    html += '</div>';
                     el.innerHTML = html;
                     targetList.appendChild(el);
                 });
@@ -2628,6 +2713,61 @@ export function renderSidebar(target) {
                 deleteButtons.forEach(function (el) { el.classList.remove('hidden'); });
             } else {
                 actionContainers.forEach(function (el) { el.classList.add('hidden'); });
+            }
+        }
+        async function sideQuestEditTask(taskId) {
+            if (!taskId) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.updateDoc) {
+                alert('Tidak dapat mengedit side quest: koneksi database tidak tersedia.');
+                return;
+            }
+            var existing = sideQuestTasksById && sideQuestTasksById[taskId] ? sideQuestTasksById[taskId] : {};
+            var currentTitle = existing && existing.title ? String(existing.title) : '';
+            var newTitle = window.prompt('Edit side quest title:', currentTitle);
+            if (newTitle === null) return;
+            newTitle = String(newTitle).trim();
+            if (!newTitle) {
+                alert('Title tidak boleh kosong.');
+                return;
+            }
+            try {
+                var updateData = { title: newTitle };
+                if (parentWin.JSON && parentWin.JSON.parse && parentWin.JSON.stringify) {
+                    try {
+                        updateData = parentWin.JSON.parse(parentWin.JSON.stringify(updateData));
+                    } catch (e) {
+                        updateData = { title: newTitle };
+                    }
+                }
+                await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), updateData);
+                if (!sideQuestTasksById) sideQuestTasksById = {};
+                if (!sideQuestTasksById[taskId]) sideQuestTasksById[taskId] = {};
+                sideQuestTasksById[taskId].title = newTitle;
+                loadSideQuestTasks();
+            } catch (e) {
+                console.error('Gagal mengedit side quest', e);
+                alert('Gagal mengedit side quest: ' + (e && e.message ? e.message : String(e)));
+            }
+        }
+        async function sideQuestDeleteTask(taskId) {
+            if (!taskId) return;
+            var parentWin = window.parent;
+            if (!parentWin || !parentWin.db || !parentWin.doc || !parentWin.deleteDoc) {
+                alert('Tidak dapat menghapus side quest: koneksi database tidak tersedia.');
+                return;
+            }
+            var ok = window.confirm('Yakin ingin menghapus side quest ini?');
+            if (!ok) return;
+            try {
+                await parentWin.deleteDoc(parentWin.doc(parentWin.db, 'tasks', taskId));
+                if (sideQuestTasksById && sideQuestTasksById[taskId]) {
+                    delete sideQuestTasksById[taskId];
+                }
+                loadSideQuestTasks();
+            } catch (e) {
+                console.error('Gagal menghapus side quest', e);
+                alert('Gagal menghapus side quest: ' + (e && e.message ? e.message : String(e)));
             }
         }
         async function questEditTask(taskId) {
@@ -2933,6 +3073,28 @@ export function renderSidebar(target) {
                     var idDelete = cardDelete.getAttribute('data-task-id');
                     if (idDelete) {
                         questDeleteTask(idDelete);
+                    }
+                }
+                return;
+            }
+            var sideEditBtn = event.target.closest('.side-quest-edit-btn');
+            if (sideEditBtn) {
+                var sideItemEdit = sideEditBtn.closest('.side-quest-item');
+                if (sideItemEdit) {
+                    var sideIdEdit = sideItemEdit.getAttribute('data-task-id');
+                    if (sideIdEdit) {
+                        sideQuestEditTask(sideIdEdit);
+                    }
+                }
+                return;
+            }
+            var sideDeleteBtn = event.target.closest('.side-quest-delete-btn');
+            if (sideDeleteBtn) {
+                var sideItemDelete = sideDeleteBtn.closest('.side-quest-item');
+                if (sideItemDelete) {
+                    var sideIdDelete = sideItemDelete.getAttribute('data-task-id');
+                    if (sideIdDelete) {
+                        sideQuestDeleteTask(sideIdDelete);
                     }
                 }
                 return;
