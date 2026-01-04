@@ -4501,7 +4501,7 @@ export function renderSidebar(target) {
             border-left: 3px solid var(--primary-teal);
             font-style: italic;
         }
-        .text-truncate-custom { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .text-truncate-custom { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
         .modal-content { border-radius: 15px; border: none; }
         .modal-header { border-bottom: 1px solid #f1f5f9; }
     </style>
@@ -4855,7 +4855,7 @@ export function renderSidebar(target) {
                 return (
                     '<div class="d-flex align-items-center">' +
                         '<img src="' + escapeAttr(info.photo) + '" class="rounded-circle me-2 border" width="30" height="30" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' +
-                        '<span class="fw-bold text-truncate-custom" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' + escapeAttr(formatNameWords(info.name, 3)) + '</span>' +
+                        '<span class="fw-bold text-truncate-custom flex-grow-1" style="min-width:0;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '" data-user-text="' + escapeAttr(formatNameWords(info.name, 3)) + '"></span>' +
                     '</div>'
                 );
             } else {
@@ -4863,7 +4863,7 @@ export function renderSidebar(target) {
                 return (
                     '<div class="d-flex align-items-center">' +
                         '<span class="d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white me-2" style="width:30px;height:30px;font-size:12px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '">' + escapeAttr(ini) + '</span>' +
-                        '<span class="fw-bold text-truncate-custom" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '">' + escapeAttr(formatNameWords(info.name || ids[0], 3)) + '</span>' +
+                        '<span class="fw-bold text-truncate-custom flex-grow-1" style="min-width:0;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '" data-user-text="' + escapeAttr(formatNameWords(info.name || ids[0], 3)) + '"></span>' +
                     '</div>'
                 );
             }
@@ -4885,7 +4885,7 @@ export function renderSidebar(target) {
             if (shortNames.length > 2) label += ' +' + String(shortNames.length - 2);
         }
         var labelHtml = label
-            ? '<span class="fw-bold text-truncate-custom ms-2" data-bs-toggle="tooltip" title="' + escapeAttr(fullNames.join(', ')) + '">' + escapeAttr(label) + '</span>'
+            ? '<span class="fw-bold text-truncate-custom ms-2" data-bs-toggle="tooltip" title="' + escapeAttr(fullNames.join(', ')) + '" data-user-text="' + escapeAttr(label) + '"></span>'
             : '';
         return '<div class="d-flex align-items-center">' + renderAvatarPile(ids, 5) + labelHtml + '</div>';
     }
@@ -5012,7 +5012,11 @@ export function renderSidebar(target) {
     }
 
     function escapeAttr(s) {
-        return String(s || '').replace(/"/g, '&quot;');
+        return String(s || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 
     function escapeJs(s) {
@@ -5276,6 +5280,11 @@ export function renderSidebar(target) {
                 };
             })(r2.id));
             tbody.appendChild(row);
+        }
+        var userTextEls = tbody.querySelectorAll('[data-user-text]');
+        for (var k = 0; k < userTextEls.length; k++) {
+            var el = userTextEls[k];
+            el.textContent = el.getAttribute('data-user-text') || '';
         }
         var tooltipTriggerList2 = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList2.map(function (tooltipTriggerEl) {
