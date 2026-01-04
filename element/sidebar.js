@@ -4657,13 +4657,13 @@ export function renderSidebar(target) {
             <div class="modal-body p-4">
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div class="text-start">
+                        <div class="col-6 text-start">
                             <div class="stat-label mb-1">Assigned</div>
                             <div id="mAssignAvatars" class="d-flex justify-content-start gap-1 flex-wrap"></div>
                         </div>
-                        <div class="text-end">
+                        <div class="col-6 text-start">
                             <div class="stat-label mb-1">Report To</div>
-                            <div id="mNotifyAvatars" class="d-flex justify-content-end gap-1 flex-wrap"></div>
+                            <div id="mNotifyAvatars" class="d-flex justify-content-start gap-1 flex-wrap"></div>
                         </div>
                     </div>
                 </div>
@@ -4710,6 +4710,10 @@ export function renderSidebar(target) {
                 <div>
                     <label class="stat-label mb-2">Report Content</label>
                     <div id="mReport" class="p-3 rounded-3 bg-light border-start border-4 border-success" style="font-size: 14px; line-height: 1.6;"></div>
+                </div>
+                <div class="mt-3" id="mFilesWrapper" style="display:none;">
+                    <label class="stat-label mb-2">Files</label>
+                    <div id="mFiles" class="d-flex flex-wrap gap-2"></div>
                 </div>
                 <div id="feedbackSection" class="mt-3" style="display:none;">
                     <label class="stat-label mb-2">Feedback</label>
@@ -4823,18 +4827,25 @@ export function renderSidebar(target) {
         var ids = Array.isArray(uids) ? uids.filter(Boolean) : [];
         if (ids.length === 0) return '<span class="text-muted">-</span>';
         var limit = typeof max === 'number' && max > 0 ? max : 5;
-        var html = '<div class="d-flex align-items-center gap-1">';
-        for (var i = 0; i < Math.min(ids.length, limit); i++) {
+        var html = '<div class="d-flex align-items-center">';
+        var showCount = Math.min(ids.length, limit);
+        for (var i = 0; i < showCount; i++) {
             var info = getUserDisplay(ids[i]);
+            var ml = i === 0 ? '' : ' margin-left:-8px;';
+            var z = 100 - i;
             if (info.photo) {
-                html += '<img src="' + escapeAttr(info.photo) + '" width="28" height="28" class="rounded-circle border" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">';
+                html += '<span class="position-relative" style="z-index:' + z + ';' + ml + '">' +
+                    '<img src="' + escapeAttr(info.photo) + '" width="28" height="28" class="rounded-circle border bg-white" style="object-fit:cover;border-width:2px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' +
+                '</span>';
             } else {
                 var ini = initialsOf(info.name || ids[i]);
-                html += '<span class="d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white" style="width:28px;height:28px;font-size:11px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[i]) + '">' + escapeAttr(ini) + '</span>';
+                html += '<span class="position-relative d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white" style="z-index:' + z + ';width:28px;height:28px;font-size:11px;' + ml + '" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[i]) + '">' + escapeAttr(ini) + '</span>';
             }
         }
         if (ids.length > limit) {
-            html += '<span class="badge bg-light text-dark border">+' + String(ids.length - limit) + '</span>';
+            var extra = ids.length - limit;
+            var mlExtra = showCount > 0 ? ' margin-left:-8px;' : '';
+            html += '<span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light text-muted border" style="width:28px;height:28px;font-size:11px;' + mlExtra + '">+' + String(extra) + '</span>';
         }
         html += '</div>';
         return html;
@@ -4843,45 +4854,7 @@ export function renderSidebar(target) {
     function renderAssigneesCell(uids) {
         var ids = Array.isArray(uids) ? uids.filter(Boolean) : [];
         if (ids.length === 0) return '<span class="text-muted">-</span>';
-        if (ids.length === 1) {
-            var info = getUserDisplay(ids[0]);
-            if (info.photo) {
-                return (
-                    '<div class="d-flex align-items-center">' +
-                        '<img src="' + escapeAttr(info.photo) + '" class="rounded-circle me-2 border" width="30" height="30" style="object-fit:cover;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '">' +
-                        '<span class="fw-bold text-truncate-custom flex-grow-1" style="min-width:0;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name) + '" data-user-text="' + escapeAttr(info.name) + '"></span>' +
-                    '</div>'
-                );
-            } else {
-                var ini = initialsOf(info.name || ids[0]);
-                return (
-                    '<div class="d-flex align-items-center">' +
-                        '<span class="d-inline-flex align-items-center justify-content-center rounded-circle border bg-secondary text-white me-2" style="width:30px;height:30px;font-size:12px;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '">' + escapeAttr(ini) + '</span>' +
-                        '<span class="fw-bold text-truncate-custom flex-grow-1" style="min-width:0;" data-bs-toggle="tooltip" title="' + escapeAttr(info.name || ids[0]) + '" data-user-text="' + escapeAttr(info.name || ids[0]) + '"></span>' +
-                    '</div>'
-                );
-            }
-        }
-        var fullNames = [];
-        var shortNames = [];
-        for (var i = 0; i < ids.length; i++) {
-            var info2 = getUserDisplay(ids[i]);
-            var nm = info2 && info2.name ? info2.name : '';
-            if (nm) {
-                fullNames.push(nm);
-                shortNames.push(firstNameOf(nm));
-            }
-        }
-        var label = '';
-        if (shortNames.length) {
-            var shown = shortNames.slice(0, 2);
-            label = shown.join(', ');
-            if (shortNames.length > 2) label += ' +' + String(shortNames.length - 2);
-        }
-        var labelHtml = label
-            ? '<span class="fw-bold text-truncate-custom ms-2" data-bs-toggle="tooltip" title="' + escapeAttr(fullNames.join(', ')) + '" data-user-text="' + escapeAttr(label) + '"></span>'
-            : '';
-        return '<div class="d-flex align-items-center">' + renderAvatarPile(ids, 5) + labelHtml + '</div>';
+        return renderAvatarPile(ids, 2);
     }
 
     function renderNamedCollection(arr) {
@@ -4960,6 +4933,45 @@ export function renderSidebar(target) {
         if (mDescription) {
             if (reportObj.description) mDescription.innerHTML = reportObj.description;
             else mDescription.innerText = '-';
+        }
+
+        var mFilesWrapper = document.getElementById('mFilesWrapper');
+        var mFiles = document.getElementById('mFiles');
+        if (mFilesWrapper && mFiles) {
+            mFiles.innerHTML = '';
+            var filesArr = Array.isArray(reportObj.files) ? reportObj.files : [];
+            if (filesArr.length > 0) {
+                var parts = [];
+                for (var fi = 0; fi < filesArr.length; fi++) {
+                    var fobj = filesArr[fi];
+                    if (!fobj) continue;
+                    var furl = fobj.url || '#';
+                    var fname = fobj.name || 'Attachment';
+                    var ftype = String(fobj.type || '').toLowerCase();
+                    var ficon = 'far fa-file';
+                    if (ftype.indexOf('pdf') !== -1) {
+                        ficon = 'far fa-file-pdf';
+                    } else if (ftype.indexOf('zip') !== -1 || ftype.indexOf('rar') !== -1 || ftype.indexOf('7z') !== -1) {
+                        ficon = 'far fa-file-archive';
+                    } else if (ftype.indexOf('image/') === 0) {
+                        ficon = 'far fa-file-image';
+                    }
+                    parts.push(
+                        '<a href="' + escapeAttr(furl) + '" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" target="_blank" rel="noopener" data-bs-toggle="tooltip" title="' + escapeAttr(fname) + '">' +
+                            '<i class="' + ficon + '"></i>' +
+                            '<span class="small text-truncate" style="max-width:150px;">' + escapeAttr(fname) + '</span>' +
+                        '</a>'
+                    );
+                }
+                if (parts.length) {
+                    mFiles.innerHTML = parts.join('');
+                    mFilesWrapper.style.display = '';
+                } else {
+                    mFilesWrapper.style.display = 'none';
+                }
+            } else {
+                mFilesWrapper.style.display = 'none';
+            }
         }
 
         pendingFeedbackFiles = [];
@@ -5873,6 +5885,7 @@ export function renderSidebar(target) {
                     fileTitle: fileTitle,
                     fileUrl: fileUrl,
                     fileIconClass: fileIconClass,
+                    files: filesArr,
                     status: statusVal,
                     notifyTo: notifyIds,
                     notifyCount: notifyIds.length,
