@@ -4332,7 +4332,7 @@ export function renderSidebar(target) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         :root {
             --primary-teal: #2d5a52;
@@ -5449,6 +5449,18 @@ export function renderSidebar(target) {
                 else if (data.status && typeof data.status === 'object') statusRaw = data.status.name || data.status.label || '';
                 var normStatus = String(statusRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
                 var isComplete = normStatus === 'complete' || normStatus === 'done';
+                if (data.task_status) {
+                    var tsRaw = '';
+                    if (typeof data.task_status === 'string') {
+                        tsRaw = data.task_status;
+                    } else if (typeof data.task_status === 'object' && (data.task_status.name || data.task_status.label)) {
+                        tsRaw = data.task_status.name || data.task_status.label || '';
+                    }
+                    var normTaskStatus = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
+                    if (normTaskStatus === 'complete' || normTaskStatus === 'done') {
+                        isComplete = true;
+                    }
+                }
                 if (!isComplete) return;
                 completeTaskIds.push(docSnap.id);
                 var questType = 'Side Quest';
