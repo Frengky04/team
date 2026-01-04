@@ -1166,6 +1166,21 @@ export function renderSidebar(target) {
         </div>
     </div>
 
+    <div id="sideQuestDescModal"
+        class="fixed inset-0 flex items-center justify-center bg-black/40 z-40 hidden">
+        <div class="bg-white rounded-2xl shadow-xl px-6 py-5 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-3">
+                <div class="text-sm font-semibold text-gray-900">Task Description</div>
+                <button type="button"
+                    class="text-gray-400 hover:text-gray-600"
+                    onclick="closeSideQuestDescModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div id="sideQuestDescModalBody" class="text-sm text-gray-700 leading-relaxed"></div>
+        </div>
+    </div>
+
     <script>
         var questTasksById = {};
         var questUsersById = {};
@@ -1546,6 +1561,21 @@ export function renderSidebar(target) {
                 questAlertOkHandler = null;
                 questAlertCancelHandler = null;
                 handler();
+            }
+        }
+
+        function openSideQuestDescription(taskId, descHtml) {
+            var modal = document.getElementById('sideQuestDescModal');
+            var body = document.getElementById('sideQuestDescModalBody');
+            if (!modal || !body) return;
+            body.innerHTML = descHtml || '';
+            modal.classList.remove('hidden');
+        }
+
+        function closeSideQuestDescModal() {
+            var modal = document.getElementById('sideQuestDescModal');
+            if (modal) {
+                modal.classList.add('hidden');
             }
         }
 
@@ -3245,7 +3275,7 @@ export function renderSidebar(target) {
             }
             var html = '';
             html += '<button type="button" class="w-6 h-6 border-2 ' + borderClass + ' rounded-full mt-1.5 flex-shrink-0 flex items-center justify-center bg-white quest-card-check-btn">';
-            html += '<i data-lucide="check" class="w-3 h-3 text-gray-400"></i>';
+            html += '<i data-lucide="check" class="w-3 h-3 text-gray-400" style=""></i>';
             html += '</button>';
             html += '<div class="flex-1">';
             html += '<div class="flex flex-wrap items-center gap-2 mb-1">';
@@ -5279,8 +5309,8 @@ export function renderSidebar(target) {
                     '<div class="d-flex flex-column align-items-center gap-1">' +
                         '<div class="' + statusClass + '">' + statusLabel + '</div>' +
                         '<div class="d-flex justify-content-center gap-1">' +
-                            '<button type="button" class="btn btn-outline-danger btn-sm px-2 rounded-2 js-reject-report"><i class="fas fa-times"></i></button>' +
-                            '<button type="button" class="btn btn-dlg-green btn-sm px-2 rounded-2 js-approve-report">' + (st2 === 'approved' ? 'Approved' : 'Approve') + '</button>' +
+                            '<button type="button" class="btn btn-dlg-red shadow-none btn-sm px-2 rounded-2 js-reject-report"><i class="fas fa-times"></i></button>' +
+                            '<button type="button" class="btn btn-dlg-blue btn-sm px-2 rounded-2 js-approve-report shadow-none">' + (st2 === 'approved' ? 'Approved' : 'Approve') + '</button>' +
                         '</div>' +
                     '</div>' +
                 '</td>';
@@ -5413,7 +5443,7 @@ export function renderSidebar(target) {
         if (!btn) return;
         var selected = Object.keys(selectedTaskIds).filter(function (k) { return !!selectedTaskIds[k]; });
         if (!bulkMode) {
-            btn.className = 'btn btn-approve-all px-3 py-2 rounded-3 shadow-sm';
+            btn.className = 'btn btn-dlg-green px-3 py-2 rounded-3';
             btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Approve all';
             btn.disabled = false;
             return;
@@ -7327,11 +7357,16 @@ export function renderSidebar(target) {
                     var tmp = document.createElement('div');
                     tmp.innerHTML = descHtml;
                     var descText = (tmp.textContent || tmp.innerText || '').trim();
+                    var hasFiles = false;
+                    if (descHtml && (descHtml.indexOf('<a ') !== -1 || descHtml.indexOf('href=') !== -1 || descHtml.indexOf('<img ') !== -1)) {
+                        hasFiles = true;
+                    }
                     if (!descText) {
                         descText = 'No description provided.';
                     }
                     var maxLen = 140;
-                    if (descText.length > maxLen) {
+                    var isLong = descText.length > maxLen;
+                    if (isLong) {
                         var truncated = descText.substring(0, maxLen);
                         truncated = truncated.replace(/\s+\S*$/, '');
                         descText = truncated + '...';
@@ -7390,7 +7425,12 @@ export function renderSidebar(target) {
                     htmlCard += '</div>';
                     htmlCard += '</div>';
                     if (descText) {
-                        htmlCard += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' + esc(descText) + '</p>';
+                        htmlCard += '<p class="text-xs md:text-sm text-gray-600 leading-snug">' +
+                            esc(descText) +
+                            ((hasFiles || isLong)
+                                ? ' <button type="button" class="text-xs font-semibold text-blue-600 hover:underline sidequest-more-link">more</button>'
+                                : '') +
+                            '</p>';
                     }
                     if (departments.length > 0) {
                         htmlCard += '<div class="flex flex-wrap gap-2 mt-1">';
@@ -7454,6 +7494,10 @@ export function renderSidebar(target) {
 
                     // Report Accordion
                     htmlCard += '<div id="report-accordion-' + taskId + '" class="hidden mt-3 border-t border-gray-100 pt-3">';
+                    htmlCard += '  <div class="mb-3">';
+                    htmlCard += '    <label class="block text-xs font-medium text-gray-600 mb-1">Optional : Attach files</label>';
+                    htmlCard += '    <input type="file" id="reportFileInput-' + taskId + '" multiple class="block w-full text-xs text-gray-700 border border-gray-200 rounded-xl bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300"/>';
+                    htmlCard += '  </div>';
                     htmlCard += '  <div class="rich-editor mb-3">';
                     htmlCard += '    <div class="rich-toolbar">';
                     htmlCard += '      <div class="rich-toolbar-left">';
@@ -7471,8 +7515,6 @@ export function renderSidebar(target) {
                     htmlCard += '      </div>';
                     htmlCard += '    </div>';
                     htmlCard += '    <div id="reportEditor-' + taskId + '" class="rich-editor-body outline-none" contenteditable="true" data-placeholder="Insert your report here..."></div>';
-                    htmlCard += '    <input type="file" id="reportFileInput-' + taskId + '" class="hidden" multiple data-task-id="' + taskId + '" />';
-                    htmlCard += '    <div id="reportFiles-' + taskId + '" class="mt-2"></div>';
                     htmlCard += '  </div>';
                     htmlCard += '  <div class="flex justify-end gap-2">';
                     htmlCard += '    <button type="button" class="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full cancel-report-btn" data-task-id="' + taskId + '">Cancel</button>';
@@ -7521,6 +7563,19 @@ export function renderSidebar(target) {
                         if (submitBtn) {
                             submitBtn.addEventListener('click', function () {
                                 submitSideQuestReport(taskId);
+                            });
+                        }
+                        var moreBtn = el.querySelector('.sidequest-more-link');
+                        if (moreBtn && taskId) {
+                            moreBtn.addEventListener('click', function (evt) {
+                                if (evt && evt.stopPropagation) {
+                                    evt.stopPropagation();
+                                }
+                                var fullHtml = '';
+                                if (questTasksById && questTasksById[taskId] && questTasksById[taskId].description) {
+                                    fullHtml = String(questTasksById[taskId].description);
+                                }
+                                openSideQuestDescription(taskId, fullHtml);
                             });
                         }
                     })();
