@@ -6120,32 +6120,8 @@ export function renderSidebar(target) {
                 else if (data.recur) questType = 'Main Quest';
                 taskQuestTypeById[docSnap.id] = questType;
 
-                // Check if we should fetch sub-collection reports (complete or pending/review status)
-                var shouldFetchSubReports = isComplete;
-                if (!shouldFetchSubReports) {
-                     // Check status string for keywords indicating a report might exist
-                     var s = normStatus;
-                     if (s.indexOf('wait') >= 0 || s.indexOf('pending') >= 0 || s.indexOf('review') >= 0 || s.indexOf('approv') >= 0 || s.indexOf('submit') >= 0 || s.indexOf('initiate') >= 0) {
-                         shouldFetchSubReports = true;
-                     }
-                     // Check task_status string as well
-                     if (data.task_status) {
-                         var tsRaw = '';
-                         if (typeof data.task_status === 'string') {
-                             tsRaw = data.task_status;
-                         } else if (typeof data.task_status === 'object' && (data.task_status.name || data.task_status.label)) {
-                             tsRaw = data.task_status.name || data.task_status.label || '';
-                         }
-                         var nts = String(tsRaw || '').trim().toLowerCase().replace(/[\s_]/g, '');
-                         if (nts.indexOf('wait') >= 0 || nts.indexOf('pending') >= 0 || nts.indexOf('review') >= 0 || nts.indexOf('approv') >= 0 || nts.indexOf('submit') >= 0 || nts.indexOf('initiate') >= 0) {
-                             shouldFetchSubReports = true;
-                         }
-                     }
-                }
-                
-                if (shouldFetchSubReports) {
-                    completeTaskIds.push(docSnap.id);
-                }
+                // Always fetch sub-collection reports for every task to be safe
+                completeTaskIds.push(docSnap.id);
             });
 
             var latestByTaskId = {};
@@ -6186,7 +6162,7 @@ export function renderSidebar(target) {
             }
 
             var cursor0 = 0;
-            var concurrency0 = 8;
+            var concurrency0 = 4;
             var workers0 = [];
             for (var w0 = 0; w0 < concurrency0; w0++) {
                 workers0.push((async function () {
@@ -6242,6 +6218,20 @@ export function renderSidebar(target) {
                 }
 
                 var filesArr = Array.isArray(rdata.files) ? rdata.files : [];
+                
+                // Fallback for older report structures
+                if (filesArr.length === 0) {
+                    var legacyUrl = rdata.fileUrl || rdata.file_url || rdata.url || '';
+                    var legacyName = rdata.fileName || rdata.file_name || rdata.name || 'Attachment';
+                    if (legacyUrl && legacyUrl !== '#') {
+                        filesArr.push({
+                            url: legacyUrl,
+                            name: legacyName,
+                            type: rdata.fileType || rdata.type || ''
+                        });
+                    }
+                }
+
                 var fileName = '';
                 var fileTitle = '';
                 var fileUrl = '#';
@@ -6577,14 +6567,12 @@ export function renderSidebar(target) {
                                 <span class="text-xs md:text-sm text-gray-500">Start</span>
                                 <input id="sideQuestStartInput" type="date"
                                     onclick="if (this.showPicker) this.showPicker();"
-                                    onfocus="if (this.showPicker) this.showPicker();"
                                     class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-xs md:text-sm text-gray-500">Due</span>
                                 <input id="sideQuestDueInput" type="date"
                                     onclick="if (this.showPicker) this.showPicker();"
-                                    onfocus="if (this.showPicker) this.showPicker();"
                                     class="w-28 md:w-32 rounded-xl border border-gray-200 px-3 py-2 text-xs md:text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100" />
                             </div>
                         </div>
@@ -7012,6 +7000,16 @@ export function renderSidebar(target) {
                     }
                 }
                 await parentWin.addDoc(parentWin.collection(parentWin.db, 'tasks', taskId, 'reports'), reportPayload);
+                
+                // Update task document to indicate a report exists
+                try {
+                    await parentWin.updateDoc(parentWin.doc(parentWin.db, 'tasks', taskId), {
+                        hasReport: true,
+                        lastReportAt: new Date().toISOString()
+                    });
+                } catch (eTask) {
+                    console.warn('Failed to update task with report flag', eTask);
+                }
                 
                 // Mark task as complete
                 await questToggleComplete(taskId);
