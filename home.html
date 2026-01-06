@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dialogika Dashboard - Final Unified</title>
+    <title>Home - Team Dialogika</title>
     
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -387,7 +387,8 @@
         import { renderSidebar } from "./element/sidebar.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDoc, getDocs, serverTimestamp, onSnapshot, orderBy, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         // 1. Konfigurasi Firebase (PASTIKAN SAMA DENGAN LOGIN/REGISTER)
         const firebaseConfig = {
@@ -406,8 +407,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         window.db = db;
         window.collection = collection;
+        window.getDoc = getDoc;
         window.getDocs = getDocs;
         window.addDoc = addDoc;
         window.serverTimestamp = serverTimestamp;
@@ -416,6 +419,11 @@
         window.deleteDoc = deleteDoc;
         window.deleteDoc = deleteDoc;
         window.updateDoc = updateDoc;
+        window.setDoc = setDoc;
+        window.storage = storage;
+        window.ref = ref;
+        window.uploadBytes = uploadBytes;
+        window.getDownloadURL = getDownloadURL;
 
         let currentUser = null;
         let departments = [];
@@ -450,7 +458,7 @@
 
                 await loadDepartments();
                 listenToProjects();
-                loadProjectTaskStatsOnce();
+                listenToTasks();
                 startPresenceTracking();
                 listenToOnlineUsers();
             } else {
@@ -534,63 +542,118 @@
         }
 
         // --- 3. AMBIL DATA PROJECT (Real-time) ---
+        let listenToProjectsRetryCount = 0;
         function listenToProjects() {
-            const pinnedContainer = document.getElementById('pinnedProjectsContainer');
-            const otherContainer = document.getElementById('otherProjectsContainer');
+            try {
+                const pinnedContainer = document.getElementById('pinnedProjectsContainer');
+                const otherContainer = document.getElementById('otherProjectsContainer');
 
-            // Query: Ambil semua project, urutkan berdasarkan waktu buat terbaru
-            const q = query(collection(db, "projects"), orderBy("created_at", "desc"));
+                // Query: Ambil semua project, urutkan berdasarkan waktu buat terbaru
+                const q = query(collection(db, "projects"), orderBy("created_at", "desc"));
 
-            // onSnapshot membuat data terupdate otomatis jika ada perubahan di database
-            onSnapshot(q, (snapshot) => {
-                let projects = [];
-                snapshot.forEach((doc) => {
-                    projects.push({ id: doc.id, ...doc.data() });
+                // onSnapshot membuat data terupdate otomatis jika ada perubahan di database
+                onSnapshot(q, (snapshot) => {
+                    listenToProjectsRetryCount = 0; // Reset retry count on success
+                    let projects = [];
+                    snapshot.forEach((doc) => {
+                        projects.push({ id: doc.id, ...doc.data() });
+                    });
+                    renderProjects(projects);
+                }, (error) => {
+                    console.error("Failed to listen to projects:", error);
+                    // Retry with exponential backoff if connection was aborted or unavailable
+                    if (error.code === 'unavailable' || error.message.includes('abort') || error.code === 'cancelled') {
+                        listenToProjectsRetryCount++;
+                        const delay = Math.min(1000 * Math.pow(2, listenToProjectsRetryCount), 30000); // Max 30s delay
+                        console.log(`Retrying projects listener in ${delay}ms (attempt ${listenToProjectsRetryCount})...`);
+                        setTimeout(listenToProjects, delay);
+                    }
                 });
-                renderProjects(projects);
-            });
+            } catch (e) {
+                console.error("Failed to listen to projects", e);
+            }
         }
 
-        // --- 3B. AMBIL STATISTIK TASK PER PROJECT (One-time, lebih ringan) ---
-        async function loadProjectTaskStatsOnce() {
+        // --- 3B. AMBIL STATISTIK TASK PER PROJECT (Real-time) ---
+        let listenToTasksRetryCount = 0;
+        let unsubscribeTasks = null;
+        function listenToTasks() {
             try {
-                const q = query(collection(db, "tasks"));
-                const snapshot = await getDocs(q);
-                const stats = {};
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data() || {};
-                    const pid = data.project_id || data.projectId || "";
-                    if (!pid) return;
-                    if (!stats[pid]) {
-                        stats[pid] = { total: 0, complete: 0 };
-                    }
-                    stats[pid].total += 1;
-                    let statusRaw = "";
-                    if (typeof data.status === "string") {
-                        statusRaw = data.status;
-                    } else if (data.status && typeof data.status === "object") {
-                        statusRaw = data.status.name || data.status.label || "";
-                    }
-                    const normalized = String(statusRaw || "").trim().toLowerCase();
-                    const isDone = normalized === "complete" || normalized === "done";
-                    if (isDone) {
-                        stats[pid].complete += 1;
-                    }
-                });
-                let totalAll = 0;
-                Object.keys(stats).forEach(pid => {
-                    const s = stats[pid] || {};
-                    totalAll += s.total || 0;
-                });
-                globalProjectTasksTotal = totalAll;
-                const projectCountEl = document.getElementById('projectTasksTotalCount');
-                if (projectCountEl) {
-                    projectCountEl.innerText = String(totalAll);
+                if (unsubscribeTasks) {
+                    unsubscribeTasks();
                 }
-                projectTaskStats = stats;
-                renderProjects(cachedProjects);
+                const q = query(collection(db, "tasks"));
+                unsubscribeTasks = onSnapshot(q, { includeMetadataChanges: false }, (snapshot) => {
+                    listenToTasksRetryCount = 0; // Reset retry count on success
+                    const stats = {};
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data() || {};
+                        const pid = data.project_id || data.projectId || "";
+                        if (!pid) return;
+                        if (!stats[pid]) {
+                            stats[pid] = { total: 0, complete: 0 };
+                        }
+                        stats[pid].total += 1;
+                        let statusRaw = "";
+                        if (typeof data.status === "string") {
+                            statusRaw = data.status;
+                        } else if (data.status && typeof data.status === "object") {
+                            statusRaw = data.status.name || data.status.label || "";
+                        }
+                        const normalized = String(statusRaw || "").trim().toLowerCase();
+                        const isDone = normalized === "complete" || normalized === "done";
+                        if (isDone) {
+                            stats[pid].complete += 1;
+                        }
+                    });
+
+                    let totalAll = 0;
+                    Object.keys(stats).forEach(pid => {
+                        const s = stats[pid] || {};
+                        totalAll += s.total || 0;
+                    });
+                    
+                    globalProjectTasksTotal = totalAll;
+                    const projectCountEl = document.getElementById('projectTasksTotalCount');
+                    if (projectCountEl) {
+                        projectCountEl.innerText = String(totalAll);
+                    }
+                    projectTaskStats = stats;
+                    renderProjects(cachedProjects);
+
+                    // Trigger sidebar refresh if available
+                    if (window.refreshSidebarCounts) {
+                        window.refreshSidebarCounts(snapshot);
+                    }
+                }, (error) => {
+                    console.error("Firestore Tasks Listener Error:", error);
+                    
+                    // Handle quota exceeded or other fatal errors
+                    if (error.code === 'resource-exhausted') {
+                        console.error("Firestore quota exceeded. Stopping listener.");
+                        return;
+                    }
+
+                    // Retry with exponential backoff if connection was aborted or unavailable
+                    const isRetryable = error.code === 'unavailable' || 
+                                      error.code === 'cancelled' || 
+                                      error.code === 'deadline-exceeded' ||
+                                      error.message.toLowerCase().includes('abort') ||
+                                      error.message.toLowerCase().includes('failed to get document');
+
+                    if (isRetryable) {
+                        listenToTasksRetryCount++;
+                        const delay = Math.min(1000 * Math.pow(2, listenToTasksRetryCount), 30000); 
+                        console.log(`Attempting to reconnect tasks listener in ${delay}ms (attempt ${listenToTasksRetryCount})...`);
+                        setTimeout(() => {
+                            if (auth.currentUser) {
+                                listenToTasks();
+                            }
+                        }, delay);
+                    }
+                });
             } catch (e) {
-                console.error("Failed to load project task stats", e);
+                console.error("Exception in listenToTasks", e);
             }
         }
 
@@ -633,6 +696,7 @@
             }
         }
 
+        let listenToOnlineUsersRetryCount = 0;
         function listenToOnlineUsers() {
             const container = document.getElementById('onlineUsersContainer');
             const badge = document.getElementById('onlineActiveBadge');
@@ -640,6 +704,7 @@
             try {
                 const colRef = collection(db, "user_presence");
                 onSnapshot(colRef, (snapshot) => {
+                    listenToOnlineUsersRetryCount = 0; // Reset retry count on success
                     const now = new Date();
                     const startOfDay = new Date();
                     startOfDay.setHours(0, 0, 0, 0);
@@ -700,10 +765,17 @@
                         container.insertAdjacentHTML('beforeend', html);
                     });
                 }, (error) => {
-                    console.error("Failed to listen online users", error);
+                    console.error("Failed to listen to online users:", error);
+                    // Retry with exponential backoff if connection was aborted or unavailable
+                    if (error.code === 'unavailable' || error.message.includes('abort') || error.code === 'cancelled') {
+                        listenToOnlineUsersRetryCount++;
+                        const delay = Math.min(1000 * Math.pow(2, listenToOnlineUsersRetryCount), 30000); // Max 30s delay
+                        console.log(`Retrying online users listener in ${delay}ms (attempt ${listenToOnlineUsersRetryCount})...`);
+                        setTimeout(listenToOnlineUsers, delay);
+                    }
                 });
             } catch (e) {
-                console.error("Failed to start online users listener", e);
+                console.error("Failed to listen to online users", e);
             }
         }
 
@@ -809,8 +881,8 @@
                         <a href="project/project.html?id=${p.id}" class="text-decoration-none">
                             <div class="project-card">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <span class="badge border pill px-3"
-                                          style="max-width:80px;background:${departmentColor};border-color:${departmentColor};color:#fff;">
+                                    <span class="badge border pill px-3 d-inline-flex align-items-center justify-content-center text-center"
+                                          style="min-width:80px;max-width:80px;background:${departmentColor};border-color:${departmentColor};color:#fff;">
                                         ${departmentName}
                                     </span>
                                     <div class="d-flex align-items-center gap-2 project-card-actions project-card-actions-unpinned">
@@ -821,7 +893,7 @@
                                     </div>
                                 </div>
                                 <h6 class="fw-bold text-dark mb-1">${p.name}</h6>
-                                <p class="text-muted small mb-2" style="min-height:2.6em;max-height:2.6em;overflow:hidden;">${shortDesc}</p>
+                                <p class="text-muted small mb-2" style="min-height:2.6em;white-space:normal;word-break:break-word;">${shortDesc}</p>
                                 <div class="d-flex align-items-center small text-muted">
                                     <i class="${iconClass} me-1"></i>
                                     <span>${progressText}</span>
