@@ -260,6 +260,30 @@
                         </div>
                     </div>
                 </section>
+
+                <section class="row g-4 mb-5" style="margin-top: 10px;">
+                    <div class="col-md-4">
+                        <div class="card p-4 h-100 shadow-sm">
+                            <h5 class="fw-bold mb-3">Internship Radar</h5>
+                            <div class="d-flex flex-wrap gap-3" id="internshipRadarList"></div>
+                            <p class="text-muted-custom mt-4 mb-0 small">Candidate internship yang terdaftar di sistem.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-4 h-100 shadow-sm">
+                            <h5 class="fw-bold mb-3">Mentor Radar</h5>
+                            <div class="d-flex flex-wrap gap-3" id="mentorRadarList"></div>
+                            <p class="text-muted-custom mt-4 mb-0 small">Candidate mentor yang terdaftar di sistem.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-4 h-100 shadow-sm">
+                            <h5 class="fw-bold mb-3">Team Radar</h5>
+                            <div class="d-flex flex-wrap gap-3" id="teamRadarList"></div>
+                            <p class="text-muted-custom mt-4 mb-0 small">Candidate team selain internship dan mentor.</p>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -314,6 +338,9 @@
             loadOnLeaveCount();
             loadRecruitmentStats();
             loadScoutingRadar(rangeStart, rangeEnd);
+            loadInternshipRadar();
+            loadMentorRadar();
+            loadTeamRadar();
         });
 
         function updateDateTime() {
@@ -518,6 +545,50 @@
             }
         }
 
+        function normalizeRolePair(roleIdRaw, roleNameRaw) {
+            const idVal = (roleIdRaw || "").toString().trim().toLowerCase();
+            const nameVal = (roleNameRaw || "").toString().trim().toLowerCase();
+            return {
+                normalizedRoleId: idVal.replace(/\s/g, ""),
+                normalizedRoleName: nameVal.replace(/\s/g, "")
+            };
+        }
+
+        function renderRadarAvatars(container, items) {
+            if (!container) return;
+            container.innerHTML = "";
+            if (!items.length) return;
+
+            const maxVisible = 5;
+            const visible = items.slice(0, maxVisible);
+            const remaining = items.length - visible.length;
+
+            visible.forEach(item => {
+                const img = document.createElement('img');
+                img.src = item.avatarUrl || ("https://i.pravatar.cc/150?u=" + item.id);
+                img.alt = item.name;
+                img.className = "candidate-photo";
+                img.setAttribute("data-bs-toggle", "tooltip");
+                img.setAttribute("data-bs-placement", "top");
+                img.setAttribute("title", item.name);
+                container.appendChild(img);
+            });
+
+            if (remaining > 0) {
+                const moreDiv = document.createElement('div');
+                moreDiv.className = "candidate-photo bg-light d-flex align-items-center justify-content-center text-muted small fw-bold";
+                moreDiv.textContent = "+" + remaining;
+                container.appendChild(moreDiv);
+            }
+
+            if (typeof bootstrap !== "undefined" && bootstrap.Tooltip) {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.forEach(el => {
+                    bootstrap.Tooltip.getOrCreateInstance(el);
+                });
+            }
+        }
+
         async function loadScoutingRadar(startDate, endDate) {
             try {
                 const container = document.getElementById('scoutingRadarList');
@@ -565,42 +636,131 @@
 
                 if (!container || !filteredTalents.length) return;
 
-                const maxVisible = 5;
-                const visible = filteredTalents.slice(0, maxVisible);
-                const remaining = filteredTalents.length - visible.length;
-
-                visible.forEach(item => {
+                const mapped = filteredTalents.map(item => {
                     const basic = item.data.basic_info || {};
                     const scouting = item.data.scouting_info || {};
-                    const recruitment = item.data.recruitment_status || {};
                     const name = basic.full_name || scouting.full_name || item.data.full_name || "Tanpa Nama";
                     const avatarUrl = basic.avatar_url || item.data.photo || "";
-
-                    const img = document.createElement('img');
-                    img.src = avatarUrl || ("https://i.pravatar.cc/150?u=" + item.id);
-                    img.alt = name;
-                    img.className = "candidate-photo";
-                    img.setAttribute("data-bs-toggle", "tooltip");
-                    img.setAttribute("data-bs-placement", "top");
-                    img.setAttribute("title", name);
-                    container.appendChild(img);
+                    return {
+                        id: item.id,
+                        name,
+                        avatarUrl
+                    };
                 });
 
-                if (remaining > 0) {
-                    const moreDiv = document.createElement('div');
-                    moreDiv.className = "candidate-photo bg-light d-flex align-items-center justify-content-center text-muted small fw-bold";
-                    moreDiv.textContent = "+" + remaining;
-                    container.appendChild(moreDiv);
-                }
-
-                if (typeof bootstrap !== "undefined" && bootstrap.Tooltip) {
-                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.forEach(el => {
-                        bootstrap.Tooltip.getOrCreateInstance(el);
-                    });
-                }
+                renderRadarAvatars(container, mapped);
             } catch (error) {
                 console.error("Failed to load scouting radar talents:", error);
+            }
+        }
+
+        async function loadInternshipRadar() {
+            try {
+                const container = document.getElementById("internshipRadarList");
+                if (!container) return;
+                container.innerHTML = "";
+
+                const talentsRef = collection(db, "talents");
+                const snap = await getDocs(talentsRef);
+                if (snap.empty) return;
+
+                const items = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const basic = data.basic_info || {};
+                    const scouting = data.scouting_info || {};
+                    const internship = data.internship || data.internship_info || {};
+
+                    const roleIdRaw = data.role_id || data.roleId || scouting.role_id || internship.role_id || "";
+                    const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
+                    const { normalizedRoleId, normalizedRoleName } = normalizeRolePair(roleIdRaw, roleNameRaw);
+                    const isInternshipRole = normalizedRoleId === "internship" && normalizedRoleName === "internship";
+                    if (!isInternshipRole) return;
+
+                    const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
+                    const avatarUrl = basic.avatar_url || data.photo || "";
+                    items.push({ id: docSnap.id, name, avatarUrl });
+                });
+
+                renderRadarAvatars(container, items);
+            } catch (error) {
+                console.error("Failed to load internship radar talents:", error);
+            }
+        }
+
+        async function loadMentorRadar() {
+            try {
+                const container = document.getElementById("mentorRadarList");
+                if (!container) return;
+                container.innerHTML = "";
+
+                const talentsRef = collection(db, "talents");
+                const snap = await getDocs(talentsRef);
+                if (snap.empty) return;
+
+                const items = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const basic = data.basic_info || {};
+                    const scouting = data.scouting_info || {};
+                    const internship = data.internship || data.internship_info || {};
+
+                    const roleIdRaw = data.role_id || data.roleId || scouting.role_id || internship.role_id || "";
+                    const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
+                    const { normalizedRoleId, normalizedRoleName } = normalizeRolePair(roleIdRaw, roleNameRaw);
+                    const isMentorRole = normalizedRoleId === "mentor" || normalizedRoleName === "mentor";
+                    if (!isMentorRole) return;
+
+                    const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
+                    const avatarUrl = basic.avatar_url || data.photo || "";
+                    items.push({ id: docSnap.id, name, avatarUrl });
+                });
+
+                renderRadarAvatars(container, items);
+            } catch (error) {
+                console.error("Failed to load mentor radar talents:", error);
+            }
+        }
+
+        async function loadTeamRadar() {
+            try {
+                const container = document.getElementById("teamRadarList");
+                if (!container) return;
+                container.innerHTML = "";
+
+                const talentsRef = collection(db, "talents");
+                const snap = await getDocs(talentsRef);
+                if (snap.empty) return;
+
+                const items = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data() || {};
+                    const basic = data.basic_info || {};
+                    const scouting = data.scouting_info || {};
+                    const internship = data.internship || data.internship_info || {};
+
+                    const roleIdRaw = data.role_id || data.roleId || scouting.role_id || internship.role_id || "";
+                    const roleNameRaw = data.role_name || data.role || basic.current_role || scouting.role_name || "";
+                    const { normalizedRoleId, normalizedRoleName } = normalizeRolePair(roleIdRaw, roleNameRaw);
+                    const isInternshipRole = normalizedRoleId === "internship" && normalizedRoleName === "internship";
+                    const isMentorRole = normalizedRoleId === "mentor" && normalizedRoleName === "mentor";
+
+                    const recruitment = data.recruitment_status || data.recruitment_system || {};
+                    const currentStatus = normalizeStatus(recruitment.current || "");
+                    const historyArray = Array.isArray(recruitment.history) ? recruitment.history : [];
+                    const hasRadarHistory = historyArray.some(entry => normalizeStatus(entry && entry.status) === "radar");
+                    const isRadar = currentStatus === "radar" || hasRadarHistory;
+
+                    if (isInternshipRole || isMentorRole || isRadar) return;
+
+                    const name = basic.full_name || scouting.full_name || data.full_name || "Tanpa Nama";
+                    const avatarUrl = basic.avatar_url || data.photo || "";
+                    items.push({ id: docSnap.id, name, avatarUrl });
+                });
+
+                renderRadarAvatars(container, items);
+            } catch (error) {
+                console.error("Failed to load team radar talents:", error);
             }
         }
 
